@@ -34,6 +34,22 @@
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
         }
+      ],
+      [
+        "expo-font",
+        {
+          "fonts": [
+            "./assets/fonts/inter_black.ttf",
+            "./assets/fonts/inter_extrabold.ttf",
+            "./assets/fonts/inter_bold.ttf",
+            "./assets/fonts/inter_semibold.ttf",
+            "./assets/fonts/inter_medium.ttf",
+            "./assets/fonts/inter_regular.ttf",
+            "./assets/fonts/inter_light.ttf",
+            "./assets/fonts/inter_extralight.ttf",
+            "./assets/fonts/inter_thin.ttf"
+          ]
+        }
       ]
     ],
     "experiments": {
