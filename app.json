@@ -1,21 +1,23 @@
 {
   "expo": {
-    "name": "SignChat-frontend",
-    "slug": "SignChat-frontend",
+    "name": "SignChat",
+    "slug": "SignChat",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "myapp",
+    "scheme": "signchat",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "it.polito.SignChat"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "it.polito.SignChat"
     },
     "web": {
       "bundler": "metro",
