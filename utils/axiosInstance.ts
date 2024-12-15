@@ -1,7 +1,7 @@
 import axios from "axios";
 import { deleteToken, getToken, saveToken } from "./secureStore";
 
-const API_BASE_URL = "http://localhost:3000/api";
+const API_BASE_URL = "http://10.0.2.2:3000/api";    //  Use local Ip address of pc when using real device
 
 //  Create and configure an Axios instance
 const axiosInstance = axios.create({

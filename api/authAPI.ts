@@ -16,7 +16,7 @@ async function login(email: string, password: string) {
     //  Call POST /api/auth/login
     const { data } = await axiosInstance({
         method: 'post',
-        url: '/auth/register',
+        url: '/auth/login',
         data: { email, password },
         headers: { 'Content-Type': 'application/json' }
     });

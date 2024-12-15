@@ -1,8 +1,11 @@
-import { Text, View, StyleSheet } from "react-native";
+import { Text, View, StyleSheet, Button } from "react-native";
 import { useTheme } from "@/hooks/useTheme";
+import { useContext } from "react";
+import { AuthContext } from "@/contexts/AuthContext";
 
 export default function Index() {
-  let theme = useTheme();
+  const theme = useTheme();
+  const context = useContext(AuthContext);
 
   return (
     <View
@@ -13,6 +16,10 @@ export default function Index() {
         backgroundColor: theme.primary
       }}
     >
+      <Text>{ `User is authenticated?:${context?.isAuthenticated}` }</Text>
+      <Button title="Login" onPress={() => {
+        context?.logout();
+      }}/>
       <Text style={[ styles.interBlack, { fontSize: 15, color: theme.primaryText }]}>Example text for font family</Text>
       <Text style={[ styles.interExtraBold, { fontSize: 15, color: theme.secondaryText }]}>Example text for font family</Text>
       <Text style={[ styles.interBold, { fontSize: 15, color: theme.accent }]}>Example text for font family</Text>
