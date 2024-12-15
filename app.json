@@ -55,7 +55,8 @@
             "./assets/fonts/inter_thin.ttf"
           ]
         }
-      ]
+      ],
+      "expo-secure-store"
     ],
     "experiments": {
       "typedRoutes": true
