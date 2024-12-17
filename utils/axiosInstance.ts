@@ -1,7 +1,8 @@
 import axios from "axios";
 import { deleteToken, getToken, saveToken } from "./secureStore";
 
-const API_BASE_URL = "http://10.0.2.2:3000/api";    //  Use local Ip address of pc when using real device
+//  Use local Ip address of pc when using real device or 10.0.2.2 with emulator
+const API_BASE_URL = "http://192.168.178.183:3000/api";   
 
 //  Create and configure an Axios instance
 const axiosInstance = axios.create({
@@ -46,11 +47,16 @@ axiosInstance.interceptors.response.use(
                     });
 
                     //  Save new tokens to Secure Store
-                    await saveToken('accesToken', data.accessToken);
+                    await saveToken('accessToken', data.accessToken);
                     await saveToken('refreshToken', data.refreshToken);
 
+                    //  If the original api is the logout api, update refreshToken parameter in the body
+                    if (originalRequest.url === "/auth/logout") {
+                        originalRequest.data = { refreshToken: data.refreshToken };
+                    }
+
                     //  Retry original request using the new access token
-                    originalRequest.headers.Authorization = `Bearer ${data.newAccessToken}`;
+                    originalRequest.headers.Authorization = `Bearer ${data.accessToken}`;
                     
                     return axiosInstance(originalRequest);
                 } catch {

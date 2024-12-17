@@ -4,15 +4,17 @@ import { deleteToken, getToken, saveToken } from "@/utils/secureStore";
 import { isAxiosError } from "axios";
 
 interface AuthContextType {
+    isReady: boolean,
     isAuthenticated: boolean,
-    register: (email: string, password: string) => Promise<void>,
-    login: (email: string, password: string) => Promise<void>,
-    logout: () => Promise<void>
+    register: (email: string, password: string) => Promise<boolean>,
+    login: (email: string, password: string) => Promise<boolean>,
+    logout: () => Promise<boolean>
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+    const [isReady, setIsReady] = useState(false);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
 
     useEffect(() => {
@@ -36,8 +38,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 if(isAxiosError(error)) {
                     //  No need to do anything: user is simply not yet authenticated
                     //  Handle error 
-                    console.log('User not authenticated', error.response?.data.message)
+                    console.log('User not authenticated', error.response?.data.message);
                 }
+            } finally {
+                setIsReady(true);
             }
         };
 
@@ -46,7 +50,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const registerHandler = async (email: string, password: string) => {
         try {
-            const { accessToken, refreshToken } = await authAPI.register(email, password);
+            const { tokens } = await authAPI.register(email, password);
+            const { accessToken, refreshToken } = tokens;
 
             //  Store tokens in the Secure Store
             await saveToken('accessToken', accessToken);
@@ -54,6 +59,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
             //  Update auth state
             setIsAuthenticated(true);
+            return true;
         } catch (error) {
             // Delete both tokens from Secure Store to avoid partial storage
             await deleteToken('accessToken');
@@ -63,6 +69,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 //  Handle error
                 console.log(error.response?.data.message);
             }
+
+            return false;
         }
     };
 
@@ -76,6 +84,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
             //  Update auth state
             setIsAuthenticated(true);
+            return true;
         } catch (error) {
             // Delete both tokens from Secure Store to avoid partial storage
             await deleteToken('accessToken');
@@ -85,6 +94,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 //  Handle error
                 console.log(error.response?.data.message);
             }
+
+            return false;
         }
     };
 
@@ -102,16 +113,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             await deleteToken('refreshToken');
 
             setIsAuthenticated(false);
+            return true;
         } catch (error) {
             if(isAxiosError(error)) {
                 //  Handle error
                 console.log(error.response?.data.message);
             }
+
+            return false;
         }
     };
 
     return (
-        <AuthContext.Provider value={{ isAuthenticated, register: registerHandler, login: loginHandler, logout: logoutHandler }}>
+        <AuthContext.Provider value={{ isReady, isAuthenticated, register: registerHandler, login: loginHandler, logout: logoutHandler }}>
             {children}
         </AuthContext.Provider>
     );
