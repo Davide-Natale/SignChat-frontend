@@ -8,7 +8,7 @@ export default function Login() {
     const theme = useTheme();
     const router = useRouter();
     const authContext = useContext(AuthContext);
-    const [email, setEmail] = useState("daxnatale@gmail.com");
+    const [email, setEmail] = useState("test@polito.it");
     const [password, setPassword] = useState("Aa0?aaaa");
 
     return (
