@@ -19,7 +19,7 @@ export default function Login() {
 
     return (
         <SafeAreaView style={[styles.main, { backgroundColor: theme.primary }]}>
-            <ScrollView contentContainerStyle={styles.inner}>
+            <ScrollView contentContainerStyle={styles.inner} showsVerticalScrollIndicator={false}>
                 <View style={styles.container}>
                     <Image
                         source={require("@/assets/images/icon.png")}
