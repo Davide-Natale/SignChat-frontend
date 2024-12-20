@@ -12,14 +12,14 @@ export const Colors = {
     },
     dark: {
         primary: "#121212",
-        secondary: "#3A3A3A",
+        secondary: "#2C2C2C",
         accent: "#4A90E2",
         onAccent: "#FFFFFF",
         error: "#FF4D4D",
         confirm: "#388E3C",
         primaryText: "#D1D1D1",
         secondaryText: "#AAAAAA",
-        divider: "#3A3A3A"
+        divider: "#525252"
     }
 }
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleProp, ViewStyle, Pressable, DimensionValue, TouchableOpacity } from 'react-native';
+import { StyleProp, ViewStyle, DimensionValue, TouchableOpacity } from 'react-native';
 
 interface ThemedButtonProps {
     onPress: () => void

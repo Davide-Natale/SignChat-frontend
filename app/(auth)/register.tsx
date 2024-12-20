@@ -1,13 +1,15 @@
 import { AuthContext } from '@/contexts/AuthContext';
 import { useTheme } from '@/hooks/useTheme';
 import { useRouter } from 'expo-router';
-import { useContext, useState } from 'react';
+import { useContext, useState, useRef } from 'react';
 import { Image } from 'expo-image';
 import ThemedButton from '@/components/ThemedButton';
 import ThemedText from '@/components/ThemedText';
 import ThemedTextInput from '@/components/ThemedTextInput';
-import {  StyleSheet, TouchableOpacity, View, ScrollView } from 'react-native';
+import {  StyleSheet, TouchableOpacity, View, ScrollView, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import EmailIcon from "@/assets/icons/email-bold.svg";
+import LockIcon from "@/assets/icons/lock-bold.svg";
 
 export default function Login() {
     const theme = useTheme();
@@ -16,10 +18,19 @@ export default function Login() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
+    const [emailErrMsg, setEmailErrMsg] = useState("");
+    const [passwordErrMsg, setPasswordErrMsg] = useState("");
+    const [confirmPasswordErrMsg, setConfirmPasswordErrMsg] = useState("");
+    const textInputRef2 = useRef<TextInput>(null);
+    const textInputRef3 = useRef<TextInput>(null);
 
     return (
         <SafeAreaView style={[styles.main, { backgroundColor: theme.primary }]}>
-            <ScrollView contentContainerStyle={styles.inner} showsVerticalScrollIndicator={false}>
+            <ScrollView 
+                contentContainerStyle={styles.inner} 
+                showsVerticalScrollIndicator={false}
+                keyboardShouldPersistTaps="handled"
+            >
                 <View style={styles.container}>
                     <Image
                         source={require("@/assets/images/icon.png")}
@@ -34,17 +45,43 @@ export default function Login() {
                     <ThemedTextInput
                         value={email}
                         onChangeText={e => setEmail(e)}
+                        clearValue={() => setEmail("")}
+                        errMsg={emailErrMsg}
                         placeholder='Email'
+                        leadingIcon={<EmailIcon fill={theme.primaryText} />}
+                        autoCorrect={false}
+                        autoCapitalize='none'
+                        keyboardType='email-address'
+                        returnKeyType="next"
+                        onSubmitEditing={() => textInputRef2.current?.focus()}
                     />
                     <ThemedTextInput
+                        externalRef={textInputRef2}
                         value={password}
                         onChangeText={p => setPassword(p)}
+                        errMsg={passwordErrMsg}
+                        secureTextEntry
                         placeholder='Password'
+                        leadingIcon={<LockIcon fill={theme.primaryText} />}
+                        autoCorrect={false}
+                        autoCapitalize='none'
+                        keyboardType='default'
+                        returnKeyType='next'
+                        onSubmitEditing={() => textInputRef3.current?.focus()}
                     />
                     <ThemedTextInput
+                        externalRef={textInputRef3}
                         value={confirmPassword}
                         onChangeText={p => setConfirmPassword(p)}
+                        errMsg={confirmPasswordErrMsg}
+                        secureTextEntry
                         placeholder='Confirm Password'
+                        leadingIcon={<LockIcon fill={theme.primaryText} />}
+                        autoCorrect={false}
+                        autoCapitalize='none'
+                        keyboardType='default'
+                        returnKeyType='done'
+                        onSubmitEditing={() => { /*TODO: add the same handler of confirm button*/ }}
                     />
                     <ThemedButton
                         onPress={async () => {
@@ -106,12 +143,12 @@ const styles = StyleSheet.create({
     title: {
         width: "100%",
         textAlign: "left",
-        letterSpacing: 1.5
+        letterSpacing: 1
     },
     description: {
         width: "100%",
         textAlign: "left",
-        letterSpacing: 1.2,
+        letterSpacing: 1,
         marginLeft: 20,
         marginBottom: 20
     },

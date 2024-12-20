@@ -1,8 +1,8 @@
-import { Text, View, StyleSheet, Button, ScrollView } from "react-native";
+import { View, StyleSheet, ScrollView } from "react-native";
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from "@/hooks/useTheme";
 import { useRouter, Redirect } from "expo-router";
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect } from "react";
 import { AuthContext } from "@/contexts/AuthContext";
 import { Image } from "expo-image";
 import * as SplashScreen from 'expo-splash-screen';
@@ -29,9 +29,7 @@ export default function Index() {
 
   if (authContext?.isAuthenticated) {
     return <Redirect href="/calls" />;
-  }
-
-
+  } 
 
   return (
     <SafeAreaView style={[styles.main, { backgroundColor: theme.primary }]}>
@@ -99,11 +97,11 @@ const styles = StyleSheet.create({
   },
   title: {
     textAlign: "center",
-    letterSpacing: 1.5
+    letterSpacing: 1
   },
   description: {
     textAlign: "center",
-    letterSpacing: 1.5,
+    letterSpacing: 1,
     marginVertical: 5
   },
   button1: {
