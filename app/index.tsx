@@ -8,23 +8,24 @@ import { Image } from "expo-image";
 import * as SplashScreen from 'expo-splash-screen';
 import ThemedText from "@/components/ThemedText";
 import ThemedButton from "@/components/ThemedButton";
+import { AppContext } from "@/contexts/AppContext";
 
 SplashScreen.preventAutoHideAsync();
 
 export default function Index() {
   const router = useRouter();
   const theme = useTheme();
+  const appContext = useContext(AppContext);
   const authContext = useContext(AuthContext);
   const description = "Break down communication barrier seffortlessly. " +
     "Connect, communicate and engage like never before!";
 
   useEffect(() => {
-    if (authContext?.isReady) SplashScreen.hideAsync();
+    if (appContext?.isReady) SplashScreen.hideAsync();
+  }, [appContext?.isReady]);
 
-  }, [authContext?.isReady]);
-
-  if (!authContext?.isReady) {
-    return <View style={{ backgroundColor: theme.primary }}></View>;
+  if (!appContext?.isReady) {
+    return null;
   }
 
   if (authContext?.isAuthenticated) {
@@ -49,7 +50,6 @@ export default function Index() {
             onPress={() => router.push("/login")}
             height={60}
             width="100%"
-            shape="circular"
             backgroundColor={theme.accent}
             style={styles.button1}
           >
@@ -60,7 +60,6 @@ export default function Index() {
             height={60}
             width="100%"
             type="outlined"
-            shape="circular"
             borderColor={theme.accent}
             backgroundColor={theme.primary}
             style={styles.button2}

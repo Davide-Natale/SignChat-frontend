@@ -5,21 +5,72 @@ import { AuthContext } from '@/contexts/AuthContext';
 import { useTheme } from '@/hooks/useTheme';
 import { useRouter } from 'expo-router';
 import { useContext, useRef, useState } from 'react';
-import { StyleSheet, View, TouchableOpacity, ScrollView,TextInput } from 'react-native';
+import { StyleSheet, View, TouchableOpacity, ScrollView,TextInput, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
 import EmailIcon from "@/assets/icons/email-bold.svg";
 import LockIcon from "@/assets/icons/lock-bold.svg";
+import { isAxiosError } from 'axios';
+import { AppContext } from '@/contexts/AppContext';
 
 export default function Login() {
     const theme = useTheme();
     const router = useRouter();
+    const appContext = useContext(AppContext);
     const authContext = useContext(AuthContext);
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
+    const [email, setEmail] = useState("test@polito.it");
+    const [password, setPassword] = useState("Aa0?aaaa");
     const [emailErrMsg, setEmailErrMsg] = useState("");
     const [passwordErrMsg, setPasswordErrMsg] = useState("");
     const textInputRef2 = useRef<TextInput>(null);
+
+    const checkEmail = () => {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@\.]{2,}$/;
+
+        if(email === "") {
+            setEmailErrMsg("Email is a required field.");
+            return false;
+        } 
+
+        if(!emailRegex.test(email)) {
+            setEmailErrMsg("Insert a valid email.");
+            return false;
+        }
+            
+        setEmailErrMsg("");
+        return true; 
+    };
+    
+    const checkPassword = () => { 
+        if(password === "") {
+            setPasswordErrMsg("Password is a required field.");
+            return false;
+        } 
+            
+        setPasswordErrMsg("");
+        return true; 
+    };
+
+    const handleSubmit = async () => {
+        const emailIsValid = checkEmail();
+        const passwordIsValid = checkPassword();
+
+        if(emailIsValid && passwordIsValid) {
+            try {
+                appContext?.updateLoading(true);
+                await authContext?.login(email, password);
+                if (router.canDismiss()) { router.dismissAll(); }
+                router.replace("/calls");
+            } catch (error) {
+                if(isAxiosError(error)) {
+                    //  Handle error
+                    console.log(error.request.data.message);
+                }
+            } finally {
+                appContext?.updateLoading(false);
+            }          
+        }
+    }
 
     return (
         <SafeAreaView style={[styles.main, { backgroundColor: theme.primary }]}>
@@ -64,28 +115,20 @@ export default function Login() {
                     autoCapitalize='none'
                     keyboardType='default'
                     returnKeyType='done'
-                    onSubmitEditing={() => { /*TODO: add the same handler of confirm button*/ }}
+                    onSubmitEditing={handleSubmit}
                 />
                 <ThemedButton
-                  onPress={async () => {
-                    /*const success = await authContext?.login(email, password);
-                    if (success) {
-                        if (router.canDismiss()) {
-                            router.dismissAll();
-                        }
-
-                        router.replace("/calls");
-                    }*/
-                  }}
+                  onPress={handleSubmit}
                   height={60}
                   width="100%"
-                  shape="circular"
                   backgroundColor={theme.accent}
+                  disabled={appContext?.loading}
                   style={styles.button}
                 >
-                  <ThemedText color={theme.onAccent} fontSize={18} fontWeight="bold" >Login</ThemedText>
+                    { appContext?.loading ? <ActivityIndicator color={theme.onAccent} size="large" /> :
+                        <ThemedText color={theme.onAccent} fontSize={18} fontWeight="bold" >Login</ThemedText>
+                    }
                 </ThemedButton>
-
                 <View style={styles.textGroup}>
                     <ThemedText color={theme.secondaryText} fontSize={15} fontWeight='regular'>
                         Don't have an account?
@@ -94,7 +137,6 @@ export default function Login() {
                         <ThemedText color={theme.accent} fontSize={15} fontWeight='medium' style={styles.text}>Sign Up</ThemedText>
                     </TouchableOpacity>
                 </View>
-                
               </View>
             </ScrollView>
         </SafeAreaView>

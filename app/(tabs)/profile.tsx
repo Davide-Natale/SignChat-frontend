@@ -13,7 +13,7 @@ export default function ProfileScreen() {
 
   useEffect(() => {
     profileAPI.getProfile()
-      .then(u => { setUser(u); })
+      .then(user => { setUser(user); })
       .catch(err => { if(isAxiosError(err)) console.log(err.response?.data.message); })
   }, []);
   
@@ -27,11 +27,16 @@ export default function ProfileScreen() {
         title='Logout' 
         color={theme.error}
         onPress={async () => {
-          const success = await authContext?.logout();
-          if(success) 
+          try {
+            await authContext?.logout();
+          } catch (error) {
+            if(isAxiosError(error)) {
+              //  Handle error
+              console.log(error.response?.data.message);
+            }
+          } finally {
             router.replace("/login");
-          else 
-            router.replace("/login");
+          }
         }} 
       />
     </View>

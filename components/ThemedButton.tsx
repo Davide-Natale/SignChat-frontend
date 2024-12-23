@@ -9,6 +9,7 @@ interface ThemedButtonProps {
     width?: DimensionValue
     borderColor?: string
     backgroundColor: string
+    disabled?: boolean
     children: React.ReactNode
     style?: StyleProp<ViewStyle>
 }
@@ -22,20 +23,23 @@ export default function ThemedButton(
         width,
         borderColor,
         backgroundColor,
+        disabled = false,
         children,
         style
     }: ThemedButtonProps
 ) {
     let borderRadius = 8;
 
-    if(shape === "circular" && height) {
-        borderRadius = parseInt(height.toString()) / 2;
+    if(height) {
+        borderRadius = shape === 'circular' ? 
+            parseInt(height?.toString()) / 2 : parseInt(height?.toString()) / 4;
     }
 
     return (
         <TouchableOpacity
             onPress={onPress}
             activeOpacity={0.8}
+            disabled={disabled}
             touchSoundDisabled
             style={[style, 
                 {

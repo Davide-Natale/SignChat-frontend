@@ -6,14 +6,17 @@ import { Image } from 'expo-image';
 import ThemedButton from '@/components/ThemedButton';
 import ThemedText from '@/components/ThemedText';
 import ThemedTextInput from '@/components/ThemedTextInput';
-import {  StyleSheet, TouchableOpacity, View, ScrollView, TextInput } from 'react-native';
+import {  StyleSheet, TouchableOpacity, View, ScrollView, TextInput, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import EmailIcon from "@/assets/icons/email-bold.svg";
 import LockIcon from "@/assets/icons/lock-bold.svg";
+import { AppContext } from '@/contexts/AppContext';
+import { isAxiosError } from 'axios';
 
 export default function Login() {
     const theme = useTheme();
     const router = useRouter();
+    const appContext = useContext(AppContext);
     const authContext = useContext(AuthContext);
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -23,6 +26,90 @@ export default function Login() {
     const [confirmPasswordErrMsg, setConfirmPasswordErrMsg] = useState("");
     const textInputRef2 = useRef<TextInput>(null);
     const textInputRef3 = useRef<TextInput>(null);
+
+    const checkEmail = () => {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@\.]{2,}$/;
+
+        if(email === "") {
+            setEmailErrMsg("Email is a required field.");
+            return false;
+        } 
+
+        if(!emailRegex.test(email)) {
+            setEmailErrMsg("Insert a valid email.");
+            return false;
+        }
+            
+        setEmailErrMsg("");
+        return true; 
+    };
+
+    const checkPassword = () => { 
+        if(password.length < 8) {
+            setPasswordErrMsg("Password must be at least 8 characters long.");
+            return false;
+        }
+    
+        if(!/[A-Z]/.test(password)) {
+            setPasswordErrMsg("Password must include at least one uppercase letter.");
+            return false;
+        }
+    
+        if(!/[a-z]/.test(password)) {
+            setPasswordErrMsg("Password must include at least one lowercase letter.");
+            return false;
+        }
+    
+        if(!/[0-9]/.test(password)) {
+            setPasswordErrMsg("Password must include at least one number.");
+            return false;
+        }
+    
+        if(!/[@$!%*?&#]/.test(password)) {
+            setPasswordErrMsg("Password must include at least one special character (@$!%*?&#).");
+            return false;
+        }
+    
+        setPasswordErrMsg("");
+        return true; 
+    };
+
+    const checkConfirmPassword = () => { 
+        if(confirmPassword === "") {
+            setConfirmPasswordErrMsg("Confirm password is a required field.");
+            return false;
+        } 
+
+        if(confirmPassword !== password) {
+            setConfirmPasswordErrMsg("Passwords do not match.");
+            return false;
+        }
+
+        setConfirmPasswordErrMsg("");
+        return true;
+    }
+
+    const handleSubmit = async () => {
+        const emailIsValid = checkEmail();
+        const passwordIsValid = checkPassword();
+        const confirmPasswordIsValid = checkConfirmPassword();
+
+        if(emailIsValid && passwordIsValid && confirmPasswordIsValid) {
+            try {
+                appContext?.updateLoading(true);
+                await authContext?.register(email, password);
+                if (router.canDismiss()) { router.dismissAll(); }
+                router.replace("/calls");
+            } catch (error) {
+                if(isAxiosError(error)) {
+                    //  Handle error
+                    console.log(error.request.data.message);
+                }
+            } finally {
+                appContext?.updateLoading(false);
+            }          
+        }
+    }
 
     return (
         <SafeAreaView style={[styles.main, { backgroundColor: theme.primary }]}>
@@ -81,26 +168,19 @@ export default function Login() {
                         autoCapitalize='none'
                         keyboardType='default'
                         returnKeyType='done'
-                        onSubmitEditing={() => { /*TODO: add the same handler of confirm button*/ }}
+                        onSubmitEditing={handleSubmit}
                     />
                     <ThemedButton
-                        onPress={async () => {
-                            /*const success = await authContext?.register(email, password)
-                            if (success) {
-                                if (router.canDismiss()) {
-                                    router.dismissAll();
-                                }
-
-                                router.replace("/calls");
-                            }*/
-                        }}
+                        onPress={handleSubmit}
                         height={60}
                         width="100%"
-                        shape="circular"
                         backgroundColor={theme.accent}
+                        disabled={appContext?.loading}
                         style={styles.button}
                     >
-                        <ThemedText color={theme.onAccent} fontSize={18} fontWeight="bold" >Sign Up</ThemedText>
+                        { appContext?.loading ? <ActivityIndicator color={theme.onAccent} size="large" /> :
+                            <ThemedText color={theme.onAccent} fontSize={18} fontWeight="bold" >Sign Up</ThemedText>
+                        }
                     </ThemedButton>
 
                     <View style={styles.textGroup}>

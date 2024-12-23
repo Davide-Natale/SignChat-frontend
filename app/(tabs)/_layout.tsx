@@ -13,6 +13,8 @@ export default function TabLayout() {
     return (
         <Tabs
             screenOptions={{
+                headerTitleStyle: { color: theme.primaryText },
+                headerStyle: { backgroundColor: theme.secondary },
                 tabBarStyle: { backgroundColor: theme.secondary },
                 tabBarActiveTintColor: theme.accent,
                 tabBarInactiveTintColor: theme.secondaryText
