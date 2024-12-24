@@ -32,6 +32,7 @@ export default function ThemedTextInput({ errMsg, leadingIcon, clearValue, exter
                         textInputRef.current?.focus(); 
                     }
                 }}
+                android_disableSound
             >
                 <View style={[styles.container, { backgroundColor: theme.secondary, borderColor }]} >
                     {leadingIcon}
@@ -56,6 +57,7 @@ export default function ThemedTextInput({ errMsg, leadingIcon, clearValue, exter
                     {!rest.secureTextEntry && rest.value !== "" ?
                         <TouchableOpacity
                             activeOpacity={0.8}
+                            touchSoundDisabled
                             onPress={() => { if (clearValue) clearValue(); }}
                         >
                             <ClearIcon stroke={theme.primaryText} />
@@ -65,6 +67,7 @@ export default function ThemedTextInput({ errMsg, leadingIcon, clearValue, exter
                     {rest.secureTextEntry ?
                         <TouchableOpacity
                             activeOpacity={0.8}
+                            touchSoundDisabled
                             onPress={() => setIsPasswordVisible(prev => !prev)}
                         >
                             {isPasswordVisible ?
@@ -88,7 +91,7 @@ export default function ThemedTextInput({ errMsg, leadingIcon, clearValue, exter
 const styles = StyleSheet.create({
     main: {
         width: "100%",
-        marginBottom: 12,
+        marginTop: 12
     },
     container: {
         height: 60,
@@ -96,8 +99,8 @@ const styles = StyleSheet.create({
         justifyContent: "flex-start",
         alignItems: "center",
         borderWidth: 1.5,
-        borderRadius: 15,
-        paddingHorizontal: 12,
+        borderRadius: 20,
+        paddingHorizontal: 12
     },
     input: {
         flex: 1,
@@ -106,8 +109,8 @@ const styles = StyleSheet.create({
     textGroup: {
         flexDirection: "row",
         alignItems: "center",
-        marginTop: 5,
-        marginHorizontal: 6
+        marginTop: 6,
+        marginHorizontal: 3
     },
     supportingText: {         
         marginLeft: 5

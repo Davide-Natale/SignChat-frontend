@@ -6,8 +6,6 @@ import { useTheme } from '@/hooks/useTheme';
 import { useRouter } from 'expo-router';
 import { useContext, useRef, useState } from 'react';
 import { StyleSheet, View, TouchableOpacity, ScrollView,TextInput, ActivityIndicator } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Image } from 'expo-image';
 import EmailIcon from "@/assets/icons/email-bold.svg";
 import LockIcon from "@/assets/icons/lock-bold.svg";
 import { isAxiosError } from 'axios';
@@ -73,22 +71,17 @@ export default function Login() {
     }
 
     return (
-        <SafeAreaView style={[styles.main, { backgroundColor: theme.primary }]}>
-            <ScrollView 
-                contentContainerStyle={styles.inner} 
-                showsVerticalScrollIndicator={false}
-                keyboardShouldPersistTaps="handled"
-            >
-              <View style={styles.container}>
-                <Image 
-                  source={require("@/assets/images/icon.png")} 
-                  style={styles.image} 
-                />
-                <ThemedText color={theme.primaryText} fontSize={28} fontWeight="extrabold" style={styles.title}>
-                  Welcome back!
+        <ScrollView 
+            contentContainerStyle={[styles.main, { backgroundColor: theme.primary }]} 
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+        >
+            <View style={styles.inner}>
+                <ThemedText color={theme.primaryText} fontSize={32} fontWeight="bold" style={styles.title}>
+                    {"Hey,\nWelcome Back!"}
                 </ThemedText>
-                <ThemedText color={theme.secondaryText} fontSize={16} fontWeight="medium" style={styles.description}>
-                  Please log in to continue.
+                <ThemedText color={theme.secondaryText} fontSize={15} fontWeight="medium" style={styles.description}>
+                    Please login to continue.
                 </ThemedText>
                 <ThemedTextInput
                     value={email}
@@ -117,75 +110,85 @@ export default function Login() {
                     returnKeyType='done'
                     onSubmitEditing={handleSubmit}
                 />
+                <TouchableOpacity
+                    onPress={() => { router.push("/forgot-password"); }}
+                    touchSoundDisabled
+                    activeOpacity={0.8}
+                    style={styles.questionButton}
+                >
+                    <ThemedText color={theme.primaryText} fontSize={15} fontWeight="semibold" style={styles.question}>
+                        Forgot Password?
+                    </ThemedText>
+                </TouchableOpacity>
                 <ThemedButton
-                  onPress={handleSubmit}
-                  height={60}
-                  width="100%"
-                  backgroundColor={theme.accent}
-                  disabled={appContext?.loading}
-                  style={styles.button}
+                    onPress={handleSubmit}
+                    height={60}
+                    width="100%"
+                    backgroundColor={theme.accent}
+                    disabled={appContext?.loading}
+                    style={styles.button}
                 >
                     { appContext?.loading ? <ActivityIndicator color={theme.onAccent} size="large" /> :
-                        <ThemedText color={theme.onAccent} fontSize={18} fontWeight="bold" >Login</ThemedText>
+                        <ThemedText color={theme.onAccent} fontSize={20} fontWeight="bold" >Login</ThemedText>
                     }
                 </ThemedButton>
                 <View style={styles.textGroup}>
-                    <ThemedText color={theme.secondaryText} fontSize={15} fontWeight='regular'>
+                    <ThemedText color={theme.secondaryText} fontSize={14} fontWeight='medium'>
                         Don't have an account?
                     </ThemedText>
-                    <TouchableOpacity onPress={() => { router.replace("/register"); }}>
-                        <ThemedText color={theme.accent} fontSize={15} fontWeight='medium' style={styles.text}>Sign Up</ThemedText>
+                    <TouchableOpacity 
+                        onPress={() => { router.replace("/register"); }} 
+                        touchSoundDisabled
+                        activeOpacity={0.8}
+                    >
+                        <ThemedText color={theme.accent} fontSize={14} fontWeight='bold' style={styles.text}>Sign Up</ThemedText>
                     </TouchableOpacity>
                 </View>
-              </View>
-            </ScrollView>
-        </SafeAreaView>
-        
+            </View>
+        </ScrollView>
     );
 }
 
 const styles = StyleSheet.create({
     main: {
-        flex: 1
-    },
-    inner: {
         flexGrow: 1,
-        justifyContent: "center",
-        alignItems: "center"
-    },
-    container: {
-        width: "85%",
         justifyContent: "flex-start",
         alignItems: "center"
     },
-    image: {
-        height: 150,
-        width: 150,
-        borderRadius: 35,
-        elevation: 10,
-        marginVertical: 60
+    inner: {
+        width: "90%",
+        justifyContent: "flex-start",
+        alignItems: "center"
     },
     title: {
         width: "100%",
         textAlign: "left",
-        letterSpacing: 1
+        letterSpacing: 1,
+        marginTop: 18
     },
     description: {
         width: "100%",
         textAlign: "left",
         letterSpacing: 1,
-        marginLeft: 20, 
-        marginBottom: 20
+        marginTop: 10,
+        marginBottom: 13
+    },
+    questionButton: {
+        width: "100%"
+    },
+    question: {
+        textAlign: "right",
+        marginHorizontal: 3
     },
     button: {
-        marginTop: 200,
-        marginBottom: 12
+        marginTop: 70,
+        marginBottom: 15
     },
     textGroup: {
         flexDirection: "row",
         justifyContent: "center",
         alignItems: "center",
-        marginBottom: 50,
+        marginBottom: 40,
     },
     text: {
         marginLeft: 5

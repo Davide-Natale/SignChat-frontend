@@ -2,12 +2,10 @@ import { AuthContext } from '@/contexts/AuthContext';
 import { useTheme } from '@/hooks/useTheme';
 import { useRouter } from 'expo-router';
 import { useContext, useState, useRef } from 'react';
-import { Image } from 'expo-image';
 import ThemedButton from '@/components/ThemedButton';
 import ThemedText from '@/components/ThemedText';
 import ThemedTextInput from '@/components/ThemedTextInput';
 import {  StyleSheet, TouchableOpacity, View, ScrollView, TextInput, ActivityIndicator } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import EmailIcon from "@/assets/icons/email-bold.svg";
 import LockIcon from "@/assets/icons/lock-bold.svg";
 import { AppContext } from '@/contexts/AppContext';
@@ -18,9 +16,9 @@ export default function Login() {
     const router = useRouter();
     const appContext = useContext(AppContext);
     const authContext = useContext(AuthContext);
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const [confirmPassword, setConfirmPassword] = useState("");
+    const [email, setEmail] = useState("test3@polito.it");
+    const [password, setPassword] = useState("Aa0?aaaa");
+    const [confirmPassword, setConfirmPassword] = useState("Aa0?aaaa");
     const [emailErrMsg, setEmailErrMsg] = useState("");
     const [passwordErrMsg, setPasswordErrMsg] = useState("");
     const [confirmPasswordErrMsg, setConfirmPasswordErrMsg] = useState("");
@@ -112,135 +110,121 @@ export default function Login() {
     }
 
     return (
-        <SafeAreaView style={[styles.main, { backgroundColor: theme.primary }]}>
-            <ScrollView 
-                contentContainerStyle={styles.inner} 
-                showsVerticalScrollIndicator={false}
-                keyboardShouldPersistTaps="handled"
-            >
-                <View style={styles.container}>
-                    <Image
-                        source={require("@/assets/images/icon.png")}
-                        style={styles.image}
-                    />
-                    <ThemedText color={theme.primaryText} fontSize={28} fontWeight="extrabold" style={styles.title}>
-                        Create account
+        <ScrollView 
+            contentContainerStyle={[styles.main, { backgroundColor: theme.primary }]} 
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+        >
+            <View style={styles.inner}>
+                <ThemedText color={theme.primaryText} fontSize={32} fontWeight="bold" style={styles.title}>
+                    {"Let's\nGet Started"}
+                </ThemedText>
+                <ThemedText color={theme.secondaryText} fontSize={15} fontWeight="medium" style={styles.description}>
+                    Please fill details to create an account.
+                </ThemedText>
+                <ThemedTextInput
+                    value={email}
+                    onChangeText={e => setEmail(e)}
+                    clearValue={() => setEmail("")}
+                    errMsg={emailErrMsg}
+                    placeholder='Email'
+                    leadingIcon={<EmailIcon fill={theme.primaryText} />}
+                    autoCorrect={false}
+                    autoCapitalize='none'
+                    keyboardType='email-address'
+                    returnKeyType="next"
+                    onSubmitEditing={() => textInputRef2.current?.focus()}
+                />
+                <ThemedTextInput
+                    externalRef={textInputRef2}
+                    value={password}
+                    onChangeText={p => setPassword(p)}
+                    errMsg={passwordErrMsg}
+                    secureTextEntry
+                    placeholder='Password'
+                    leadingIcon={<LockIcon fill={theme.primaryText} />}
+                    autoCorrect={false}
+                    autoCapitalize='none'
+                    keyboardType='default'
+                    returnKeyType='next'
+                    onSubmitEditing={() => textInputRef3.current?.focus()}
+                />
+                <ThemedTextInput
+                    externalRef={textInputRef3}
+                    value={confirmPassword}
+                    onChangeText={p => setConfirmPassword(p)}
+                    errMsg={confirmPasswordErrMsg}
+                    secureTextEntry
+                    placeholder='Confirm Password'
+                    leadingIcon={<LockIcon fill={theme.primaryText} />}
+                    autoCorrect={false}
+                    autoCapitalize='none'
+                    keyboardType='default'
+                    returnKeyType='done'
+                    onSubmitEditing={handleSubmit}
+                />
+                <ThemedButton
+                    onPress={handleSubmit}
+                    height={60}
+                    width="100%"
+                    backgroundColor={theme.accent}
+                    disabled={appContext?.loading}
+                    style={styles.button}
+                >
+                    { appContext?.loading ? <ActivityIndicator color={theme.onAccent} size="large" /> :
+                        <ThemedText color={theme.onAccent} fontSize={20} fontWeight="bold" >Sign Up</ThemedText>
+                    }
+                </ThemedButton>
+                <View style={styles.textGroup}>
+                    <ThemedText color={theme.secondaryText} fontSize={14} fontWeight='medium' >
+                        Already have an account?
                     </ThemedText>
-                    <ThemedText color={theme.secondaryText} fontSize={16} fontWeight="medium" style={styles.description}>
-                        Please sign up to continue.
-                    </ThemedText>
-                    <ThemedTextInput
-                        value={email}
-                        onChangeText={e => setEmail(e)}
-                        clearValue={() => setEmail("")}
-                        errMsg={emailErrMsg}
-                        placeholder='Email'
-                        leadingIcon={<EmailIcon fill={theme.primaryText} />}
-                        autoCorrect={false}
-                        autoCapitalize='none'
-                        keyboardType='email-address'
-                        returnKeyType="next"
-                        onSubmitEditing={() => textInputRef2.current?.focus()}
-                    />
-                    <ThemedTextInput
-                        externalRef={textInputRef2}
-                        value={password}
-                        onChangeText={p => setPassword(p)}
-                        errMsg={passwordErrMsg}
-                        secureTextEntry
-                        placeholder='Password'
-                        leadingIcon={<LockIcon fill={theme.primaryText} />}
-                        autoCorrect={false}
-                        autoCapitalize='none'
-                        keyboardType='default'
-                        returnKeyType='next'
-                        onSubmitEditing={() => textInputRef3.current?.focus()}
-                    />
-                    <ThemedTextInput
-                        externalRef={textInputRef3}
-                        value={confirmPassword}
-                        onChangeText={p => setConfirmPassword(p)}
-                        errMsg={confirmPasswordErrMsg}
-                        secureTextEntry
-                        placeholder='Confirm Password'
-                        leadingIcon={<LockIcon fill={theme.primaryText} />}
-                        autoCorrect={false}
-                        autoCapitalize='none'
-                        keyboardType='default'
-                        returnKeyType='done'
-                        onSubmitEditing={handleSubmit}
-                    />
-                    <ThemedButton
-                        onPress={handleSubmit}
-                        height={60}
-                        width="100%"
-                        backgroundColor={theme.accent}
-                        disabled={appContext?.loading}
-                        style={styles.button}
+                    <TouchableOpacity 
+                        onPress={() => { router.replace("/login"); }} 
+                        touchSoundDisabled
+                        activeOpacity={0.8}
                     >
-                        { appContext?.loading ? <ActivityIndicator color={theme.onAccent} size="large" /> :
-                            <ThemedText color={theme.onAccent} fontSize={18} fontWeight="bold" >Sign Up</ThemedText>
-                        }
-                    </ThemedButton>
-
-                    <View style={styles.textGroup}>
-                        <ThemedText color={theme.secondaryText} fontSize={15} fontWeight='regular'>
-                            Already have an account?
-                        </ThemedText>
-                        <TouchableOpacity onPress={() => { router.replace("/login"); }}>
-                            <ThemedText color={theme.accent} fontSize={15} fontWeight='medium' style={styles.text}>Login</ThemedText>
-                        </TouchableOpacity>
-                    </View>
-
+                        <ThemedText color={theme.accent} fontSize={14} fontWeight='bold' style={styles.text}>Login</ThemedText>
+                    </TouchableOpacity>
                 </View>
-            </ScrollView>
-        </SafeAreaView>
-
+            </View>
+        </ScrollView>
     );
 }
 
 const styles = StyleSheet.create({
     main: {
-        flex: 1
-    },
-    inner: {
         flexGrow: 1,
-        justifyContent: "center",
-        alignItems: "center"
-    },
-    container: {
-        width: "85%",
         justifyContent: "flex-start",
         alignItems: "center"
     },
-    image: {
-        height: 150,
-        width: 150,
-        borderRadius: 35,
-        elevation: 10,
-        marginVertical: 60
+    inner: {
+        width: "90%",
+        justifyContent: "flex-start",
+        alignItems: "center"
     },
     title: {
         width: "100%",
         textAlign: "left",
-        letterSpacing: 1
+        letterSpacing: 1,
+        marginTop: 18
     },
     description: {
         width: "100%",
         textAlign: "left",
         letterSpacing: 1,
-        marginLeft: 20,
-        marginBottom: 20
+        marginTop: 10,
+        marginBottom: 13
     },
     button: {
-        marginTop: 110,
-        marginBottom: 12
+        marginTop: 50,
+        marginBottom: 15
     },
     textGroup: {
         flexDirection: "row",
         justifyContent: "center",
         alignItems: "center",
-        marginBottom: 50,
+        marginBottom: 40,
     },
     text: {
         marginLeft: 5

@@ -1,4 +1,4 @@
-import { View, StyleSheet, ScrollView } from "react-native";
+import { View, StyleSheet, ScrollView, useColorScheme, TouchableOpacity } from "react-native";
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from "@/hooks/useTheme";
 import { useRouter, Redirect } from "expo-router";
@@ -15,9 +15,10 @@ SplashScreen.preventAutoHideAsync();
 export default function Index() {
   const router = useRouter();
   const theme = useTheme();
+  const colorScheme = useColorScheme();
   const appContext = useContext(AppContext);
   const authContext = useContext(AuthContext);
-  const description = "Break down communication barrier seffortlessly. " +
+  const description = "Break down communication barriers effortlessly. " +
     "Connect, communicate and engage like never before!";
 
   useEffect(() => {
@@ -30,45 +31,48 @@ export default function Index() {
 
   if (authContext?.isAuthenticated) {
     return <Redirect href="/calls" />;
-  } 
+  }
 
   return (
     <SafeAreaView style={[styles.main, { backgroundColor: theme.primary }]}>
       <ScrollView contentContainerStyle={styles.inner} showsVerticalScrollIndicator={false}>
-        <View style={styles.container}>
+        <View style={styles.container1}>
           <Image
-            source={require("@/assets/images/icon.png")}
+            source={colorScheme === "dark" ? require("@/assets/images/welcome-dark.png") :
+              require("@/assets/images/welcome-light.png")}
             style={styles.image}
           />
-          <ThemedText color={theme.primaryText} fontSize={28} fontWeight="extrabold" style={styles.title}>
+          <ThemedText color={theme.primaryText} fontSize={27} fontWeight="extrabold" style={styles.title}>
             Welcome to SignChat!
           </ThemedText>
           <ThemedText color={theme.secondaryText} fontSize={16} fontWeight="medium" style={styles.description}>
             {description}
           </ThemedText>
-          <ThemedButton
-            onPress={() => router.push("/login")}
-            height={60}
-            width="100%"
-            backgroundColor={theme.accent}
-            style={styles.button1}
-          >
-            <ThemedText color={theme.onAccent} fontSize={18} fontWeight="bold" >Login</ThemedText>
-          </ThemedButton>
+        </View>
+        <View style={styles.container2}>
           <ThemedButton
             onPress={() => router.push("/register")}
             height={60}
             width="100%"
-            type="outlined"
-            borderColor={theme.accent}
-            backgroundColor={theme.primary}
-            style={styles.button2}
+            backgroundColor={theme.accent}
+            style={styles.button}
           >
-            <ThemedText color={theme.accent} fontSize={18} fontWeight="bold" >Create an Account</ThemedText>
+            <ThemedText color={theme.onAccent} fontSize={20} fontWeight="bold" >Get Started</ThemedText>
           </ThemedButton>
+          <View style={styles.textGroup}>
+            <ThemedText color={theme.secondaryText} fontSize={14} fontWeight='medium'>
+              Already have an account?
+            </ThemedText>
+            <TouchableOpacity 
+              onPress={() => { router.push("/login"); }} 
+              touchSoundDisabled 
+              activeOpacity={0.8}
+            >
+              <ThemedText color={theme.accent} fontSize={14} fontWeight='semibold' style={styles.text}>Login</ThemedText>
+            </TouchableOpacity>
+          </View>
         </View>
       </ScrollView>
-
     </SafeAreaView>
   );
 }
@@ -79,20 +83,24 @@ const styles = StyleSheet.create({
   },
   inner: {
     flexGrow: 1,
+    justifyContent: "space-between",
+    alignItems: "center"
+  },
+  container1: {
+    width: "90%",
     justifyContent: "center",
     alignItems: "center"
   },
-  container: {
-    width: "85%",
-    justifyContent: "flex-start",
-    alignItems: "center",
+  container2: {
+    width: "90%",
+    justifyContent: "center",
+    alignItems: "center"
   },
   image: {
-    height: 170,
-    width: 170,
-    borderRadius: 35,
-    elevation: 10,
-    marginVertical: 90
+    width: "90%",
+    aspectRatio: 1,
+    marginTop: 35,
+    marginBottom: 60
   },
   title: {
     textAlign: "center",
@@ -101,14 +109,19 @@ const styles = StyleSheet.create({
   description: {
     textAlign: "center",
     letterSpacing: 1,
-    marginVertical: 5
+    marginTop: 10
   },
-  button1: {
-    marginTop: 200,
-    marginBottom: 12
+  button: {
+    marginTop: 100,
+    marginBottom: 15,
   },
-  button2: {
-    marginTop: 12,
-    marginBottom: 40
+  textGroup: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 40,
+  },
+  text: {
+    marginLeft: 5
   }
 });

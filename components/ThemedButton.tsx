@@ -32,7 +32,7 @@ export default function ThemedButton(
 
     if(height) {
         borderRadius = shape === 'circular' ? 
-            parseInt(height?.toString()) / 2 : parseInt(height?.toString()) / 4;
+            parseInt(height?.toString()) / 2 : parseInt(height?.toString()) / 3;
     }
 
     return (
