@@ -42,7 +42,10 @@ export default function ForgotPassword() {
                 try {
                     appContext?.updateLoading(true);
                     //  await authAPI.requestOtp(email);
-                    router.push("/verify-otp");
+                    router.push({
+                        pathname: "/verify-otp",
+                        params: { email }
+                    });
                 } catch (error) {
                     if(isAxiosError(error)) {
                         //  Handle error

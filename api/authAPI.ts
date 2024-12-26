@@ -84,6 +84,6 @@ async function verifyAuth() {
     });
 }
 
-const authAPI = { register,  login, changePassword, requestOtp, resetPassword, logout, verifyAuth };
+const authAPI = { register,  login, changePassword, requestOtp, verifyOtp, resetPassword, logout, verifyAuth };
 
 export default authAPI;
