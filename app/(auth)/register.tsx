@@ -22,8 +22,8 @@ export default function Login() {
     const [emailErrMsg, setEmailErrMsg] = useState("");
     const [passwordErrMsg, setPasswordErrMsg] = useState("");
     const [confirmPasswordErrMsg, setConfirmPasswordErrMsg] = useState("");
+    const textInputRef1 = useRef<TextInput>(null);
     const textInputRef2 = useRef<TextInput>(null);
-    const textInputRef3 = useRef<TextInput>(null);
 
     const checkEmail = () => {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@\.]{2,}$/;
@@ -133,10 +133,10 @@ export default function Login() {
                     autoCapitalize='none'
                     keyboardType='email-address'
                     returnKeyType="next"
-                    onSubmitEditing={() => textInputRef2.current?.focus()}
+                    onSubmitEditing={() => textInputRef1.current?.focus()}
                 />
                 <ThemedTextInput
-                    externalRef={textInputRef2}
+                    externalRef={textInputRef1}
                     value={password}
                     onChangeText={p => setPassword(p)}
                     errMsg={passwordErrMsg}
@@ -147,10 +147,10 @@ export default function Login() {
                     autoCapitalize='none'
                     keyboardType='default'
                     returnKeyType='next'
-                    onSubmitEditing={() => textInputRef3.current?.focus()}
+                    onSubmitEditing={() => textInputRef2.current?.focus()}
                 />
                 <ThemedTextInput
-                    externalRef={textInputRef3}
+                    externalRef={textInputRef2}
                     value={confirmPassword}
                     onChangeText={p => setConfirmPassword(p)}
                     errMsg={confirmPasswordErrMsg}

@@ -44,12 +44,24 @@ async function requestOtp(email: string) {
     });
 }
 
-async function resetPassword(email: string, otp: string, newPassword: string) {
+async function verifyOtp(email: string, otp: string) {
+    //  Call POST /api/auth/reset-password/verify-otp
+    const { data } = await axiosInstance({
+        method: 'post',
+        url: '/auth/reset-password/verify-otp',
+        data: { email, otp },
+        headers: { 'Content-Type': 'application/json' }
+    });
+
+    return data;
+}
+
+async function resetPassword(newPassword: string) {
     //  Call POST /api/auth/reset-password/confirm
     await axiosInstance({
         method: 'post',
         url: '/auth/reset-password/confirm',
-        data: { email, otp, newPassword },
+        data: { newPassword },
         headers: { 'Content-Type': 'application/json' }
     });
 }

@@ -20,7 +20,7 @@ export default function Login() {
     const [password, setPassword] = useState("Aa0?aaaa");
     const [emailErrMsg, setEmailErrMsg] = useState("");
     const [passwordErrMsg, setPasswordErrMsg] = useState("");
-    const textInputRef2 = useRef<TextInput>(null);
+    const textInputRef = useRef<TextInput>(null);
 
     const checkEmail = () => {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@\.]{2,}$/;
@@ -94,10 +94,10 @@ export default function Login() {
                     autoCapitalize='none'
                     keyboardType='email-address'
                     returnKeyType="next"
-                    onSubmitEditing={() => textInputRef2.current?.focus()}
+                    onSubmitEditing={() => textInputRef.current?.focus()}
                 />
                 <ThemedTextInput
-                    externalRef={textInputRef2}
+                    externalRef={textInputRef}
                     value={password}
                     onChangeText={p => setPassword(p)}
                     errMsg={passwordErrMsg}
@@ -116,7 +116,7 @@ export default function Login() {
                     activeOpacity={0.8}
                     style={styles.questionButton}
                 >
-                    <ThemedText color={theme.primaryText} fontSize={15} fontWeight="semibold" style={styles.question}>
+                    <ThemedText color={theme.primaryText} fontSize={15} fontWeight="semibold" >
                         Forgot Password?
                     </ThemedText>
                 </TouchableOpacity>
@@ -174,10 +174,7 @@ const styles = StyleSheet.create({
         marginBottom: 13
     },
     questionButton: {
-        width: "100%"
-    },
-    question: {
-        textAlign: "right",
+        alignSelf: "flex-end",
         marginHorizontal: 3
     },
     button: {
