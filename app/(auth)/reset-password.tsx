@@ -9,13 +9,14 @@ import { useContext, useRef, useState } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import LockIcon from "@/assets/icons/lock-bold.svg";
 import ThemedButton from '@/components/ThemedButton';
+import { deleteToken } from '@/utils/secureStore';
 
 export default function ResetPassword() {
     const theme = useTheme();
     const router = useRouter();
     const appContext = useContext(AppContext);
-    const [password, setPassword] = useState("Aa0?aaaa");
-    const [confirmPassword, setConfirmPassword] = useState("Aa0?aaaa");
+    const [password, setPassword] = useState("Bb1!pppp");
+    const [confirmPassword, setConfirmPassword] = useState("Bb1!pppp");
     const [passwordErrMsg, setPasswordErrMsg] = useState("");
     const [confirmPasswordErrMsg, setConfirmPasswordErrMsg] = useState("");
     const textInputRef = useRef<TextInput>(null);
@@ -72,14 +73,17 @@ export default function ResetPassword() {
         if (passwordIsValid && confirmPasswordIsValid) {
             try {
                 appContext?.updateLoading(true);
-                //await authAPI.resetPassword(password);
-                //  TODO: add deletion of access token
+                await authAPI.resetPassword(password);
+
+                // Delete accessToken from Secure Store
+                await deleteToken('accessToken');
+
                 if (router.canDismiss()) { router.dismissAll(); }
                 router.replace("/password-changed");
             } catch (error) {
                 if (isAxiosError(error)) {
                     //  Handle error
-                    console.log(error.request.data.message);
+                    console.log(error.response?.data.message);
                 }
             } finally {
                 appContext?.updateLoading(false);

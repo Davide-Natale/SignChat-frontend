@@ -16,8 +16,8 @@ export default function Login() {
     const router = useRouter();
     const appContext = useContext(AppContext);
     const authContext = useContext(AuthContext);
-    const [email, setEmail] = useState("test@polito.it");
-    const [password, setPassword] = useState("Aa0?aaaa");
+    const [email, setEmail] = useState("daxnatale@gmail.com");
+    const [password, setPassword] = useState("Bb1!2000");
     const [emailErrMsg, setEmailErrMsg] = useState("");
     const [passwordErrMsg, setPasswordErrMsg] = useState("");
     const textInputRef = useRef<TextInput>(null);
@@ -62,7 +62,7 @@ export default function Login() {
             } catch (error) {
                 if(isAxiosError(error)) {
                     //  Handle error
-                    console.log(error.request.data.message);
+                    console.log(error.response?.data.message);
                 }
             } finally {
                 appContext?.updateLoading(false);
@@ -114,7 +114,7 @@ export default function Login() {
                     onPress={() => { router.push("/forgot-password"); }}
                     touchSoundDisabled
                     activeOpacity={0.8}
-                    style={styles.questionButton}
+                    style={styles.textButton}
                 >
                     <ThemedText color={theme.primaryText} fontSize={15} fontWeight="semibold" >
                         Forgot Password?
@@ -173,7 +173,7 @@ const styles = StyleSheet.create({
         marginTop: 10,
         marginBottom: 13
     },
-    questionButton: {
+    textButton: {
         alignSelf: "flex-end",
         marginHorizontal: 3
     },

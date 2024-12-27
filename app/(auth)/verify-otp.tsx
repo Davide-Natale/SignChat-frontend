@@ -1,12 +1,19 @@
 import authAPI from '@/api/authAPI';
 import OtpForm from '@/components/OtpForm';
+import ThemedButton from '@/components/ThemedButton';
 import ThemedText from '@/components/ThemedText';
 import { AppContext } from '@/contexts/AppContext';
 import { useTheme } from '@/hooks/useTheme';
+import { saveToken } from '@/utils/secureStore';
 import { isAxiosError } from 'axios';
+import dayjs from 'dayjs';
+import duration from 'dayjs/plugin/duration';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useContext, useState } from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { useContext, useEffect, useState } from 'react';
+import { ScrollView, StyleSheet, View, ActivityIndicator, TouchableOpacity } from 'react-native';
+
+//  Use duration plugin
+dayjs.extend(duration);
 
 export default function VerifyOtp() {
     const theme = useTheme();
@@ -15,6 +22,20 @@ export default function VerifyOtp() {
     const appContext = useContext(AppContext);
     const [otp, setOtp] = useState(['', '', '', '', '', '']);
     const [errMsg, setErrMsg] = useState("");
+    const [localLoading, setLocalLoading] = useState(false);
+    const [timer, setTimer] = useState(120);
+    const formattedTimer = dayjs.duration(timer, 'seconds').format('m:ss');
+
+    useEffect(() => {
+        if(timer > 0) {
+            const interval = setInterval(() => {
+                setTimer(prev => prev - 1);
+            }, 1000);
+
+            return () => clearInterval(interval);
+        }
+    }, [timer]);
+
 
     const maskEmail = (email: string) => {
         const [localPart, domain] = email.split('@');
@@ -31,8 +52,9 @@ export default function VerifyOtp() {
             return false;
         }
 
+        setErrMsg("");
         return true;
-    }
+    };
 
     const handleSubmit = async () => {
         const literalOtp = otp.join("");
@@ -41,20 +63,37 @@ export default function VerifyOtp() {
         if (isOtpValid) {
             try {
                 appContext?.updateLoading(true);
-                //const { accessToken } = await authAPI.verifyOtp(email, literalOtp);
-                //  TODO: add store access token code
+                const { accessToken } = await authAPI.verifyOtp(email, literalOtp);
+
+                //  Store accessToken in the Secure Store
+                await saveToken('accessToken', accessToken);
+
                 router.push("/reset-password");
             } catch (error) {
                 if (isAxiosError(error)) {
                     //  Handle error
-                    console.log(error.request.data.message);
+                    console.log(error.response?.data.message);
                 }
             } finally {
                 appContext?.updateLoading(false);
             }
         }
-    }
+    };
 
+    const resendOtp = async () => {
+        try {
+            setLocalLoading(true);
+            await authAPI.requestOtp(email);
+            setTimer(120);
+        } catch (error) {
+            if(isAxiosError(error)) {
+                //  Handle error
+                console.log(error.response?.data.message);
+            }
+        } finally {
+            setLocalLoading(false);
+        } 
+    };
 
     return (
         <ScrollView
@@ -70,6 +109,39 @@ export default function VerifyOtp() {
                     {`Plese enter the 6-digit code sent to your email address: ${maskEmail(email)}`}
                 </ThemedText>
                 <OtpForm otp={otp} setOtp={setOtp} errMsg={errMsg} handleSubmit={handleSubmit} />
+                <View style={[styles.timerContainer, { borderColor: theme.divider }]}>
+                    { localLoading ? <ActivityIndicator color={theme.accent} size="small" /> : 
+                        <ThemedText color={theme.secondaryText} fontSize={17} fontWeight="semibold" style={styles.timer}>
+                            {formattedTimer}
+                        </ThemedText>
+                    }
+                </View>
+                <TouchableOpacity 
+                    onPress={resendOtp}
+                    touchSoundDisabled
+                    activeOpacity={0.8}
+                    disabled={localLoading || timer > 0}
+                >   
+                    <ThemedText 
+                        color={localLoading || timer > 0 ? theme.divider : theme.accent} 
+                        fontSize={16} 
+                        fontWeight="semibold"
+                    >
+                        Resend Code
+                    </ThemedText>
+                </TouchableOpacity>
+                <ThemedButton
+                    onPress={handleSubmit}
+                    height={60}
+                    width="100%"
+                    backgroundColor={theme.accent}
+                    disabled={appContext?.loading}
+                    style={styles.button}
+                >
+                    { appContext?.loading ? <ActivityIndicator color={theme.onAccent} size="large" /> :
+                        <ThemedText color={theme.onAccent} fontSize={20} fontWeight="bold" >Verify</ThemedText>
+                    }
+                </ThemedButton>
             </View>
         </ScrollView>
 
@@ -100,8 +172,19 @@ const styles = StyleSheet.create({
         marginTop: 10,
         marginBottom: 18
     },
+    timerContainer: {
+        height: 30,
+        width: 70,
+        justifyContent: "center",
+        borderWidth: 2.5,
+        borderRadius: 15, 
+        marginVertical: 8
+    },
+    timer: {
+        textAlign: "center"
+    },
     button: {
-        marginTop: 18,
+        marginTop: 30,
         marginBottom: 30
     }
 });

@@ -41,7 +41,7 @@ export default function ForgotPassword() {
             if(emailIsValid) {
                 try {
                     appContext?.updateLoading(true);
-                    //  await authAPI.requestOtp(email);
+                    await authAPI.requestOtp(email);
                     router.push({
                         pathname: "/verify-otp",
                         params: { email }
@@ -49,7 +49,7 @@ export default function ForgotPassword() {
                 } catch (error) {
                     if(isAxiosError(error)) {
                         //  Handle error
-                        console.log(error.request.data.message);
+                        console.log(error.response?.data.message);
                     }
                 } finally {
                     appContext?.updateLoading(false);

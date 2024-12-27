@@ -101,7 +101,7 @@ export default function Login() {
             } catch (error) {
                 if(isAxiosError(error)) {
                     //  Handle error
-                    console.log(error.request.data.message);
+                    console.log(error.response?.data.message);
                 }
             } finally {
                 appContext?.updateLoading(false);
