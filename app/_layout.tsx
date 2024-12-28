@@ -4,6 +4,7 @@ import { StatusBar } from "expo-status-bar";
 import { AppProvider } from "@/contexts/AppContext";
 import { useTheme } from "@/hooks/useTheme";
 import ThemedBackButton from "@/components/ThemedBackButton";
+import ThemedSaveButton from "@/components/ThemedSaveButton";
 
 
 export default function RootLayout() {
@@ -30,6 +31,20 @@ export default function RootLayout() {
               headerTitle: "", 
               headerShadowVisible: false,
               headerLeft: () => <ThemedBackButton />
+            }}
+          />
+          <Stack.Screen 
+            name="(auth)/complete-profile" 
+            options={{
+              headerTitle: "Complete Profile",
+              headerTitleAlign: "center",
+              headerTitleStyle: {
+                fontFamily: "inter_bold",
+                fontSize: 19, 
+                color: theme.primaryText
+              },
+              headerStyle: { backgroundColor: theme.primary },
+              headerShadowVisible: false
             }}
           />
           <Stack.Screen 

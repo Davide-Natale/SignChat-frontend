@@ -32,6 +32,8 @@ export default function Index() {
   if (authContext?.isAuthenticated) {
     return <Redirect href="/calls" />;
   }
+  
+  return(<Redirect href={"/complete-profile"} />);
 
   return (
     <SafeAreaView style={[styles.main, { backgroundColor: theme.primary }]}>

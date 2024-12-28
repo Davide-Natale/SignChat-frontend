@@ -58,7 +58,15 @@ export default function ThemedTextInput({ errMsg, leadingIcon, clearValue, exter
                         <TouchableOpacity
                             activeOpacity={0.8}
                             touchSoundDisabled
-                            onPress={() => { if (clearValue) clearValue(); }}
+                            onPress={() => { 
+                                if (clearValue) { clearValue(); }
+                                setIsFocused(true);
+                                if(externalRef) {
+                                    externalRef.current?.focus();
+                                } else {
+                                    textInputRef.current?.focus(); 
+                                }
+                            }}
                         >
                             <ClearIcon stroke={theme.primaryText} />
                         </TouchableOpacity> : null
