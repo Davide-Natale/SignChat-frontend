@@ -1,6 +1,6 @@
 import { StyleSheet, Text, View } from 'react-native';
 
-export default function TranscriptionsScreen() {
+export default function Transcriptions() {
   return (
     <View>
       <Text>Transcriptions</Text>

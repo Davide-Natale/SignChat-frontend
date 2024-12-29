@@ -6,7 +6,7 @@ import { Button, StyleSheet, Text, View } from 'react-native';
 import profileAPI, { User } from '@/api/profileAPI';  //  TODO: move this type to a type folder
 import { isAxiosError } from 'axios';
 
-export default function ProfileScreen() {
+export default function Profile() {
   const theme = useTheme();
   const [user, setUser] = useState<User>();
   const authContext = useContext(AuthContext);
@@ -39,6 +39,7 @@ export default function ProfileScreen() {
           }
         }} 
       />
+      <Button title='Edit' onPress={() => router.push("/profile/edit")}/>
     </View>
   );
 }

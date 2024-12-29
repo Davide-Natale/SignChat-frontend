@@ -78,6 +78,21 @@ export default function RootLayout() {
               />
               <Stack.Screen name="(auth)/password-changed" options={{ headerShown: false }} />
               <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+              <Stack.Screen 
+                name="profile/edit"
+                options={{
+                  headerTitle: "Edit Profile",
+                  headerTitleAlign: "center",
+                  headerTitleStyle: {
+                    fontFamily: "inter_bold",
+                    fontSize: 19,
+                    color: theme.primaryText
+                  },
+                  headerStyle: { backgroundColor: theme.primary },
+                  headerShadowVisible: false,
+                  headerLeft: () => <ThemedBackButton />
+                }}
+              /> 
             </Stack>
             <StatusBar style="auto" />
           </AuthProvider>

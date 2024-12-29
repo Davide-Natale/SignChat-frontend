@@ -3,7 +3,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { useContext } from 'react';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 
-export default function CallsScreen() {
+export default function Calls() {
   const theme = useTheme();
   const appContext = useContext(AppContext);
 
