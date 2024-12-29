@@ -6,6 +6,7 @@ import { useNavigation } from 'expo-router';
 import { useRouter } from 'expo-router';
 import { useContext, useLayoutEffect, useRef, useState } from 'react';
 import { ScrollView, StyleSheet, TextInput, View } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
 import UserIcon from "@/assets/icons/user-bold.svg";
 import EmailIcon from "@/assets/icons/email-bold.svg";
 import PhoneIcon from "@/assets/icons/call-bold.svg";
@@ -17,12 +18,14 @@ import CameraIcon from '@/assets/icons/camera.svg';
 import GalleryIcon from '@/assets/icons/gallery.svg';
 import TrashIcon from '@/assets/icons/trash.svg';
 import ListItem from '@/components/ListItem';
+import React from 'react';
 
 export default function CompleteProfile() {
     const theme = useTheme();
     const router = useRouter();
     const navigation = useNavigation();
     const appContext = useContext(AppContext);
+    const [imageProfile, setImageProfile] = useState<string | null>(null);
     const [firstName, setFirstName] = useState("Davide");
     const [lastName, setLastName] = useState("Natale");
     const [email, setEmail] = useState("daxnatale@gmail.com");
@@ -35,6 +38,56 @@ export default function CompleteProfile() {
     const textInputRef2 = useRef<TextInput>(null);
     const textInputRef3 = useRef<TextInput>(null);
     const bottomSheetRef = useRef<BottomSheetModal>(null);
+
+    const pickImage = async () => {
+        bottomSheetRef.current?.dismiss();
+
+        try {
+            //  Request Permissions
+            await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+            //  Launch Gallery 
+            const result = await ImagePicker.launchImageLibraryAsync({
+                mediaTypes: 'images',
+                allowsEditing: true,
+                aspect: [1, 1],
+                quality: 1
+            });
+
+            //  Update Image Profile
+            if (!result.canceled) {
+                setImageProfile(result.assets[0].uri)
+            }
+        } catch (error) {
+            //  Handle error
+            console.log(error);
+        }
+    };
+    
+    const takePhoto = async () => {
+        bottomSheetRef.current?.dismiss();
+
+        try {
+            //  Request Permissions
+            await ImagePicker.requestCameraPermissionsAsync();
+
+            //  Launch Camera 
+            const result = await ImagePicker.launchCameraAsync({
+                cameraType: ImagePicker.CameraType.front,
+                allowsEditing: true,
+                aspect: [1, 1],
+                quality: 1
+            });
+
+            //  Update Image Profile
+            if (!result.canceled) {
+                setImageProfile(result.assets[0].uri)
+            }
+        } catch (error) {
+            //  Handle error
+            console.log(error);
+        }
+    };
 
     const checkFirstName = () => { /* TODO: implement it */ }
 
@@ -74,7 +127,7 @@ export default function CompleteProfile() {
             keyboardShouldPersistTaps="handled"
         >
             <View style={styles.inner}>
-                <ImageProfile showEdit size={150} onEditPress={() => bottomSheetRef.current?.present()} />
+                <ImageProfile uri={imageProfile} size={150} showEdit onEditPress={() => bottomSheetRef.current?.present()} />
                 <ThemedTextInput
                     value={firstName}
                     onChangeText={f => setFirstName(f)}
@@ -143,7 +196,7 @@ export default function CompleteProfile() {
                         </ThemedText>
                         <View style={[styles.surface, { backgroundColor: theme.onSurface}]} >
                             <ListItem 
-                                onPress={() => bottomSheetRef.current?.dismiss()}
+                                onPress={takePhoto}
                                 headlineContent={
                                     <ThemedText color={theme.secondaryText} fontSize={16} fontWeight="regular" >
                                         Take a photo
@@ -154,7 +207,7 @@ export default function CompleteProfile() {
                             />
                             <Divider height={0.5} width="95%" style={styles.divider}/>
                             <ListItem 
-                                onPress={() => bottomSheetRef.current?.dismiss()}
+                                onPress={pickImage}
                                 headlineContent={
                                     <ThemedText color={theme.secondaryText} fontSize={16} fontWeight="regular" >
                                         Choose a photo
@@ -163,17 +216,22 @@ export default function CompleteProfile() {
                                 trailingContent={<GalleryIcon stroke={theme.secondaryText}/>}
                                 style={styles.row}
                             />
-                            <Divider height={0.5} width="95%" style={styles.divider}/>
-                            <ListItem 
-                                onPress={() => bottomSheetRef.current?.dismiss()}
-                                headlineContent={
-                                    <ThemedText color={theme.error} fontSize={16} fontWeight="regular" >
-                                        Delete photo
-                                    </ThemedText>
-                                }
-                                trailingContent={<TrashIcon stroke={theme.error}/>}
-                                style={styles.row}
-                            />
+                            {imageProfile ?
+                                <>
+                                    <Divider height={0.5} width="95%" style={styles.divider}/>
+                                    <ListItem 
+                                        onPress={() => { setImageProfile(null) ; bottomSheetRef.current?.dismiss() }}
+                                        headlineContent={
+                                            <ThemedText color={theme.error} fontSize={16} fontWeight="regular" >
+                                                Remove photo
+                                            </ThemedText>
+                                        }
+                                        trailingContent={<TrashIcon stroke={theme.error}/>}
+                                        style={styles.row}
+                                    />
+                                </>
+                                 : null
+                            }
                         </View>
                     </BottomSheetView>
                 </BottomSheetModal>

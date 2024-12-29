@@ -5,13 +5,13 @@ import ThemedButton from "@/components/ThemedButton";
 import EditIconBold from "@/assets/icons/edit-bold.svg";
 
 interface ImageProfileProps {
-    url?: string
+    uri: string | null 
     size: number
     showEdit?: boolean
     onEditPress?: () => void
 }
 
-export default function ImageProfile({ url, size, showEdit = false, onEditPress }: ImageProfileProps) {
+export default function ImageProfile({ uri, size, showEdit = false, onEditPress }: ImageProfileProps) {
     const theme = useTheme();
     const colorScheme = useColorScheme();
     const placeholder = colorScheme === 'dark' ? require("@/assets/images/profile-placeholder-dark.png") :
@@ -20,7 +20,7 @@ export default function ImageProfile({ url, size, showEdit = false, onEditPress 
     return (
         <View style={[styles.main, { height: size, width: size }]}>
             <Image
-                source={ url ? { uri: url } : placeholder }
+                source={ uri ? { uri } : placeholder }
                 style={[styles.image, { borderRadius: size / 2 }]}
             />
             { showEdit && onEditPress ? 
