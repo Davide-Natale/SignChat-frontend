@@ -1,18 +1,15 @@
-import { AppContext } from '@/contexts/AppContext';
+import ThemedText from '@/components/ThemedText';
 import { useTheme } from '@/hooks/useTheme';
-import { useContext } from 'react';
-import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 export default function Calls() {
   const theme = useTheme();
-  const appContext = useContext(AppContext);
 
   return (
     <View style={[styles.main, { backgroundColor: theme.primary }]}>
-      { appContext?.loading ? 
-        <ActivityIndicator color={theme.secondaryText} size="large" /> :
-        <Text style={{ color: theme.primaryText, textAlign: "center", fontFamily: "inter_bold", fontSize: 25 }}>Calls</Text>
-      }
+      <ThemedText color={theme.primaryText} fontWeight='bold' fontSize={25} >
+        Calls
+      </ThemedText>
     </View>
   );
 }

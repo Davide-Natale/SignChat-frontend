@@ -40,54 +40,54 @@ export default function CompleteProfile() {
     const bottomSheetRef = useRef<BottomSheetModal>(null);
 
     const pickImage = async () => {
-            bottomSheetRef.current?.dismiss();
-    
-            try {
-                //  Request Permissions
-                await ImagePicker.requestMediaLibraryPermissionsAsync();
-    
-                //  Launch Gallery 
-                const result = await ImagePicker.launchImageLibraryAsync({
-                    mediaTypes: 'images',
-                    allowsEditing: true,
-                    aspect: [1, 1],
-                    quality: 1
-                });
-    
-                //  Update Image Profile
-                if (!result.canceled) {
-                    setImageProfile(result.assets[0].uri)
-                }
-            } catch (error) {
-                //  Handle error
-                console.log(error);
+        bottomSheetRef.current?.dismiss();
+
+        try {
+            //  Request Permissions
+            await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+            //  Launch Gallery 
+            const result = await ImagePicker.launchImageLibraryAsync({
+                mediaTypes: 'images',
+                allowsEditing: true,
+                aspect: [1, 1],
+                quality: 1
+            });
+
+            //  Update Image Profile
+            if (!result.canceled) {
+                setImageProfile(result.assets[0].uri)
             }
-        };
-        
-        const takePhoto = async () => {
-            bottomSheetRef.current?.dismiss();
-    
-            try {
-                //  Request Permissions
-                await ImagePicker.requestCameraPermissionsAsync();
-    
-                //  Launch Camera 
-                const result = await ImagePicker.launchCameraAsync({
-                    cameraType: ImagePicker.CameraType.front,
-                    allowsEditing: true,
-                    aspect: [1, 1],
-                    quality: 1
-                });
-    
-                //  Update Image Profile
-                if (!result.canceled) {
-                    setImageProfile(result.assets[0].uri)
-                }
-            } catch (error) {
-                //  Handle error
-                console.log(error);
+        } catch (error) {
+            //  Handle error
+            console.log(error);
+        }
+    };
+
+    const takePhoto = async () => {
+        bottomSheetRef.current?.dismiss();
+
+        try {
+            //  Request Permissions
+            await ImagePicker.requestCameraPermissionsAsync();
+
+            //  Launch Camera 
+            const result = await ImagePicker.launchCameraAsync({
+                cameraType: ImagePicker.CameraType.front,
+                allowsEditing: true,
+                aspect: [1, 1],
+                quality: 1
+            });
+
+            //  Update Image Profile
+            if (!result.canceled) {
+                setImageProfile(result.assets[0].uri)
             }
-        };
+        } catch (error) {
+            //  Handle error
+            console.log(error);
+        }
+    };
 
     const checkFirstName = () => { /* TODO: implement it */ }
 
@@ -127,7 +127,13 @@ export default function CompleteProfile() {
             keyboardShouldPersistTaps="handled"
         >
             <View style={styles.inner}>
-                <ImageProfile uri={imageProfile} showEdit size={150} onEditPress={() => bottomSheetRef.current?.present()} />
+                <ImageProfile 
+                    uri={imageProfile}  
+                    size={140} 
+                    showEdit
+                    onEditPress={() => bottomSheetRef.current?.present()} 
+                    style={styles.image}
+                />
                 <ThemedTextInput
                     value={firstName}
                     onChangeText={f => setFirstName(f)}
@@ -251,6 +257,10 @@ const styles = StyleSheet.create({
         width: "90%",
         justifyContent: "flex-start",
         alignItems: "center"
+    },
+    image: {
+        marginTop: 15,
+        marginBottom: 25
     },
     contentContainer: {
         flex: 1,

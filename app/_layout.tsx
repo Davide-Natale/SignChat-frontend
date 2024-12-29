@@ -93,6 +93,15 @@ export default function RootLayout() {
                   headerLeft: () => <ThemedBackButton />
                 }}
               /> 
+              <Stack.Screen 
+                name="profile/change-password"
+                options={{
+                  headerTitle: "",
+                  headerStyle: { backgroundColor: theme.primary },
+                  headerShadowVisible: false,
+                  headerLeft: () => <ThemedBackButton />
+                }}
+              /> 
             </Stack>
             <StatusBar style="auto" />
           </AuthProvider>

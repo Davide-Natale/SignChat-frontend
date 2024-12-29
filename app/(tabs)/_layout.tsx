@@ -13,11 +13,21 @@ export default function TabLayout() {
     return (
         <Tabs
             screenOptions={{
-                headerTitleStyle: { color: theme.primaryText },
+                headerTitleAlign: "center",
+                headerTitleStyle: { 
+                    fontFamily: "inter_bold",
+                    fontSize: 19,
+                    color: theme.primaryText 
+                },
                 headerStyle: { backgroundColor: theme.secondary },
-                tabBarStyle: { backgroundColor: theme.secondary },
+                tabBarStyle: { 
+                    borderTopWidth: undefined, 
+                    backgroundColor: theme.secondary,
+                    elevation: 10
+                },
+                tabBarLabelStyle: { fontFamily: "inter_regular" },
                 tabBarActiveTintColor: theme.accent,
-                tabBarInactiveTintColor: theme.secondaryText
+                tabBarInactiveTintColor: theme.secondaryText,
             }}>
             <Tabs.Screen
                 name="calls"
@@ -58,7 +68,9 @@ export default function TabLayout() {
             <Tabs.Screen 
                 name="profile"
                 options={{
-                    title: 'Profile'
+                    title: 'Profile',
+                    headerStyle: { backgroundColor: theme.surface },
+                    headerShadowVisible: false
                 }}
             />
         </Tabs>

@@ -127,7 +127,13 @@ export default function CompleteProfile() {
             keyboardShouldPersistTaps="handled"
         >
             <View style={styles.inner}>
-                <ImageProfile uri={imageProfile} size={150} showEdit onEditPress={() => bottomSheetRef.current?.present()} />
+                <ImageProfile 
+                    uri={imageProfile} 
+                    size={140} 
+                    showEdit 
+                    onEditPress={() => bottomSheetRef.current?.present()} 
+                    style={styles.image}
+                />
                 <ThemedTextInput
                     value={firstName}
                     onChangeText={f => setFirstName(f)}
@@ -251,6 +257,10 @@ const styles = StyleSheet.create({
         width: "90%",
         justifyContent: "flex-start",
         alignItems: "center"
+    },
+    image: {
+        marginTop: 15,
+        marginBottom: 25
     },
     contentContainer: {
         flex: 1,

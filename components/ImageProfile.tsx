@@ -1,5 +1,5 @@
 import { useTheme } from '@/hooks/useTheme';
-import { StyleSheet, useColorScheme, View } from 'react-native';
+import { StyleProp, StyleSheet, useColorScheme, View, ViewStyle } from 'react-native';
 import { Image } from 'expo-image';
 import ThemedButton from "@/components/ThemedButton";
 import EditIconBold from "@/assets/icons/edit-bold.svg";
@@ -9,16 +9,17 @@ interface ImageProfileProps {
     size: number
     showEdit?: boolean
     onEditPress?: () => void
+    style?: StyleProp<ViewStyle>
 }
 
-export default function ImageProfile({ uri, size, showEdit = false, onEditPress }: ImageProfileProps) {
+export default function ImageProfile({ uri, size, showEdit = false, onEditPress, style }: ImageProfileProps) {
     const theme = useTheme();
     const colorScheme = useColorScheme();
     const placeholder = colorScheme === 'dark' ? require("@/assets/images/profile-placeholder-dark.png") :
         require("@/assets/images/profile-placeholder-light.png");
 
     return (
-        <View style={[styles.main, { height: size, width: size }]}>
+        <View style={[style, styles.main, { height: size, width: size }]}>
             <Image
                 source={ uri ? { uri } : placeholder }
                 style={[styles.image, { borderRadius: size / 2 }]}
@@ -51,9 +52,7 @@ export default function ImageProfile({ uri, size, showEdit = false, onEditPress 
 const styles = StyleSheet.create({
     main: {
         justifyContent: "flex-end",
-        alignItems: "flex-end",
-        marginTop: 15,
-        marginBottom: 25
+        alignItems: "flex-end"
     },
     image: {
         height: "100%",
