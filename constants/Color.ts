@@ -2,6 +2,8 @@ export const Colors = {
     light: {
         primary: "#FFFFFF",
         secondary: "#F4F4F4",
+        surface: "#F4F4F4",
+        onSurface: "#FFFFFF",
         accent: "#007CFF",
         onAccent: "#FFFFFF",
         error: "#CA3B3B",
@@ -13,6 +15,8 @@ export const Colors = {
     dark: {
         primary: "#121212",
         secondary: "#2C2C2C",
+        surface: "#121212",
+        onSurface: "#2C2C2C",
         accent: "#4A90E2",
         onAccent: "#FFFFFF",
         error: "#FF4D4D",
