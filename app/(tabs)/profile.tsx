@@ -184,7 +184,7 @@ export default function Profile() {
           title='Delete Account'
           content='Are you sure to delete your account?'
           confirmText='Delete'
-          onConfirm={() => { setShowDialog(false) /*TODO: add call delete profile api */}}
+          onConfirm={() => { setShowDialog(false); /*TODO: add call delete profile api */}}
           onDismiss={() => setShowDialog(false)}
         />
       </View>

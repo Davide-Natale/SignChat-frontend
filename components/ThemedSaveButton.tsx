@@ -1,6 +1,7 @@
 import { useTheme } from '@/hooks/useTheme';
 import ThemedText from '@/components/ThemedText';
-import { StyleSheet, TouchableOpacity } from 'react-native';
+import { StyleSheet } from 'react-native';
+import { TouchableOpacity } from 'react-native-gesture-handler';
 
 interface ThemedSaveButtonProps {
     onPress: () => void

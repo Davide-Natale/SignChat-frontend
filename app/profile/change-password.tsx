@@ -24,6 +24,7 @@ export default function ChangePassword() {
     const textInputRef2 = useRef<TextInput>(null);
     const description = "Your new password must contain at least 8 characters " +
         "and include a combination of numbers, letters and special characters (@$!%*?&#).";
+        
     const checkCurrentPassword= () => {
         if(currentPassword === "") {
             setCurrrentPasswordErrMsg("Current Password is a required field.");

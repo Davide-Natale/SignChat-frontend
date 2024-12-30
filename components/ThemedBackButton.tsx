@@ -1,7 +1,7 @@
-import { TouchableOpacity } from "react-native";
 import BackIcon from "@/assets/icons/back.svg";
 import { useRouter } from "expo-router";
 import { useTheme } from "@/hooks/useTheme";
+import { TouchableOpacity } from "react-native-gesture-handler";
 
 export default function ThemedBackButton() {
     const theme = useTheme();

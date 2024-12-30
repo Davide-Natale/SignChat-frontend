@@ -16,6 +16,7 @@ export default function ListItem({ headlineContent, leadingContent, trailingCont
             touchSoundDisabled
             activeOpacity={0.5}
             disabled={onPress === undefined}
+            style={styles.pressable}
         >
             <View style={[style, styles.row]}>
                 {leadingContent ? 
@@ -30,8 +31,10 @@ export default function ListItem({ headlineContent, leadingContent, trailingCont
 }
 
 const styles = StyleSheet.create({
+    pressable: {
+        width: "100%"
+    },
     row: {
-        width: "100%",
         flexDirection: "row",
         justifyContent: "space-between",
         alignItems: "center"

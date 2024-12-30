@@ -235,8 +235,7 @@ export default function CompleteProfile() {
                                         trailingContent={<TrashIcon stroke={theme.error}/>}
                                         style={styles.row}
                                     />
-                                </>
-                                 : null
+                                </> : null
                             }
                         </View>
                     </BottomSheetView>
