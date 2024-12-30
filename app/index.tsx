@@ -104,11 +104,11 @@ const styles = StyleSheet.create({
   },
   title: {
     textAlign: "center",
-    letterSpacing: 1
+    letterSpacing: 0.2
   },
   description: {
     textAlign: "center",
-    letterSpacing: 1,
+    letterSpacing: 0.2,
     marginTop: 10
   },
   button: {

@@ -114,13 +114,13 @@ const styles = StyleSheet.create({
     title: {
         width: "100%",
         textAlign: "left",
-        letterSpacing: 1,
+        letterSpacing: 0.2,
         marginTop: 18
     },
     description: {
         width: "100%",
         textAlign: "left",
-        letterSpacing: 1,
+        letterSpacing: 0.2,
         marginTop: 10,
         marginBottom: 18
     },

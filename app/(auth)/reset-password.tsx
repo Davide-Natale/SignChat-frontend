@@ -20,6 +20,8 @@ export default function ResetPassword() {
     const [passwordErrMsg, setPasswordErrMsg] = useState("");
     const [confirmPasswordErrMsg, setConfirmPasswordErrMsg] = useState("");
     const textInputRef = useRef<TextInput>(null);
+    const description = "Your new password must contain at least 8 characters " +
+        "and include a combination of numbers, letters and special characters (@$!%*?&#).";
 
     const checkPassword = () => {
         if (password.length < 8) {
@@ -53,7 +55,7 @@ export default function ResetPassword() {
 
     const checkConfirmPassword = () => {
         if (confirmPassword === "") {
-            setConfirmPasswordErrMsg("Confirm password is a required field.");
+            setConfirmPasswordErrMsg("Confirm Password is a required field.");
             return false;
         }
 
@@ -102,7 +104,7 @@ export default function ResetPassword() {
                     Reset Password
                 </ThemedText>
                 <ThemedText color={theme.secondaryText} fontSize={15} fontWeight="medium" style={styles.description}>
-                    Create a new password.
+                    {description}
                 </ThemedText>
                 <ThemedTextInput
                     value={password}
@@ -162,13 +164,13 @@ const styles = StyleSheet.create({
     title: {
         width: "100%",
         textAlign: "left",
-        letterSpacing: 1,
+        letterSpacing: 0.2,
         marginTop: 18
     },
     description: {
         width: "100%",
         textAlign: "left",
-        letterSpacing: 1,
+        letterSpacing: 0.2,
         marginTop: 10,
         marginBottom: 13
     },

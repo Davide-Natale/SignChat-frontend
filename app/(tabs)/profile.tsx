@@ -19,10 +19,13 @@ import LockIcon from '@/assets/icons/lock.svg';
 import LogoutIcon from '@/assets/icons/logout.svg';
 import ArrowRightIcon from '@/assets/icons/arrow-right.svg';
 import { Switch } from 'react-native-gesture-handler';
+import AlertDialog from '@/components/AlertDialog';
 
 export default function Profile() {
   const theme = useTheme();
   const [user, setUser] = useState<User>();
+  const [showDialog, setShowDialog] = useState(false);
+  const [isEnabled, setIsEnabled] = useState(false);
   const authContext = useContext(AuthContext);
   const fullName = user ? user.firstName + " " + user.lastName : "";
 
@@ -96,8 +99,8 @@ export default function Profile() {
             trailingContent={
               <Switch 
                 //  TODO: handle correctly this value
-                value={true} 
-                //onValueChange={}
+                value={isEnabled} 
+                onValueChange={value => setIsEnabled(value)}
                 thumbColor={theme.onAccent}
                 trackColor={{false: theme.divider, true: theme.confirm}}
                 style={styles.switch} 
@@ -143,7 +146,7 @@ export default function Profile() {
           />
           <Divider height={0.5} width="85%" style={styles.divider} />
           <ListItem
-            onPress={() => {/* TODO: add handler */}}
+            onPress={() => setShowDialog(true)}
             leadingContent={<TrashIcon stroke={theme.error} style={styles.icon} />}
             headlineContent={
               <ThemedText color={theme.error} fontSize={16} fontWeight="regular" numberOfLines={1} >
@@ -176,6 +179,14 @@ export default function Profile() {
             style={styles.row}
           />
         </View>
+        <AlertDialog 
+          showDialog={showDialog}
+          title='Delete Account'
+          content='Are you sure to delete your account?'
+          confirmText='Delete'
+          onConfirm={() => { setShowDialog(false) /*TODO: add call delete profile api */}}
+          onDismiss={() => setShowDialog(false)}
+        />
       </View>
     </ScrollView>
   );

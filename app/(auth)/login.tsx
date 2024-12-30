@@ -17,7 +17,7 @@ export default function Login() {
     const appContext = useContext(AppContext);
     const authContext = useContext(AuthContext);
     const [email, setEmail] = useState("daxnatale@gmail.com");
-    const [password, setPassword] = useState("Bb1!pppp");
+    const [password, setPassword] = useState("Bb1!aaaa");
     const [emailErrMsg, setEmailErrMsg] = useState("");
     const [passwordErrMsg, setPasswordErrMsg] = useState("");
     const textInputRef = useRef<TextInput>(null);
@@ -163,13 +163,13 @@ const styles = StyleSheet.create({
     title: {
         width: "100%",
         textAlign: "left",
-        letterSpacing: 1,
+        letterSpacing: 0.2,
         marginTop: 18
     },
     description: {
         width: "100%",
         textAlign: "left",
-        letterSpacing: 1,
+        letterSpacing: 0.2,
         marginTop: 10,
         marginBottom: 13
     },
