@@ -1,9 +1,8 @@
 import { AuthContext } from '@/contexts/AuthContext';
 import { useTheme } from '@/hooks/useTheme';
-import { router } from 'expo-router';
-import { useContext, useEffect, useState } from 'react';
+import { router, useFocusEffect } from 'expo-router';
+import { useCallback, useContext, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
-import profileAPI, { User } from '@/api/profileAPI';
 import { isAxiosError } from 'axios';
 import ImageProfile from '@/components/ImageProfile';
 import ThemedText from '@/components/ThemedText';
@@ -20,20 +19,16 @@ import LogoutIcon from '@/assets/icons/logout.svg';
 import ArrowRightIcon from '@/assets/icons/arrow-right.svg';
 import { Switch } from 'react-native-gesture-handler';
 import AlertDialog from '@/components/AlertDialog';
+import { AppContext } from '@/contexts/AppContext';
 
 export default function Profile() {
   const theme = useTheme();
-  const [user, setUser] = useState<User>();
   const [showDialog, setShowDialog] = useState(false);
-  const [isEnabled, setIsEnabled] = useState(false);
   const authContext = useContext(AuthContext);
-  const fullName = user ? user.firstName + " " + user.lastName : "";
+  const appContext = useContext(AppContext);
+  const fullName = authContext?.user ? authContext?.user.firstName + " " + authContext?.user.lastName : "";
 
-  useEffect(() => {
-    profileAPI.getProfile()
-      .then(user => { setUser(user); })
-      .catch(err => { if (isAxiosError(err)) console.log(err.response?.data.message); })
-  }, []);
+  useFocusEffect(useCallback(() => { authContext?.fetchProfile(); }, []));
 
   return (
     <ScrollView
@@ -69,7 +64,7 @@ export default function Profile() {
             leadingContent={<EmailIcon stroke={theme.secondaryText} style={styles.icon} />}
             headlineContent={
               <ThemedText color={theme.secondaryText} fontSize={16} fontWeight="regular" numberOfLines={1} >
-                {user? user.email : ""}
+                {authContext?.user? authContext?.user.email : ""}
               </ThemedText>
             }
             style={styles.row}
@@ -79,7 +74,7 @@ export default function Profile() {
             leadingContent={<PhoneIcon stroke={theme.secondaryText} style={styles.icon} />}
             headlineContent={
               <ThemedText color={theme.secondaryText} fontSize={16} fontWeight="regular" numberOfLines={1} >
-                {user? user.phone : ""}
+                {authContext?.user? authContext?.user.phone : ""}
               </ThemedText>
             }
             style={styles.row}
@@ -98,9 +93,8 @@ export default function Profile() {
             }
             trailingContent={
               <Switch 
-                //  TODO: handle correctly this value
-                value={isEnabled} 
-                onValueChange={value => setIsEnabled(value)}
+                value={appContext?.isNotificationsEnabled ?? false} 
+                onValueChange={appContext?.updateNotifications}
                 thumbColor={theme.onAccent}
                 trackColor={{false: theme.divider, true: theme.confirm}}
                 style={styles.switch} 
@@ -117,10 +111,9 @@ export default function Profile() {
               </ThemedText>
             }
             trailingContent={
-              <Switch 
-                //  TODO: handle correctly this value
-                value={true} 
-                //onValueChange={}
+              <Switch
+                value={appContext?.isAccessibilityEnabled ?? false} 
+                onValueChange={appContext?.updateAccessibility}
                 thumbColor={theme.onAccent}
                 trackColor={{false: theme.divider, true: theme.confirm}}
                 style={styles.switch}

@@ -3,12 +3,15 @@ import authAPI from "@/api/authAPI";
 import { deleteToken, getToken, saveToken } from "@/utils/secureStore";
 import { isAxiosError } from "axios";
 import { AppContext } from "./AppContext";
+import profileAPI, { User } from "@/api/profileAPI";
 
 interface AuthContextType {
-    isAuthenticated: boolean,
-    register: (email: string, password: string) => Promise<void>,
-    login: (email: string, password: string) => Promise<void>,
+    isAuthenticated: boolean
+    user: User | undefined
+    register: (email: string, password: string) => Promise<void>
+    login: (email: string, password: string) => Promise<void>
     logout: () => Promise<void>
+    fetchProfile: () => Promise<void>
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -16,6 +19,7 @@ export const AuthContext = createContext<AuthContextType | undefined>(undefined)
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const appContext = useContext(AppContext);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [user, setUser] = useState<User>();
 
     useEffect(() => {
         const checkAuth = async () => {
@@ -102,10 +106,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         await deleteToken('refreshToken');
 
         setIsAuthenticated(false);
+    }; 
+
+    const fetchProfile = async () => {
+        try {
+            const user = await profileAPI.getProfile();
+            setUser(user);
+        } catch (error) {
+            if (isAxiosError(error)) {
+                //  Handle error
+                console.log(error.response?.data.message);
+            }
+        }
     };
 
     return (
-        <AuthContext.Provider value={{ isAuthenticated, register: registerHandler, login: loginHandler, logout: logoutHandler }}>
+        <AuthContext.Provider value={
+            { 
+                isAuthenticated, 
+                user,
+                register: registerHandler, 
+                login: loginHandler, 
+                logout: logoutHandler,
+                fetchProfile
+            }
+        }>
             {children}
         </AuthContext.Provider>
     );

@@ -6,9 +6,35 @@ import ContactIconBold from '@/assets/icons/contact-bold.svg';
 import TranscriptionIcon from '@/assets/icons/transcription.svg';
 import TranscriptionIconBold from '@/assets/icons/transcription-bold.svg';
 import { useTheme } from "@/hooks/useTheme";
+import { useContext, useEffect } from "react";
+import { AppContext } from "@/contexts/AppContext";
+import { AuthContext } from "@/contexts/AuthContext";
 
 export default function TabLayout() {
     const theme = useTheme();
+    const appContext = useContext(AppContext);
+    const authContext = useContext(AuthContext);
+
+    useEffect(() => {
+        const checkPreferences = async () => {
+            try {
+                if(appContext?.isNotificationsEnabled === null || appContext?.isAccessibilityEnabled === null) {
+                    //  If preferences are not set yet, initialize them with default values.
+                    await appContext.updateNotifications(false);
+                    await appContext.updateAccessibility(true);
+                }
+            } catch (error) {
+                //  Handle error
+                console.log(error);
+            }
+        };
+        
+        checkPreferences();
+    }, []);
+
+    useEffect(() => {
+        authContext?.fetchProfile();
+    }, []);
 
     return (
         <Tabs
