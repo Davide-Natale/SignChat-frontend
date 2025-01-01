@@ -5,7 +5,7 @@ export interface User {
     lastName: string,
     email: string,
     phone: string,
-    isDeaf: boolean 
+    imageProfile: string | null 
 }
 
 async function getProfile(): Promise<User> {
@@ -17,13 +17,13 @@ async function getProfile(): Promise<User> {
         lastName: data.lastName,
         email: data.email,
         phone: data.phone,
-        isDeaf: data.isDeaf
+        imageProfile: data.imageProfile
     }
 
     return user;
 }
 
-async function updateProfile(user: User) {
+async function updateProfile(user: Omit<User, 'imageProfile'>) {
     //  Call PUT /api/profile
     await axiosInstance({
         method: 'put',

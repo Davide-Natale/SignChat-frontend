@@ -17,8 +17,8 @@ export default function Login() {
     const appContext = useContext(AppContext);
     const authContext = useContext(AuthContext);
     const [email, setEmail] = useState("test3@polito.it");
-    const [password, setPassword] = useState("Aa0?aaaa");
-    const [confirmPassword, setConfirmPassword] = useState("Aa0?aaaa");
+    const [password, setPassword] = useState("Bb1!aaaa");
+    const [confirmPassword, setConfirmPassword] = useState("Bb1!aaaa");
     const [emailErrMsg, setEmailErrMsg] = useState("");
     const [passwordErrMsg, setPasswordErrMsg] = useState("");
     const [confirmPasswordErrMsg, setConfirmPasswordErrMsg] = useState("");
@@ -97,7 +97,7 @@ export default function Login() {
                 appContext?.updateLoading(true);
                 await authContext?.register(email, password);
                 if (router.canDismiss()) { router.dismissAll(); }
-                router.replace("/calls");
+                router.replace("/complete-profile");
             } catch (error) {
                 if(isAxiosError(error)) {
                     //  Handle error
@@ -183,6 +183,7 @@ export default function Login() {
                         onPress={() => { router.replace("/login"); }} 
                         touchSoundDisabled
                         activeOpacity={0.8}
+                        disabled={appContext?.loading}
                     >
                         <ThemedText color={theme.accent} fontSize={14} fontWeight='bold' style={styles.text}>Login</ThemedText>
                     </TouchableOpacity>

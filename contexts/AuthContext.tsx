@@ -12,6 +12,7 @@ interface AuthContextType {
     login: (email: string, password: string) => Promise<void>
     logout: () => Promise<void>
     fetchProfile: () => Promise<void>
+    deleteAccount: () => Promise<void>
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -119,7 +120,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             }
         }
     };
+    
+    const deleteAccount = async () => {
+        //  Read refresh token from Secure Store
+        const refreshToken = await getToken('refreshToken');
 
+        if(refreshToken) {
+            await profileAPI.deleteAccount(refreshToken);
+        }
+
+        //  In any case, remove tokens from Secure Store and update auth state
+        await deleteToken('accessToken');
+        await deleteToken('refreshToken');
+
+        setIsAuthenticated(false);
+    }
+ 
     return (
         <AuthContext.Provider value={
             { 
@@ -128,7 +144,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 register: registerHandler, 
                 login: loginHandler, 
                 logout: logoutHandler,
-                fetchProfile
+                fetchProfile,
+                deleteAccount
             }
         }>
             {children}

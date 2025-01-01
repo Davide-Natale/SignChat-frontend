@@ -115,6 +115,7 @@ export default function Login() {
                     touchSoundDisabled
                     activeOpacity={0.8}
                     style={styles.textButton}
+                    disabled={appContext?.loading}
                 >
                     <ThemedText color={theme.primaryText} fontSize={15} fontWeight="semibold" >
                         Forgot Password?
@@ -140,6 +141,7 @@ export default function Login() {
                         onPress={() => { router.replace("/register"); }} 
                         touchSoundDisabled
                         activeOpacity={0.8}
+                        disabled={appContext?.loading}
                     >
                         <ThemedText color={theme.accent} fontSize={14} fontWeight='bold' style={styles.text}>Sign Up</ThemedText>
                     </TouchableOpacity>

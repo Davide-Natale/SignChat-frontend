@@ -177,7 +177,20 @@ export default function Profile() {
           title='Delete Account'
           content='Are you sure to delete your account?'
           confirmText='Delete'
-          onConfirm={() => { setShowDialog(false); /*TODO: add call delete profile api */}}
+          onConfirm={async () => { 
+            setShowDialog(false); 
+            try {
+              await authContext?.deleteAccount();
+            } catch (error) {
+              if(isAxiosError(error)) {
+                //  Handle error
+                console.log(error.response?.data.message);
+              }
+            } finally {
+              router.replace("/"); 
+              router.push("/login");
+            }
+          }}
           onDismiss={() => setShowDialog(false)}
         />
       </View>

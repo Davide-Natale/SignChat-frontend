@@ -4,7 +4,7 @@ import { AppContext } from '@/contexts/AppContext';
 import { useTheme } from '@/hooks/useTheme';
 import { useNavigation } from 'expo-router';
 import { useRouter } from 'expo-router';
-import { useContext, useLayoutEffect, useRef, useState } from 'react';
+import { useContext, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import UserIcon from "@/assets/icons/user-bold.svg";
@@ -19,17 +19,21 @@ import GalleryIcon from '@/assets/icons/gallery.svg';
 import TrashIcon from '@/assets/icons/trash.svg';
 import ListItem from '@/components/ListItem';
 import React from 'react';
+import { AuthContext } from '@/contexts/AuthContext';
+import profileAPI from '@/api/profileAPI';
+import { isAxiosError } from 'axios';
 
 export default function CompleteProfile() {
     const theme = useTheme();
     const router = useRouter();
     const navigation = useNavigation();
     const appContext = useContext(AppContext);
+    const authContext = useContext(AuthContext);
     const [imageProfile, setImageProfile] = useState<string | null>(null);
-    const [firstName, setFirstName] = useState("Davide");
-    const [lastName, setLastName] = useState("Natale");
-    const [email, setEmail] = useState("daxnatale@gmail.com");
-    const [phoneNumber, setPhoneNumber] = useState("3457604304");
+    const [firstName, setFirstName] = useState("");
+    const [lastName, setLastName] = useState("");
+    const [email, setEmail] = useState("");
+    const [phone, setPhone] = useState("");
     const [firstErrMsg, setFirstErrMsg] = useState("");
     const [lastErrMsg, setLastErrMsg] = useState("");
     const [emailErrMsg, setEmailErrMsg] = useState("");
@@ -38,6 +42,17 @@ export default function CompleteProfile() {
     const textInputRef2 = useRef<TextInput>(null);
     const textInputRef3 = useRef<TextInput>(null);
     const bottomSheetRef = useRef<BottomSheetModal>(null);
+
+    useEffect(() => {
+        authContext?.fetchProfile();
+    }, []);
+
+    useEffect(() => {
+        setFirstName(authContext?.user?.firstName ?? "");
+        setLastName(authContext?.user?.lastName ?? "");
+        setEmail(authContext?.user?.email ?? ""); 
+        setPhone(authContext?.user?.phone ?? "");
+    }, [authContext?.user]);
 
     const pickImage = async () => {
         bottomSheetRef.current?.dismiss();
@@ -89,9 +104,25 @@ export default function CompleteProfile() {
         }
     };
 
-    const checkFirstName = () => { /* TODO: implement it */ }
+    const checkFirstName = () => { 
+        if(firstName === "") {
+            setFirstErrMsg("First Name is a required field.");
+            return false;
+        } 
+            
+        setFirstErrMsg("");
+        return true;
+    }
 
-    const checkLastName = () => { /* TODO: implement it */ }
+    const checkLastName = () => { 
+        if(lastName === "") {
+            setLastErrMsg("Last Name is a required field.");
+            return false;
+        } 
+            
+        setLastErrMsg("");
+        return true;
+    }
 
     const checkEmail = () => {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@\.]{2,}$/;
@@ -110,15 +141,50 @@ export default function CompleteProfile() {
         return true;
     };
 
-    const checkPhoneNumber = () => { /* TODO: implement it */ }
+    const checkPhoneNumber = () => {
+        const phoneRegex = /^[0-9]+$/;
 
-    const handleSubmit = async () => { /* TODO: implement it */ }
+        if(phone === "") {
+            setPhoneErrMsg("Phone Number is a required field.");
+            return false;
+        }
+
+        if(!phoneRegex.test(phone)) {
+            setPhoneErrMsg("Insert a valid phone number.");
+            return false;
+        }
+
+        setPhoneErrMsg("");
+        return true;
+    }
+
+    const handleSubmit = async () => {
+        const isFirstValid = checkFirstName();
+        const isLastValid = checkLastName(); 
+        const emailIsValid = checkEmail();
+        const isPhoneValid = checkPhoneNumber();
+
+        if (isFirstValid && isLastValid && emailIsValid && isPhoneValid) {
+            try {
+                appContext?.updateLoading(true);
+                await profileAPI.updateProfile({ firstName, lastName, email, phone });
+                router.back();
+            } catch (error) {
+                if (isAxiosError(error)) {
+                    //  Handle error
+                    console.log(error.response?.data.message);
+                }
+            } finally {
+                appContext?.updateLoading(false);
+            }
+        }
+    }
 
     useLayoutEffect(() => {
         navigation.setOptions({
             headerRight: () => <ThemedSaveButton onPress={handleSubmit} />
         });
-    }, []);
+    }, [firstName, lastName, email, phone]);
 
     return (
         <ScrollView
@@ -177,9 +243,9 @@ export default function CompleteProfile() {
                 />
                 <ThemedTextInput
                     externalRef={textInputRef3}
-                    value={phoneNumber}
-                    onChangeText={p => setPhoneNumber(p)}
-                    clearValue={() => setPhoneNumber("")}
+                    value={phone}
+                    onChangeText={p => setPhone(p)}
+                    clearValue={() => setPhone("")}
                     errMsg={phoneErrMsg}
                     placeholder='Phone Number'
                     leadingIcon={<PhoneIcon fill={theme.primaryText} />}
