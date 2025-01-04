@@ -31,8 +31,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
                 setIsNotificationsEnabled(notificationsPreference);
                 setIsAccessibilityEnabled(accessibilityPreference);
             } catch (error) {
-                //  Handle erro
-                console.log("Error while loading preferences.", error);
+                //  No need to do anything: unable to retreive preferences
             }
         };
 
@@ -59,7 +58,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         }
     };
 
-    return (
+    return(
         <AppContext.Provider value={
             { 
                 isReady, 

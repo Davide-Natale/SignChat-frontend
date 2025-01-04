@@ -3,17 +3,19 @@ import ThemedText from '@/components/ThemedText';
 import ThemedTextInput from '@/components/ThemedTextInput';
 import { AppContext } from '@/contexts/AppContext';
 import { useTheme } from '@/hooks/useTheme';
-import { isAxiosError } from 'axios';
 import { useRouter } from 'expo-router';
 import { useContext, useRef, useState } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import LockIcon from "@/assets/icons/lock-bold.svg";
 import ThemedButton from '@/components/ThemedButton';
+import { ErrorContext } from '@/contexts/ErrorContext';
+import ThemedSnackBar from '@/components/ThemedSnackBar';
 
 export default function ChangePassword() {
     const theme = useTheme();
     const router = useRouter();
     const appContext = useContext(AppContext);
+    const errorContext = useContext(ErrorContext);
     const [currentPassword, setCurrentPassword] = useState("Bb1!pppp");
     const [newPassword, setNewPassword] = useState("Bb1!aaaa");
     const [confirmNewPassword, setConfirmNewPassword] = useState("Bb1!aaaa");
@@ -91,10 +93,7 @@ export default function ChangePassword() {
                 await authAPI.changePassword(currentPassword, newPassword);
                 router.back();
             } catch (error) {
-                if (isAxiosError(error)) {
-                    //  Handle error
-                    console.log(error.response?.data.message);
-                }
+                errorContext?.handleError(error);
             } finally {
                 appContext?.updateLoading(false);
             }
@@ -168,6 +167,7 @@ export default function ChangePassword() {
                     }
                 </ThemedButton>
             </View>
+            <ThemedSnackBar />
         </ScrollView>
     );
 }

@@ -20,14 +20,16 @@ import TrashIcon from '@/assets/icons/trash.svg';
 import ListItem from '@/components/ListItem';
 import React from 'react';
 import { AuthContext } from '@/contexts/AuthContext';
-import { isAxiosError } from 'axios';
 import profileAPI from '@/api/profileAPI';
+import { ErrorContext } from '@/contexts/ErrorContext';
+import ThemedSnackBar from '@/components/ThemedSnackBar';
 
 export default function CompleteProfile() {
     const theme = useTheme();
     const router = useRouter();
     const navigation = useNavigation();
     const appContext = useContext(AppContext);
+    const errorContext = useContext(ErrorContext);
     const authContext = useContext(AuthContext);
     const [imageProfile, setImageProfile] = useState<string | null>(null);
     const [firstName, setFirstName] = useState("");
@@ -74,8 +76,7 @@ export default function CompleteProfile() {
                 setImageProfile(result.assets[0].uri)
             }
         } catch (error) {
-            //  Handle error
-            console.log(error);
+            errorContext?.handleError(error);
         }
     };
     
@@ -99,8 +100,7 @@ export default function CompleteProfile() {
                 setImageProfile(result.assets[0].uri)
             }
         } catch (error) {
-            //  Handle error
-            console.log(error);
+            errorContext?.handleError(error);
         }
     };
 
@@ -170,10 +170,7 @@ export default function CompleteProfile() {
                 await profileAPI.updateProfile({ firstName, lastName, email, phone });
                 router.replace("/calls");
             } catch (error) {
-                if (isAxiosError(error)) {
-                    //  Handle error
-                    console.log(error.response?.data.message);
-                }
+                errorContext?.handleError(error);
             } finally {
                 appContext?.updateLoading(false);
             }
@@ -251,7 +248,7 @@ export default function CompleteProfile() {
                     leadingIcon={<PhoneIcon fill={theme.primaryText} />}
                     autoCorrect={false}
                     autoCapitalize='none'
-                    keyboardType='numeric'
+                    keyboardType='number-pad'
                     returnKeyType='done'
                     onSubmitEditing={handleSubmit}
                 />
@@ -308,6 +305,7 @@ export default function CompleteProfile() {
                     </BottomSheetView>
                 </BottomSheetModal>
             </View>
+            <ThemedSnackBar />
         </ScrollView>
     );
 }

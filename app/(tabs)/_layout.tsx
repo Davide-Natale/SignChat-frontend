@@ -24,8 +24,7 @@ export default function TabLayout() {
                     await appContext.updateAccessibility(true);
                 }
             } catch (error) {
-                //  Handle error
-                console.log(error);
+                //  No need to do anything: unable to update preferences
             }
         };
         

@@ -3,18 +3,20 @@ import ThemedText from '@/components/ThemedText';
 import ThemedTextInput from '@/components/ThemedTextInput';
 import { AppContext } from '@/contexts/AppContext';
 import { useTheme } from '@/hooks/useTheme';
-import { isAxiosError } from 'axios';
 import { useRouter } from 'expo-router';
 import { useContext, useRef, useState } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import LockIcon from "@/assets/icons/lock-bold.svg";
 import ThemedButton from '@/components/ThemedButton';
 import { deleteToken } from '@/utils/secureStore';
+import { ErrorContext } from '@/contexts/ErrorContext';
+import ThemedSnackBar from '@/components/ThemedSnackBar';
 
 export default function ResetPassword() {
     const theme = useTheme();
     const router = useRouter();
     const appContext = useContext(AppContext);
+    const errorContext = useContext(ErrorContext);
     const [password, setPassword] = useState("Bb1!pppp");
     const [confirmPassword, setConfirmPassword] = useState("Bb1!pppp");
     const [passwordErrMsg, setPasswordErrMsg] = useState("");
@@ -83,10 +85,7 @@ export default function ResetPassword() {
                 if (router.canDismiss()) { router.dismissAll(); }
                 router.replace("/password-changed");
             } catch (error) {
-                if (isAxiosError(error)) {
-                    //  Handle error
-                    console.log(error.response?.data.message);
-                }
+                errorContext?.handleError(error);
             } finally {
                 appContext?.updateLoading(false);
             }
@@ -146,6 +145,7 @@ export default function ResetPassword() {
                     }
                 </ThemedButton>
             </View>
+            <ThemedSnackBar />
         </ScrollView>
     );
 }

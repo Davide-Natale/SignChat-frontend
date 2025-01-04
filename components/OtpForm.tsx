@@ -54,7 +54,7 @@ export default function OtpForm({ otp, setOtp, errMsg, handleSubmit }: OtpFormPr
                                     key={index}
                                     value={value}
                                     onChangeText={newValue => handleChange(newValue, index)}
-                                    keyboardType="numeric"
+                                    keyboardType="number-pad"
                                     returnKeyType="done"
                                     maxLength={1}
                                     textAlign="center"

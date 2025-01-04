@@ -1,7 +1,6 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import authAPI from "@/api/authAPI";
 import { deleteToken, getToken, saveToken } from "@/utils/secureStore";
-import { isAxiosError } from "axios";
 import { AppContext } from "./AppContext";
 import profileAPI, { User } from "@/api/profileAPI";
 
@@ -40,11 +39,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 //  Update auth state since user is authenticated
                 setIsAuthenticated(true);
             } catch (error) {
-                if(isAxiosError(error)) {
-                    //  No need to do anything: user is simply not yet authenticated
-                    //  Handle error 
-                    console.log('User not authenticated', error.response?.data.message);
-                }
+                //  No need to do anything: user is simply not yet authenticated
             } finally {
                 appContext?.updateIsReady(true);
             }
@@ -114,10 +109,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             const user = await profileAPI.getProfile();
             setUser(user);
         } catch (error) {
-            if (isAxiosError(error)) {
-                //  Handle error
-                console.log(error.response?.data.message);
-            }
+            //  No need to do anything
         }
     };
     
@@ -136,7 +128,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setIsAuthenticated(false);
     }
  
-    return (
+    return(
         <AuthContext.Provider value={
             { 
                 isAuthenticated, 

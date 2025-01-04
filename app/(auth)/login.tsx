@@ -8,13 +8,15 @@ import { useContext, useRef, useState } from 'react';
 import { StyleSheet, View, TouchableOpacity, ScrollView,TextInput, ActivityIndicator } from 'react-native';
 import EmailIcon from "@/assets/icons/email-bold.svg";
 import LockIcon from "@/assets/icons/lock-bold.svg";
-import { isAxiosError } from 'axios';
 import { AppContext } from '@/contexts/AppContext';
+import { ErrorContext } from '@/contexts/ErrorContext';
+import ThemedSnackBar from '@/components/ThemedSnackBar';
 
 export default function Login() {
     const theme = useTheme();
     const router = useRouter();
     const appContext = useContext(AppContext);
+    const errorContext = useContext(ErrorContext);
     const authContext = useContext(AuthContext);
     const [email, setEmail] = useState("daxnatale@gmail.com");
     const [password, setPassword] = useState("Bb1!aaaa");
@@ -60,10 +62,7 @@ export default function Login() {
                 if (router.canDismiss()) { router.dismissAll(); }
                 router.replace("/calls");
             } catch (error) {
-                if(isAxiosError(error)) {
-                    //  Handle error
-                    console.log(error.response?.data.message);
-                }
+                errorContext?.handleError(error); 
             } finally {
                 appContext?.updateLoading(false);
             }          
@@ -147,6 +146,7 @@ export default function Login() {
                     </TouchableOpacity>
                 </View>
             </View>
+            <ThemedSnackBar />
         </ScrollView>
     );
 }

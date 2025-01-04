@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios, { isAxiosError } from "axios";
 import { deleteToken, getToken, saveToken } from "./secureStore";
 
 //  Use local Ip address of pc when using real device or 10.0.2.2 with emulator
@@ -6,7 +6,8 @@ const API_BASE_URL = "http://192.168.178.183:3000/api";
 
 //  Create and configure an Axios instance
 const axiosInstance = axios.create({
-    baseURL: API_BASE_URL
+    baseURL: API_BASE_URL,
+    timeout: 15000
 });
 
 //  Request interceptor to attach access token
@@ -28,7 +29,7 @@ axiosInstance.interceptors.response.use(
     async (error) => {
         const originalRequest = error.config;
 
-        if(error.response.status === 401 && !originalRequest._retry) {
+        if(isAxiosError(error) && error.response?.status === 401 && !originalRequest._retry) {
             //  This parameter is used to ensures that the
             //  request is resend only one time and avoid loop
             originalRequest._retry = true;
@@ -66,7 +67,7 @@ axiosInstance.interceptors.response.use(
                 }
             }
         }
-
+        
         return Promise.reject(error)
     }
 );

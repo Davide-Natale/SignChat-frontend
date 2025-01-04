@@ -9,13 +9,15 @@ import {  StyleSheet, TouchableOpacity, View, ScrollView, TextInput, ActivityInd
 import EmailIcon from "@/assets/icons/email-bold.svg";
 import LockIcon from "@/assets/icons/lock-bold.svg";
 import { AppContext } from '@/contexts/AppContext';
-import { isAxiosError } from 'axios';
+import { ErrorContext } from '@/contexts/ErrorContext';
+import ThemedSnackBar from '@/components/ThemedSnackBar';
 
 export default function Login() {
     const theme = useTheme();
     const router = useRouter();
     const appContext = useContext(AppContext);
     const authContext = useContext(AuthContext);
+    const errorContext = useContext(ErrorContext);
     const [email, setEmail] = useState("test3@polito.it");
     const [password, setPassword] = useState("Bb1!aaaa");
     const [confirmPassword, setConfirmPassword] = useState("Bb1!aaaa");
@@ -99,10 +101,7 @@ export default function Login() {
                 if (router.canDismiss()) { router.dismissAll(); }
                 router.replace("/complete-profile");
             } catch (error) {
-                if(isAxiosError(error)) {
-                    //  Handle error
-                    console.log(error.response?.data.message);
-                }
+                errorContext?.handleError(error);
             } finally {
                 appContext?.updateLoading(false);
             }          
@@ -189,6 +188,7 @@ export default function Login() {
                     </TouchableOpacity>
                 </View>
             </View>
+            <ThemedSnackBar />
         </ScrollView>
     );
 }

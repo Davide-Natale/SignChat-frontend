@@ -1,11 +1,12 @@
 import authAPI from '@/api/authAPI';
 import OtpForm from '@/components/OtpForm';
 import ThemedButton from '@/components/ThemedButton';
+import ThemedSnackBar from '@/components/ThemedSnackBar';
 import ThemedText from '@/components/ThemedText';
 import { AppContext } from '@/contexts/AppContext';
+import { ErrorContext } from '@/contexts/ErrorContext';
 import { useTheme } from '@/hooks/useTheme';
 import { saveToken } from '@/utils/secureStore';
-import { isAxiosError } from 'axios';
 import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -20,6 +21,7 @@ export default function VerifyOtp() {
     const router = useRouter();
     const { email } = useLocalSearchParams<{ email: string }>();
     const appContext = useContext(AppContext);
+    const errorContext = useContext(ErrorContext);
     const [otp, setOtp] = useState(['', '', '', '', '', '']);
     const [errMsg, setErrMsg] = useState("");
     const [localLoading, setLocalLoading] = useState(false);
@@ -70,10 +72,7 @@ export default function VerifyOtp() {
 
                 router.push("/reset-password");
             } catch (error) {
-                if (isAxiosError(error)) {
-                    //  Handle error
-                    console.log(error.response?.data.message);
-                }
+                errorContext?.handleError(error);
             } finally {
                 appContext?.updateLoading(false);
             }
@@ -86,10 +85,7 @@ export default function VerifyOtp() {
             await authAPI.requestOtp(email);
             setTimer(120);
         } catch (error) {
-            if(isAxiosError(error)) {
-                //  Handle error
-                console.log(error.response?.data.message);
-            }
+            errorContext?.handleError(error);
         } finally {
             setLocalLoading(false);
         } 
@@ -120,7 +116,7 @@ export default function VerifyOtp() {
                     onPress={resendOtp}
                     touchSoundDisabled
                     activeOpacity={0.8}
-                    disabled={localLoading || timer > 0}
+                    disabled={localLoading || timer > 0 || appContext?.loading}
                 >   
                     <ThemedText 
                         color={localLoading || timer > 0 ? theme.divider : theme.accent} 
@@ -135,7 +131,7 @@ export default function VerifyOtp() {
                     height={60}
                     width="100%"
                     backgroundColor={theme.accent}
-                    disabled={appContext?.loading}
+                    disabled={appContext?.loading || localLoading}
                     style={styles.button}
                 >
                     { appContext?.loading ? <ActivityIndicator color={theme.onAccent} size="large" /> :
@@ -143,6 +139,7 @@ export default function VerifyOtp() {
                     }
                 </ThemedButton>
             </View>
+            <ThemedSnackBar />
         </ScrollView>
 
     );

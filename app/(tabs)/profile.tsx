@@ -3,7 +3,6 @@ import { useTheme } from '@/hooks/useTheme';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useContext, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
-import { isAxiosError } from 'axios';
 import ImageProfile from '@/components/ImageProfile';
 import ThemedText from '@/components/ThemedText';
 import ThemedButton from '@/components/ThemedButton';
@@ -154,10 +153,7 @@ export default function Profile() {
               try {
                 await authContext?.logout();
               } catch (error) {
-                if(isAxiosError(error)) {
-                  //  Handle error
-                  console.log(error.response?.data.message);
-                }
+                //  No need to do anything
               } finally {
                 router.replace("/"); 
                 router.push("/login");
@@ -182,10 +178,7 @@ export default function Profile() {
             try {
               await authContext?.deleteAccount();
             } catch (error) {
-              if(isAxiosError(error)) {
-                //  Handle error
-                console.log(error.response?.data.message);
-              }
+              //  No need to do anything
             } finally {
               router.replace("/"); 
               router.push("/login");

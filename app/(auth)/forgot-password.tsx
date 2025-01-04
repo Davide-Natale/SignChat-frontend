@@ -2,18 +2,20 @@ import ThemedText from '@/components/ThemedText';
 import ThemedTextInput from '@/components/ThemedTextInput';
 import { AppContext } from '@/contexts/AppContext';
 import { useTheme } from '@/hooks/useTheme';
-import { isAxiosError } from 'axios';
 import { useRouter } from 'expo-router';
 import { useContext, useState } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
 import EmailIcon from "@/assets/icons/email-bold.svg";
 import ThemedButton from '@/components/ThemedButton';
 import authAPI from '@/api/authAPI';
+import { ErrorContext } from '@/contexts/ErrorContext';
+import ThemedSnackBar from '@/components/ThemedSnackBar';
 
 export default function ForgotPassword() {
     const theme = useTheme();
     const router = useRouter();
     const appContext = useContext(AppContext);
+    const errorContext = useContext(ErrorContext);
     const [email, setEmail] = useState("daxnatale@gmail.com");
     const [emailErrMsg, setEmailErrMsg] = useState("");
     const description = "Don't worry! It happens. Please enter the email address assosieted with your account."
@@ -47,10 +49,7 @@ export default function ForgotPassword() {
                         params: { email }
                     });
                 } catch (error) {
-                    if(isAxiosError(error)) {
-                        //  Handle error
-                        console.log(error.response?.data.message);
-                    }
+                    errorContext?.handleError(error);
                 } finally {
                     appContext?.updateLoading(false);
                 }          
@@ -96,6 +95,7 @@ export default function ForgotPassword() {
                     }
                 </ThemedButton>
             </View>
+            <ThemedSnackBar />
         </ScrollView>
     );
 }
