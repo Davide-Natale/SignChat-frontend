@@ -2,9 +2,9 @@ import { useTheme } from '@/hooks/useTheme';
 import { DimensionValue, StyleProp, StyleSheet, Text, View, ViewStyle } from 'react-native';
 
 interface DividerProps {
-    height: DimensionValue
-    width: DimensionValue
-    style?: StyleProp<ViewStyle>
+    height: DimensionValue;
+    width: DimensionValue;
+    style?: StyleProp<ViewStyle>;
 }
 
 export default function Divider({ height, width, style }: DividerProps) {

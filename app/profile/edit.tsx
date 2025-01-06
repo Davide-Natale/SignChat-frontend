@@ -23,6 +23,7 @@ import { AuthContext } from '@/contexts/AuthContext';
 import profileAPI from '@/api/profileAPI';
 import { ErrorContext } from '@/contexts/ErrorContext';
 import ThemedSnackBar from '@/components/ThemedSnackBar';
+import { ImageProfileType } from '@/types/ImageProfileType';
 
 export default function Edit() {
     const theme = useTheme();
@@ -31,7 +32,7 @@ export default function Edit() {
     const appContext = useContext(AppContext);
     const errorContext = useContext(ErrorContext);
     const authContext = useContext(AuthContext);
-    const [imageProfile, setImageProfile] = useState<string | null>(null);
+    const [imageProfile, setImageProfile] = useState<ImageProfileType>({ type: 'none' });
     const [firstName, setFirstName] = useState("");
     const [lastName, setLastName] = useState("");
     const [email, setEmail] = useState("");
@@ -54,6 +55,13 @@ export default function Edit() {
         setLastName(authContext?.user?.lastName ?? "");
         setEmail(authContext?.user?.email ?? ""); 
         setPhone(authContext?.user?.phone ?? "");
+
+        if(authContext?.user?.imageProfile) {
+            setImageProfile({
+                type: 'remote',
+                uri: authContext.user.imageProfile
+            });
+        }
     }, [authContext?.user]);
 
     const pickImage = async () => {
@@ -73,7 +81,14 @@ export default function Edit() {
 
             //  Update Image Profile
             if (!result.canceled) {
-                setImageProfile(result.assets[0].uri)
+                const asset = result.assets[0];
+
+                setImageProfile({
+                    type: 'local',
+                    uri: asset.uri,
+                    mimeType: asset.mimeType ?? 'application/octet-stream',
+                    fileName: asset.fileName ?? 'unknown'
+                });
             }
         } catch (error) {
             errorContext?.handleError(error);
@@ -97,7 +112,14 @@ export default function Edit() {
 
             //  Update Image Profile
             if (!result.canceled) {
-                setImageProfile(result.assets[0].uri)
+                const asset = result.assets[0];
+
+                setImageProfile({
+                    type: 'local',
+                    uri: asset.uri,
+                    mimeType: asset.mimeType ?? 'application/octet-stream',
+                    fileName: asset.fileName ?? 'unknown'
+                });
             }
         } catch (error) {
             errorContext?.handleError(error);
@@ -167,6 +189,13 @@ export default function Edit() {
         if (isFirstValid && isLastValid && emailIsValid && isPhoneValid) {
             try {
                 appContext?.updateLoading(true);
+
+                if(imageProfile.type === 'local') {
+                    await profileAPI.uploadProfileImage(imageProfile);
+                } else if(authContext?.user?.imageProfile && imageProfile.type === 'none') {
+                    await profileAPI.deleteProfileImage();
+                }
+
                 await profileAPI.updateProfile({ firstName, lastName, email, phone });
                 router.back();
             } catch (error) {
@@ -181,7 +210,7 @@ export default function Edit() {
         navigation.setOptions({
             headerRight: () => <ThemedSaveButton onPress={handleSubmit} />
         });
-    }, [firstName, lastName, email, phone]);
+    }, [firstName, lastName, email, phone, imageProfile]);
 
     return (
         <ScrollView
@@ -191,7 +220,7 @@ export default function Edit() {
         >
             <View style={styles.inner}>
                 <ImageProfile 
-                    uri={imageProfile}  
+                    uri={imageProfile.type !== 'none' ? imageProfile.uri : null}  
                     size={140} 
                     showEdit
                     onEditPress={() => bottomSheetRef.current?.present()} 
@@ -285,11 +314,11 @@ export default function Edit() {
                                 trailingContent={<GalleryIcon stroke={theme.secondaryText}/>}
                                 style={styles.row}
                             />
-                            {imageProfile ?
+                            {imageProfile.type !== 'none' ?
                                 <>
                                     <Divider height={0.5} width="95%" style={styles.divider}/>
                                     <ListItem 
-                                        onPress={() => { setImageProfile(null) ; bottomSheetRef.current?.dismiss() }}
+                                        onPress={() => { setImageProfile({ type: 'none' }) ; bottomSheetRef.current?.dismiss() }}
                                         headlineContent={
                                             <ThemedText color={theme.error} fontSize={16} fontWeight="regular" >
                                                 Remove photo

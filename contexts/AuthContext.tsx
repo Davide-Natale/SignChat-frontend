@@ -2,16 +2,17 @@ import { createContext, useContext, useEffect, useState } from "react";
 import authAPI from "@/api/authAPI";
 import { deleteToken, getToken, saveToken } from "@/utils/secureStore";
 import { AppContext } from "./AppContext";
-import profileAPI, { User } from "@/api/profileAPI";
+import profileAPI from "@/api/profileAPI";
+import { User } from "@/types/User";
 
 interface AuthContextType {
-    isAuthenticated: boolean
-    user: User | undefined
-    register: (email: string, password: string) => Promise<void>
-    login: (email: string, password: string) => Promise<void>
-    logout: () => Promise<void>
-    fetchProfile: () => Promise<void>
-    deleteAccount: () => Promise<void>
+    isAuthenticated: boolean;
+    user: User | undefined;
+    register: (email: string, password: string) => Promise<void>;
+    login: (email: string, password: string) => Promise<void>;
+    logout: () => Promise<void>;
+    fetchProfile: () => Promise<void>;
+    deleteAccount: () => Promise<void>;
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);

@@ -1,13 +1,13 @@
 import { StyleProp, Text, TextStyle } from 'react-native';
 
 interface ThemedTextProps {
-    color: string
-    fontSize: number
-    numberOfLines?: number
-    children: React.ReactNode
+    color: string;
+    fontSize: number;
+    numberOfLines?: number;
+    children: React.ReactNode;
     fontWeight: "black" | "extrabold" | "bold" | "semibold" |
-        "medium" | "regular" | "light" | "extralight" | "thin"
-    style?: StyleProp<TextStyle>
+        "medium" | "regular" | "light" | "extralight" | "thin";
+    style?: StyleProp<TextStyle>;
 }
 
 export default function ThemedText(

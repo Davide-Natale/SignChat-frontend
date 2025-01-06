@@ -6,7 +6,7 @@ import { useContext } from 'react';
 import { AppContext } from '@/contexts/AppContext';
 
 interface ThemedSaveButtonProps {
-    onPress: () => void
+    onPress: () => void;
 }
 
 export default function ThemedSaveButton({ onPress }: ThemedSaveButtonProps) {

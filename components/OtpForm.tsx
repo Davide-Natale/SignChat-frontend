@@ -5,10 +5,10 @@ import { Pressable, StyleSheet, TextInput, View } from 'react-native';
 import DangerIcon from "@/assets/icons/danger.svg";
 
 interface OtpFormProps {
-    otp: string[]
-    setOtp: React.Dispatch<React.SetStateAction<string[]>>
-    errMsg: string
-    handleSubmit: () => void
+    otp: string[];
+    setOtp: React.Dispatch<React.SetStateAction<string[]>>;
+    errMsg: string;
+    handleSubmit: () => void;
 }
 
 export default function OtpForm({ otp, setOtp, errMsg, handleSubmit }: OtpFormProps) {

@@ -2,11 +2,11 @@ import React from 'react';
 import { StyleProp, StyleSheet, TouchableOpacity, View, ViewStyle } from 'react-native';
 
 interface ListItemProps {
-    headlineContent: React.ReactNode
-    leadingContent?: React.ReactNode
-    trailingContent?: React.ReactNode
-    onPress?: () => void
-    style?: StyleProp<ViewStyle>
+    headlineContent: React.ReactNode;
+    leadingContent?: React.ReactNode;
+    trailingContent?: React.ReactNode;
+    onPress?: () => void;
+    style?: StyleProp<ViewStyle>;
 }
 
 export default function ListItem({ headlineContent, leadingContent, trailingContent, onPress, style }: ListItemProps) {

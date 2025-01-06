@@ -2,14 +2,14 @@ import { getPreference, savePreference } from "@/utils/asyncStorage";
 import React, { createContext, useEffect, useState } from "react"
 
 interface AppContextType {
-    isReady: boolean,
-    updateIsReady: (ready: boolean) => void
-    loading: boolean,
-    updateLoading: (loading: boolean) => void
-    isNotificationsEnabled: boolean | null
-    updateNotifications: (value: boolean) => Promise<void>
-    isAccessibilityEnabled: boolean | null
-    updateAccessibility: (value: boolean) => Promise<void>
+    isReady: boolean;
+    updateIsReady: (ready: boolean) => void;
+    loading: boolean;
+    updateLoading: (loading: boolean) => void;
+    isNotificationsEnabled: boolean | null;
+    updateNotifications: (value: boolean) => Promise<void>;
+    isAccessibilityEnabled: boolean | null;
+    updateAccessibility: (value: boolean) => Promise<void>;
 }
 
 export const AppContext = createContext<AppContextType | undefined>(undefined);

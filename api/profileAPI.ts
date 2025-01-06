@@ -1,12 +1,6 @@
+import { ImageProfileType } from "@/types/ImageProfileType";
+import { User } from "@/types/User";
 import axiosInstance from "@/utils/axiosInstance";
-
-export interface User {
-    firstName: string, 
-    lastName: string,
-    email: string,
-    phone: string,
-    imageProfile: string | null 
-}
 
 async function getProfile(): Promise<User> {
     //  Call GET /api/profile
@@ -43,6 +37,32 @@ async function deleteAccount(refreshToken: string) {
     });
 }
 
-const profileAPI = { getProfile, updateProfile, deleteAccount };
+async function uploadProfileImage(imageProfile: Extract<ImageProfileType, { type: 'local' }>) {
+    const formData = new FormData();
+    formData.append('image', {
+        uri: imageProfile.uri,
+        type: imageProfile.mimeType,
+        name: imageProfile.fileName
+    } as any);
+
+    //  Call POST /api/profile/image
+    await axiosInstance({
+        method: 'post',
+        url: '/profile/image',
+        data: formData,
+        headers: { 'Content-Type': 'multipart/form-data' },
+        timeout: 30000 
+    });
+}
+
+async function deleteProfileImage() {
+    //  Call DELETE /api/profile/image
+    await axiosInstance({
+        method: 'delete',
+        url: '/profile/image'
+    });
+}
+
+const profileAPI = { getProfile, updateProfile, deleteAccount, uploadProfileImage, deleteProfileImage };
 
 export default profileAPI;

@@ -2,10 +2,10 @@ import { isAxiosError } from "axios";
 import React, { createContext, useState } from "react"
 
 interface ErrorContextType {
-    errMsg: string
-    showErrMsg: boolean
-    handleError: (error: unknown) => void
-    clearErrMsg: () => void
+    errMsg: string;
+    showErrMsg: boolean;
+    handleError: (error: unknown) => void;
+    clearErrMsg: () => void;
 }
 
 export const ErrorContext = createContext<ErrorContextType | undefined>(undefined);

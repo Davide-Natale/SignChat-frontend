@@ -8,10 +8,10 @@ import ThemedText from '@/components/ThemedText';
 import DangerIcon from "@/assets/icons/danger.svg";
 
 type ThemedTextInputProps = TextInputProps & {
-    errMsg: string
-    leadingIcon?: React.ReactNode
-    clearValue?: () => void,
-    externalRef?: React.RefObject<TextInput>
+    errMsg: string;
+    leadingIcon?: React.ReactNode;
+    clearValue?: () => void;
+    externalRef?: React.RefObject<TextInput>;
 }
 
 export default function ThemedTextInput({ errMsg, leadingIcon, clearValue, externalRef, ...rest }: ThemedTextInputProps) {

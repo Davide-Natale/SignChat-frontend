@@ -5,11 +5,11 @@ import ThemedButton from "@/components/ThemedButton";
 import EditIconBold from "@/assets/icons/edit-bold.svg";
 
 interface ImageProfileProps {
-    uri: string | null 
-    size: number
-    showEdit?: boolean
-    onEditPress?: () => void
-    style?: StyleProp<ViewStyle>
+    uri: string | null;
+    size: number;
+    showEdit?: boolean;
+    onEditPress?: () => void;
+    style?: StyleProp<ViewStyle>;
 }
 
 export default function ImageProfile({ uri, size, showEdit = false, onEditPress, style }: ImageProfileProps) {

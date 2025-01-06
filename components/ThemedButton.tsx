@@ -2,16 +2,16 @@ import React from 'react';
 import { StyleProp, ViewStyle, DimensionValue, TouchableOpacity } from 'react-native';
 
 interface ThemedButtonProps {
-    onPress: () => void
-    type?: "filled" | "outlined"
-    shape?: 'rounded' | "circular"
-    height?: DimensionValue
-    width?: DimensionValue
-    borderColor?: string
-    backgroundColor: string
-    disabled?: boolean
-    children: React.ReactNode
-    style?: StyleProp<ViewStyle>
+    onPress: () => void;
+    type?: "filled" | "outlined";
+    shape?: 'rounded' | "circular";
+    height?: DimensionValue;
+    width?: DimensionValue;
+    borderColor?: string;
+    backgroundColor: string;
+    disabled?: boolean;
+    children: React.ReactNode;
+    style?: StyleProp<ViewStyle>;
 }
 
 export default function ThemedButton(

@@ -35,8 +35,11 @@ export default function Profile() {
       showsVerticalScrollIndicator={false}
     >
       <View style={styles.inner}>
-        {/* TODO: change with real imageProfile variable*/}
-        <ImageProfile uri={null } size={140} style={styles.image} />
+        <ImageProfile 
+          uri={authContext?.user?.imageProfile ?? null} 
+          size={140} 
+          style={styles.image} 
+        />
         <ThemedText 
           color={theme.primaryText} 
           fontSize={28} 

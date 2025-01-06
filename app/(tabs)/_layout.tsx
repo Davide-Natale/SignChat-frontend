@@ -9,6 +9,7 @@ import { useTheme } from "@/hooks/useTheme";
 import { useContext, useEffect } from "react";
 import { AppContext } from "@/contexts/AppContext";
 import { AuthContext } from "@/contexts/AuthContext";
+import ImageProfile from "@/components/ImageProfile";
 
 export default function TabLayout() {
     const theme = useTheme();
@@ -59,7 +60,7 @@ export default function TabLayout() {
                 options={{
                     title: 'Calls',
                     tabBarIcon: ({ focused, color }) => {
-                        return (
+                        return(
                             focused ? <CallIconBold fill={color} /> :
                                 <CallIcon stroke={color} />
                         );
@@ -71,7 +72,7 @@ export default function TabLayout() {
                 options={{ 
                     title: 'Contacts',
                     tabBarIcon: ({ focused, color }) => {
-                        return (
+                        return(
                             focused ? <ContactIconBold fill={color} /> :
                                 <ContactIcon stroke={color} />
                         );
@@ -83,7 +84,7 @@ export default function TabLayout() {
                 options={{
                     title: 'Transcriptions',
                     tabBarIcon: ({ focused, color }) => {
-                        return (
+                        return(
                             focused ? <TranscriptionIconBold fill={color} /> :
                                 <TranscriptionIcon stroke={color} />
                         );
@@ -95,7 +96,20 @@ export default function TabLayout() {
                 options={{
                     title: 'Profile',
                     headerStyle: { backgroundColor: theme.surface },
-                    headerShadowVisible: false
+                    headerShadowVisible: false,
+                    tabBarIcon: ({ color }) => {
+                        return(
+                            <ImageProfile 
+                                uri={authContext?.user?.imageProfile ?? null}
+                                size={24}
+                                style={{ 
+                                    borderRadius: 12, 
+                                    borderColor: color, 
+                                    borderWidth: 1.75 
+                                }}
+                            />
+                        );
+                    }
                 }}
             />
         </Tabs>
