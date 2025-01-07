@@ -64,6 +64,7 @@ export default function VerifyOtp() {
 
         if (isOtpValid) {
             try {
+                errorContext?.clearErrMsg();
                 appContext?.updateLoading(true);
                 const { accessToken } = await authAPI.verifyOtp(email, literalOtp);
 

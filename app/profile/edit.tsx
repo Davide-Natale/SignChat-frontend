@@ -188,6 +188,7 @@ export default function Edit() {
 
         if (isFirstValid && isLastValid && emailIsValid && isPhoneValid) {
             try {
+                errorContext?.clearErrMsg();
                 appContext?.updateLoading(true);
 
                 if(imageProfile.type === 'local') {

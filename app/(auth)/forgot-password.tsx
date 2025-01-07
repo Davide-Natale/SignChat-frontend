@@ -38,23 +38,24 @@ export default function ForgotPassword() {
     };
 
     const handleSubmit = async () => {
-            const emailIsValid = checkEmail();
-    
-            if(emailIsValid) {
-                try {
-                    appContext?.updateLoading(true);
-                    await authAPI.requestOtp(email);
-                    router.push({
-                        pathname: "/verify-otp",
-                        params: { email }
-                    });
-                } catch (error) {
-                    errorContext?.handleError(error);
-                } finally {
-                    appContext?.updateLoading(false);
-                }          
+        const emailIsValid = checkEmail();
+
+        if (emailIsValid) {
+            try {
+                errorContext?.clearErrMsg();
+                appContext?.updateLoading(true);
+                await authAPI.requestOtp(email);
+                router.push({
+                    pathname: "/verify-otp",
+                    params: { email }
+                });
+            } catch (error) {
+                errorContext?.handleError(error);
+            } finally {
+                appContext?.updateLoading(false);
             }
         }
+    }
 
     return (
         <ScrollView 

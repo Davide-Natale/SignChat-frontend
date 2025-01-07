@@ -102,6 +102,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         await deleteToken('accessToken');
         await deleteToken('refreshToken');
 
+        setUser(undefined);
         setIsAuthenticated(false);
     }; 
 
@@ -126,6 +127,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         await deleteToken('accessToken');
         await deleteToken('refreshToken');
 
+        setUser(undefined);
         setIsAuthenticated(false);
     }
  

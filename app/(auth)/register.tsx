@@ -18,9 +18,9 @@ export default function Login() {
     const appContext = useContext(AppContext);
     const authContext = useContext(AuthContext);
     const errorContext = useContext(ErrorContext);
-    const [email, setEmail] = useState("test3@polito.it");
-    const [password, setPassword] = useState("Bb1!aaaa");
-    const [confirmPassword, setConfirmPassword] = useState("Bb1!aaaa");
+    const [email, setEmail] = useState("daxnatale@gmail.com");
+    const [password, setPassword] = useState("Password1!");
+    const [confirmPassword, setConfirmPassword] = useState("Password1!");
     const [emailErrMsg, setEmailErrMsg] = useState("");
     const [passwordErrMsg, setPasswordErrMsg] = useState("");
     const [confirmPasswordErrMsg, setConfirmPasswordErrMsg] = useState("");
@@ -96,6 +96,7 @@ export default function Login() {
 
         if(emailIsValid && passwordIsValid && confirmPasswordIsValid) {
             try {
+                errorContext?.clearErrMsg();
                 appContext?.updateLoading(true);
                 await authContext?.register(email, password);
                 if (router.canDismiss()) { router.dismissAll(); }

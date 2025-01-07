@@ -16,9 +16,9 @@ export default function ChangePassword() {
     const router = useRouter();
     const appContext = useContext(AppContext);
     const errorContext = useContext(ErrorContext);
-    const [currentPassword, setCurrentPassword] = useState("Bb1!pppp");
-    const [newPassword, setNewPassword] = useState("Bb1!aaaa");
-    const [confirmNewPassword, setConfirmNewPassword] = useState("Bb1!aaaa");
+    const [currentPassword, setCurrentPassword] = useState("Password1!");
+    const [newPassword, setNewPassword] = useState("Password3!");
+    const [confirmNewPassword, setConfirmNewPassword] = useState("Password3!");
     const [currrentPasswordErrMsg, setCurrrentPasswordErrMsg] = useState("");
     const [newPasswordErrMsg, setNewPasswordErrMsg] = useState("");
     const [confirmNewPasswordErrMsg, setConfirmNewPasswordErrMsg] = useState("");
@@ -89,6 +89,7 @@ export default function ChangePassword() {
 
         if (currentPasswordIsValid && newPasswordIsValid && confirmNewPasswordIsValid) {
             try {
+                errorContext?.clearErrMsg();
                 appContext?.updateLoading(true);
                 await authAPI.changePassword(currentPassword, newPassword);
                 router.back();

@@ -17,8 +17,8 @@ export default function ResetPassword() {
     const router = useRouter();
     const appContext = useContext(AppContext);
     const errorContext = useContext(ErrorContext);
-    const [password, setPassword] = useState("Bb1!pppp");
-    const [confirmPassword, setConfirmPassword] = useState("Bb1!pppp");
+    const [password, setPassword] = useState("Password2!");
+    const [confirmPassword, setConfirmPassword] = useState("Password2!");
     const [passwordErrMsg, setPasswordErrMsg] = useState("");
     const [confirmPasswordErrMsg, setConfirmPasswordErrMsg] = useState("");
     const textInputRef = useRef<TextInput>(null);
@@ -76,6 +76,7 @@ export default function ResetPassword() {
 
         if (passwordIsValid && confirmPasswordIsValid) {
             try {
+                errorContext?.clearErrMsg();
                 appContext?.updateLoading(true);
                 await authAPI.resetPassword(password);
 
