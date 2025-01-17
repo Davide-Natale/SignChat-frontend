@@ -2,7 +2,7 @@ import axios, { isAxiosError } from "axios";
 import { deleteToken, getToken, saveToken } from "./secureStore";
 
 //  Use local Ip address of pc when using real device or 10.0.2.2 with emulator
-const API_BASE_URL = "http://172.21.17.96:3000/api";   
+const API_BASE_URL = "http://192.168.178.183:3000/api";   
 
 //  Create and configure an Axios instance
 const axiosInstance = axios.create({

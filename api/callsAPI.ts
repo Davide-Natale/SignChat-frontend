@@ -1,0 +1,56 @@
+import { Contact } from "@/types/Contact";
+import { User } from "@/types/User";
+import axiosInstance from "@/utils/axiosInstance";
+import dayjs from "dayjs";
+
+interface Call {
+    id: number;
+    phone: string;
+    type: 'incoming' | 'outgoing';
+    status: 'completed' | 'missed' | 'rejected' | 'unanswered';
+    date: dayjs.Dayjs;
+    duration: number;
+    contact: Contact | null;
+    user: (Omit<User, 'email'> & { id: number }) | null
+}
+
+async function getCalls(contactId?: string, userId?: number, limit?: number): Promise<Call[]> {
+    //  Call GET /api/calls
+    const { data } = await axiosInstance({
+        url: '/calls',
+        params: {
+            contactId,
+            userId,
+            limit
+        }
+    });
+
+    const calls: Call[] = data.calls.map((call: any) => (
+        {
+            id: call.id,
+            phone: call.phone,
+            type: call.type,
+            status: call.status, 
+            date: dayjs(call.date),
+            duration: call.duration,
+            contact: call.contact,
+            user: call.user
+        }
+    ));
+
+    return calls;
+}
+
+async function deleteCalls(ids: number[]) {
+    //  Call DELETE /api/calls
+    await axiosInstance({
+        method: 'delete',
+        url: '/calls',
+        data: { ids },
+        headers: { 'Content-Type': 'application/json' }
+    });
+}
+
+const callsAPI = { getCalls, deleteCalls };
+
+export default callsAPI;

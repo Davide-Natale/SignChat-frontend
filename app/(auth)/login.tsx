@@ -19,7 +19,7 @@ export default function Login() {
     const errorContext = useContext(ErrorContext);
     const authContext = useContext(AuthContext);
     const [email, setEmail] = useState("daxnatale@gmail.com");
-    const [password, setPassword] = useState("Password1!");
+    const [password, setPassword] = useState("Aa0?aaaa");
     const [emailErrMsg, setEmailErrMsg] = useState("");
     const [passwordErrMsg, setPasswordErrMsg] = useState("");
     const textInputRef = useRef<TextInput>(null);
