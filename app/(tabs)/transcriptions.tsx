@@ -1,15 +1,13 @@
 import ThemedText from '@/components/ThemedText';
 import { useTheme } from '@/hooks/useTheme';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 export default function Transcriptions() {
   const theme = useTheme();
 
   return (
-    <View style={[styles.main, { backgroundColor: theme.primary }]}>
-      <ThemedText color={theme.primaryText} fontWeight='bold' fontSize={25} >
-        Transcriptions
-      </ThemedText>
+    <View style={[styles.main, { backgroundColor: theme.surface }]}>
+  
     </View>
   );
 }

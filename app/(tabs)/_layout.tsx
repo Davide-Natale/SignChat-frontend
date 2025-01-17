@@ -42,10 +42,11 @@ export default function TabLayout() {
                 headerTitleAlign: "center",
                 headerTitleStyle: { 
                     fontFamily: "inter_bold",
-                    fontSize: 19,
+                    fontSize: 20,
                     color: theme.primaryText 
                 },
-                headerStyle: { backgroundColor: theme.secondary },
+                headerShadowVisible: false,
+                headerStyle: { backgroundColor: theme.surface },
                 tabBarStyle: { 
                     borderTopWidth: undefined, 
                     backgroundColor: theme.secondary,
@@ -65,12 +66,34 @@ export default function TabLayout() {
                                 <CallIcon stroke={color} />
                         );
                     }
+                    /*headerRight: () => 
+                        <Menu
+                            visible={visible}
+                            onDismiss={closeMenu}
+                            anchor={
+                                <TouchableOpacity
+                                    onPress={openMenu}
+                                    touchSoundDisabled
+                                    activeOpacity={0.8}
+                                >
+                                    <EmailIcon fill={theme.accent} />
+                                </TouchableOpacity>
+                            }
+                            anchorPosition="bottom"
+                            statusBarHeight={30}
+                            contentStyle={{ backgroundColor: theme.accent }}
+                        >
+                            <Menu.Item onPress={() => { }} title="Item 1" />
+                            <Menu.Item onPress={() => { }} title="Item 2" />
+                            <Menu.Item onPress={() => { }} title="Item 3" />
+                        </Menu>*/
                 }}
             />
             <Tabs.Screen 
                 name="contacts" 
                 options={{ 
                     title: 'Contacts',
+                    headerShadowVisible: false,
                     tabBarIcon: ({ focused, color }) => {
                         return(
                             focused ? <ContactIconBold fill={color} /> :
@@ -95,8 +118,6 @@ export default function TabLayout() {
                 name="profile"
                 options={{
                     title: 'Profile',
-                    headerStyle: { backgroundColor: theme.surface },
-                    headerShadowVisible: false,
                     tabBarIcon: ({ color }) => {
                         return(
                             <ImageProfile 

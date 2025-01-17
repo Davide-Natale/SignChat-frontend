@@ -1,23 +1,37 @@
-import ThemedText from '@/components/ThemedText';
+import SearchBar from '@/components/SearchBar';
 import { useTheme } from '@/hooks/useTheme';
-import { StyleSheet, View } from 'react-native';
+import { useState } from 'react';
+import { ScrollView, StyleSheet, View } from 'react-native';
 
 export default function Calls() {
   const theme = useTheme();
+  const [filter, setFilter] = useState("");
 
   return (
-    <View style={[styles.main, { backgroundColor: theme.primary }]}>
-      <ThemedText color={theme.primaryText} fontWeight='bold' fontSize={25} >
-        Calls
-      </ThemedText>
-    </View>
+    <ScrollView
+      contentContainerStyle={[styles.main, { backgroundColor: theme.surface }]}
+    >
+      <View style={styles.inner}>
+        <SearchBar
+          value={filter}
+          onChangeText={f => setFilter(f)}
+          clearValue={() => setFilter("")}
+        />
+      </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   main: {
+    flexGrow: 1,
+    justifyContent: "flex-start",
+    alignItems: "center"
+  },
+  inner: {
     flex: 1,
-    justifyContent: "center",
+    width: "90%",
+    justifyContent: "flex-start",
     alignItems: "center"
   }
 });

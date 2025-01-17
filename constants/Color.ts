@@ -2,6 +2,7 @@ export const Colors = {
     light: {
         primary: "#FFFFFF",
         secondary: "#F4F4F4",
+        onBackground: "#E8E8E8",
         surface: "#F4F4F4",
         onSurface: "#FFFFFF",
         accent: "#007CFF",
@@ -15,6 +16,7 @@ export const Colors = {
     dark: {
         primary: "#121212",
         secondary: "#2C2C2C",
+        onBackground: "#404040",
         surface: "#121212",
         onSurface: "#2C2C2C",
         accent: "#4A90E2",
