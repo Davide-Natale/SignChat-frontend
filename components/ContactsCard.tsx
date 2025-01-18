@@ -1,10 +1,11 @@
 import { useTheme } from '@/hooks/useTheme';
 import { Contact } from '@/types/Contact';
-import { StyleProp, StyleSheet, View, ViewStyle } from 'react-native';
+import { StyleProp, StyleSheet, ToastAndroid, View, ViewStyle } from 'react-native';
 import ThemedText from './ThemedText';
 import ListItem from './ListItem';
 import Divider from './Divider';
 import React from 'react';
+import ImageProfile from './ImageProfile';
 
 interface ContactsCardProps {
     label?: string;
@@ -12,29 +13,49 @@ interface ContactsCardProps {
     style?: StyleProp<ViewStyle>
 }
 
-//  TODO: implement
-
 export default function ContactsCard({ label, contacts, style }: ContactsCardProps) {
     const theme = useTheme();
 
     return (
         <View style={[styles.main, style]}>
             <ThemedText color={theme.secondaryText} fontSize={15} fontWeight="medium" style={styles.label}>
-                {label}
+                {label ?? "Invite on SignChat"}
             </ThemedText>
             <View style={[styles.surface, { backgroundColor: theme.onSurface }]} >
                 {   contacts.map((contact, index) => (
                         <React.Fragment key={contact.id}>
                             <ListItem
-                                leadingContent={undefined}
+                                leadingContent={
+                                    <ImageProfile 
+                                        uri={contact.user?.imageProfile ?? null} 
+                                        size={35}
+                                        style={styles.image}
+                                    />
+                                }
                                 headlineContent={
-                                    <ThemedText color={theme.secondaryText} fontSize={16} fontWeight="regular" numberOfLines={1} >
-                                        {contact.firstName + " " + contact.lastName}
+                                    <ThemedText color={theme.primaryText} fontSize={16} fontWeight="semibold" numberOfLines={1} >
+                                        {contact.lastName ? contact.firstName + " " + contact.lastName : contact.firstName}
                                     </ThemedText>
                                 }
+                                trailingContent={ !label ? 
+                                    <ThemedText 
+                                        color={theme.accent} 
+                                        fontSize={13} 
+                                        fontWeight="regular"
+                                    >
+                                        Invite
+                                    </ThemedText> : undefined
+                                }
+                                onPress={() => {
+                                    if(label) {
+                                        /**TODO: add navigation to contact info route */
+                                    } else {
+                                        ToastAndroid.show('Coming Soon!', ToastAndroid.SHORT);
+                                    }
+                                }}
                                 style={styles.row}
                             />
-                            { index < contacts.length ? <Divider height={0.5} width="85%" style={styles.divider} /> : null }
+                            { index < contacts.length - 1 ? <Divider height={0.5} width="83%" style={styles.divider} /> : null }
                         </React.Fragment>
                     ))
                 }
@@ -56,13 +77,13 @@ const styles = StyleSheet.create({
         width: "100%",
         justifyContent: "flex-start",
         alignItems: "flex-start",
-        borderRadius: 20
+        borderRadius: 15
       },
       row: {
-        marginVertical: 15,
-        paddingHorizontal: "5%"
+        marginVertical: 8,
+        paddingHorizontal: "3.5%"
       },
-      icon: {
+      image: {
         marginRight: 15
       },
       divider: {

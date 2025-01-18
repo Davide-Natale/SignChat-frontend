@@ -93,6 +93,12 @@ export default function TabLayout() {
                 name="contacts" 
                 options={{ 
                     title: 'Contacts',
+                    headerTitleStyle: { 
+                        fontFamily: "inter_bold",
+                        fontSize: 30,
+                        color: theme.primaryText 
+                    },
+                    headerTitleAlign: 'left',
                     headerShadowVisible: false,
                     tabBarIcon: ({ focused, color }) => {
                         return(
