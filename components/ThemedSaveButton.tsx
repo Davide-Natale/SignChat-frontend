@@ -1,6 +1,6 @@
 import { useTheme } from '@/hooks/useTheme';
 import ThemedText from '@/components/ThemedText';
-import { ActivityIndicator, StyleSheet } from 'react-native';
+import { ActivityIndicator } from 'react-native';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import { useContext } from 'react';
 import { AppContext } from '@/contexts/AppContext';
@@ -26,5 +26,3 @@ export default function ThemedSaveButton({ onPress }: ThemedSaveButtonProps) {
             </TouchableOpacity>
     );
 }
-
-const styles = StyleSheet.create({});

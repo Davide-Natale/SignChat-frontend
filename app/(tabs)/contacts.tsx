@@ -92,6 +92,7 @@ export default function Contacts() {
       />
       { filter !== "" ?  
           <ScrollView style={styles.list}
+            showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"
           >
             { filteredContacts.length === 0 && filteredUnregisteredContacts.length === 0 ? 
@@ -111,6 +112,7 @@ export default function Contacts() {
               <ContactsCard label={letter} contacts={contacts} style={styles.card} />
             )}
             ListFooterComponent={() => <ContactsCard contacts={unregisteredContacts} style={styles.footer} />}
+            showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"
             style={styles.list}
           />

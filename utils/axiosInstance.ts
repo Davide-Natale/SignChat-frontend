@@ -10,6 +10,8 @@ const axiosInstance = axios.create({
     timeout: 15000
 });
 
+let refreshTokenPromise: Promise<string | null> | null = null;
+
 //  Request interceptor to attach access token
 axiosInstance.interceptors.request.use(
     async (config) => {
@@ -34,38 +36,51 @@ axiosInstance.interceptors.response.use(
             //  request is resend only one time and avoid loop
             originalRequest._retry = true;
 
-            //  Read refresh token from Secure Store
-            const refreshToken = await getToken('refreshToken');
+            if (!refreshTokenPromise) {
+                refreshTokenPromise = (async () => {
 
-            if(refreshToken) {
-                try {
-                    //  Send request to refresh token api
-                    const { data } = await axios({
-                        method: 'post',
-                        url: `${API_BASE_URL}/auth/refresh-token`, 
-                        data: { refreshToken }, 
-                        headers: {'Content-Type': 'application/json'}
-                    });
+                    //  Read refresh token from Secure Store
+                    const refreshToken = await getToken('refreshToken');
 
-                    //  Save new tokens to Secure Store
-                    await saveToken('accessToken', data.accessToken);
-                    await saveToken('refreshToken', data.refreshToken);
+                    if(!refreshToken) return null;
 
-                    //  If the original api is the logout api or the delete profile api, update refreshToken parameter in the body
-                    if (originalRequest.url === "/auth/logout" || (originalRequest === "/profile" && originalRequest.method === "delete")) {
-                        originalRequest.data = { refreshToken: data.refreshToken };
+                    try {
+                        //  Send request to refresh token api
+                        const { data } = await axios({
+                            method: 'post',
+                            url: `${API_BASE_URL}/auth/refresh-token`, 
+                            data: { refreshToken }, 
+                            headers: {'Content-Type': 'application/json'}
+                        });
+
+                        //  Save new tokens to Secure Store
+                        await saveToken('accessToken', data.accessToken);
+                        await saveToken('refreshToken', data.refreshToken);
+
+                        //  If the original api is the logout api or the delete profile api, update refreshToken parameter in the body
+                        if (originalRequest.url === "/auth/logout" || (originalRequest === "/profile" && originalRequest.method === "delete")) {
+                            originalRequest.data = { refreshToken: data.refreshToken };
+                        }
+
+                        return data.accessToken;
+                    } catch {
+                        //  Delete both access and refresh token from Secure Store
+                        await deleteToken('accessToken');
+                        await deleteToken('refreshToken');
+                        
+                        return null;
+                    } finally {
+                        refreshTokenPromise = null;
                     }
-
-                    //  Retry original request using the new access token
-                    originalRequest.headers.Authorization = `Bearer ${data.accessToken}`;
-                    
-                    return axiosInstance(originalRequest);
-                } catch {
-                    //  Delete both access and refresh token from Secure Store
-                    await deleteToken('accessToken');
-                    await deleteToken('refreshToken');
-                }
+                })();
             }
+
+            const newAccessToken = await refreshTokenPromise;
+            if(!newAccessToken) return Promise.reject(error);
+                    
+            //  Retry original request using the new access token
+            originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+            return axiosInstance(originalRequest);
         }
         
         return Promise.reject(error)

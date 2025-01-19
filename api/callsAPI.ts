@@ -1,18 +1,6 @@
-import { Contact } from "@/types/Contact";
-import { User } from "@/types/User";
+import { Call } from "@/types/Call";
 import axiosInstance from "@/utils/axiosInstance";
 import dayjs from "dayjs";
-
-interface Call {
-    id: number;
-    phone: string;
-    type: 'incoming' | 'outgoing';
-    status: 'completed' | 'missed' | 'rejected' | 'unanswered';
-    date: dayjs.Dayjs;
-    duration: number;
-    contact: Contact | null;
-    user: (Omit<User, 'email'> & { id: number }) | null
-}
 
 async function getCalls(contactId?: string, userId?: number, limit?: number): Promise<Call[]> {
     //  Call GET /api/calls

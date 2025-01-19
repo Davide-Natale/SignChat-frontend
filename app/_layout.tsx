@@ -161,6 +161,36 @@ export default function RootLayout() {
                         headerLeft: () => <ThemedBackButton />,
                       }}
                     />
+                    <Stack.Screen
+                      name="users/[id]"
+                      options={{
+                        headerTitle: "Info User",
+                        headerTitleAlign: "center",
+                        headerTitleStyle: {
+                          fontFamily: "inter_bold",
+                          fontSize: 19,
+                          color: theme.primaryText
+                        },
+                        headerStyle: { backgroundColor: theme.surface },
+                        headerShadowVisible: false,
+                        headerLeft: () => <ThemedBackButton />
+                      }}
+                    />
+                    <Stack.Screen
+                      name="calls/[id]"
+                      options={{
+                        headerTitle: "Info Call",
+                        headerTitleAlign: "center",
+                        headerTitleStyle: {
+                          fontFamily: "inter_bold",
+                          fontSize: 19,
+                          color: theme.primaryText
+                        },
+                        headerStyle: { backgroundColor: theme.surface },
+                        headerShadowVisible: false,
+                        headerLeft: () => <ThemedBackButton />
+                      }}
+                    />
                   </Stack>
                   <StatusBar style="auto" />
                 </AuthProvider>

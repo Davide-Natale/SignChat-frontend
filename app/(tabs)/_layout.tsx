@@ -10,6 +10,7 @@ import { useContext, useEffect } from "react";
 import { AppContext } from "@/contexts/AppContext";
 import { AuthContext } from "@/contexts/AuthContext";
 import ImageProfile from "@/components/ImageProfile";
+import OptionsMenu from "@/components/OptionsMenu";
 
 export default function TabLayout() {
     const theme = useTheme();
@@ -47,7 +48,7 @@ export default function TabLayout() {
                 },
                 headerShadowVisible: false,
                 headerStyle: { backgroundColor: theme.surface },
-                tabBarStyle: { 
+                tabBarStyle: {
                     borderTopWidth: undefined, 
                     backgroundColor: theme.secondary,
                     elevation: 10
@@ -60,33 +61,19 @@ export default function TabLayout() {
                 name="calls"
                 options={{
                     title: 'Calls',
+                    headerTitleStyle: { 
+                        fontFamily: "inter_bold",
+                        fontSize: 30,
+                        color: theme.primaryText 
+                    },
+                    headerTitleAlign: 'left',
                     tabBarIcon: ({ focused, color }) => {
                         return(
                             focused ? <CallIconBold fill={color} /> :
                                 <CallIcon stroke={color} />
                         );
-                    }
-                    /*headerRight: () => 
-                        <Menu
-                            visible={visible}
-                            onDismiss={closeMenu}
-                            anchor={
-                                <TouchableOpacity
-                                    onPress={openMenu}
-                                    touchSoundDisabled
-                                    activeOpacity={0.8}
-                                >
-                                    <EmailIcon fill={theme.accent} />
-                                </TouchableOpacity>
-                            }
-                            anchorPosition="bottom"
-                            statusBarHeight={30}
-                            contentStyle={{ backgroundColor: theme.accent }}
-                        >
-                            <Menu.Item onPress={() => { }} title="Item 1" />
-                            <Menu.Item onPress={() => { }} title="Item 2" />
-                            <Menu.Item onPress={() => { }} title="Item 3" />
-                        </Menu>*/
+                    },
+                    headerRight: () => <OptionsMenu /> 
                 }}
             />
             <Tabs.Screen 
@@ -99,7 +86,6 @@ export default function TabLayout() {
                         color: theme.primaryText 
                     },
                     headerTitleAlign: 'left',
-                    headerShadowVisible: false,
                     tabBarIcon: ({ focused, color }) => {
                         return(
                             focused ? <ContactIconBold fill={color} /> :
