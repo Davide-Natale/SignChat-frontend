@@ -41,8 +41,26 @@ async function getCalls(contactId?: string, userId?: number, limit?: number): Pr
     return calls;
 }
 
+async function getCall(id: number) {
+    //  Call GET /api/calls/:id
+    const { data } = await axiosInstance(`/calls/${id}`);
+
+    const call: Call = {
+        id: data.call.id,
+        phone: data.call.phone,
+        type: data.call.type,
+        status: data.call.status,
+        date: dayjs(data.call.date),
+        duration: data.call.duration,
+        contact: data.call.contact,
+        user: data.call.user
+    };
+
+    return call;
+}
+
 async function deleteCalls(ids: number[]) {
-    //  Call DELETE /api/calls
+    //  Call DELETE /api/calls/:id
     await axiosInstance({
         method: 'delete',
         url: '/calls',
@@ -51,6 +69,6 @@ async function deleteCalls(ids: number[]) {
     });
 }
 
-const callsAPI = { getCalls, deleteCalls };
+const callsAPI = { getCalls, getCall, deleteCalls };
 
 export default callsAPI;

@@ -28,7 +28,7 @@ async function getContact(id: string): Promise<Contact> {
         lastName: data.contact.lastName,
         phone: data.contact.phone,
         user: data.contact.user
-    }
+    };
 
     return contact;
 }
