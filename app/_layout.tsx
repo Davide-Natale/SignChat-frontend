@@ -27,8 +27,8 @@ export default function RootLayout() {
         <BottomSheetModalProvider>
           <AppProvider>
             <ErrorProvider>
-              <AuthProvider>
-                <ContactsProvider>
+              <ContactsProvider>
+                <AuthProvider>
                   <Stack>
                     <Stack.Screen name="index" options={{ headerShown: false }} />
                     <Stack.Screen
@@ -116,10 +116,55 @@ export default function RootLayout() {
                         headerLeft: () => <ThemedBackButton />
                       }}
                     />
+                    <Stack.Screen
+                      name="contacts/[id]/info"
+                      options={{
+                        headerTitle: "Info Contact",
+                        headerTitleAlign: "center",
+                        headerTitleStyle: {
+                          fontFamily: "inter_bold",
+                          fontSize: 19,
+                          color: theme.primaryText
+                        },
+                        headerStyle: { backgroundColor: theme.surface },
+                        headerShadowVisible: false,
+                        headerLeft: () => <ThemedBackButton />
+                      }}
+                    />
+                    <Stack.Screen
+                      name="contacts/[id]/edit"
+                      options={{
+                        headerTitle: "Edit Contact",
+                        headerTitleAlign: "center",
+                        headerTitleStyle: {
+                          fontFamily: "inter_bold",
+                          fontSize: 19,
+                          color: theme.primaryText
+                        },
+                        headerStyle: { backgroundColor: theme.primary },
+                        headerShadowVisible: false,
+                        headerLeft: () => <ThemedBackButton />,
+                      }}
+                    />
+                    <Stack.Screen
+                      name="contacts/add"
+                      options={{
+                        headerTitle: "New Contact",
+                        headerTitleAlign: "center",
+                        headerTitleStyle: {
+                          fontFamily: "inter_bold",
+                          fontSize: 19,
+                          color: theme.primaryText
+                        },
+                        headerStyle: { backgroundColor: theme.primary },
+                        headerShadowVisible: false,
+                        headerLeft: () => <ThemedBackButton />,
+                      }}
+                    />
                   </Stack>
                   <StatusBar style="auto" />
-                </ContactsProvider>
-              </AuthProvider>
+                </AuthProvider>
+              </ContactsProvider>
             </ErrorProvider>
           </AppProvider>
         </BottomSheetModalProvider>

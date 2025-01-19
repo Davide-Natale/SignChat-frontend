@@ -6,6 +6,7 @@ import ListItem from './ListItem';
 import Divider from './Divider';
 import React from 'react';
 import ImageProfile from './ImageProfile';
+import { useRouter } from 'expo-router';
 
 interface ContactsCardProps {
     label?: string;
@@ -15,6 +16,11 @@ interface ContactsCardProps {
 
 export default function ContactsCard({ label, contacts, style }: ContactsCardProps) {
     const theme = useTheme();
+    const router = useRouter();
+
+    if(contacts.length === 0) {
+        return null;
+    }
 
     return (
         <View style={[styles.main, style]}>
@@ -48,7 +54,10 @@ export default function ContactsCard({ label, contacts, style }: ContactsCardPro
                                 }
                                 onPress={() => {
                                     if(label) {
-                                        /**TODO: add navigation to contact info route */
+                                        router.push({
+                                            pathname: "/contacts/[id]/info",
+                                            params: { id: contact.id }
+                                        });
                                     } else {
                                         ToastAndroid.show('Coming Soon!', ToastAndroid.SHORT);
                                     }
@@ -72,21 +81,21 @@ const styles = StyleSheet.create({
         marginHorizontal: 8,
         marginBottom: 5,
         alignSelf: "flex-start"
-      },
-      surface: {
+    },
+    surface: {
         width: "100%",
         justifyContent: "flex-start",
         alignItems: "flex-start",
         borderRadius: 15
-      },
-      row: {
+    },
+    row: {
         marginVertical: 8,
         paddingHorizontal: "3.5%"
-      },
-      image: {
+    },
+    image: {
         marginRight: 15
-      },
-      divider: {
-        alignSelf: "flex-end" 
-      }
+    },
+    divider: {
+        alignSelf: "flex-end"
+    }
 });

@@ -91,7 +91,7 @@ export default function TabLayout() {
             />
             <Tabs.Screen 
                 name="contacts" 
-                options={{ 
+                options={{
                     title: 'Contacts',
                     headerTitleStyle: { 
                         fontFamily: "inter_bold",

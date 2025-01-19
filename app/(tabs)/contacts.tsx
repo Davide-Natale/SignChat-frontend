@@ -4,11 +4,12 @@ import ThemedButton from '@/components/ThemedButton';
 import { ContactsContext } from '@/contexts/ContactsContext';
 import { useTheme } from '@/hooks/useTheme';
 import { processContacts } from '@/utils/contactsUtils';
-import { useFocusEffect, useNavigation } from 'expo-router';
+import { router, useFocusEffect, useNavigation } from 'expo-router';
 import { useCallback, useContext, useEffect, useState } from 'react';
 import { FlatList, Keyboard, StyleSheet, useColorScheme, View } from 'react-native';
 import AddUserIcon from "@/assets/icons/addUser-bold.svg";
 import { ScrollView } from 'react-native-gesture-handler';
+import ThemedText from '@/components/ThemedText';
 
 export default function Contacts() {
   const theme = useTheme();
@@ -23,10 +24,10 @@ export default function Contacts() {
     const fullName = `${firstName} ${lastName || ''}`;
     const nameParts = fullName.split(' ');
 
-    const checkFilter = nameParts.some(part => part.toLowerCase().startsWith(filter.toLowerCase())) ||
-      fullName.toLowerCase().startsWith(filter.toLowerCase()) ||
-      lastName?.toLowerCase().startsWith(filter.toLowerCase()) ||
-      phone.startsWith(filter);
+    const checkFilter = nameParts.some(part => part.toLowerCase().startsWith(filter.toLowerCase().trim())) ||
+      fullName.toLowerCase().startsWith(filter.toLowerCase().trim()) ||
+      lastName?.toLowerCase().startsWith(filter.toLowerCase().trim()) ||
+      phone.startsWith(filter.trim());
 
     return checkFilter;
   };
@@ -93,10 +94,15 @@ export default function Contacts() {
           <ScrollView style={styles.list}
             keyboardShouldPersistTaps="handled"
           >
+            { filteredContacts.length === 0 && filteredUnregisteredContacts.length === 0 ? 
+              <View style={[styles.emptyResult, { backgroundColor: theme.onSurface }]}>
+                <ThemedText color={theme.secondaryText} fontSize={15} fontWeight="medium" style={styles.message}>
+                  No results
+                </ThemedText>
+              </View> : null
+            }
             <ContactsCard label={"Contacts on SignChat"} contacts={filteredContacts} style={styles.card} />
-            { filteredUnregisteredContacts.length > 0 ?
-                <ContactsCard contacts={filteredUnregisteredContacts} style={styles.footer} /> : null 
-            } 
+            <ContactsCard contacts={filteredUnregisteredContacts} style={styles.footer} />
           </ScrollView> :
           <FlatList
             data={Object.entries(groupedContacts)}
@@ -104,10 +110,7 @@ export default function Contacts() {
             renderItem={({ item: [letter, contacts] }) => (
               <ContactsCard label={letter} contacts={contacts} style={styles.card} />
             )}
-            ListFooterComponent={() => (
-              unregisteredContacts.length > 0 ?
-                <ContactsCard contacts={unregisteredContacts} style={styles.footer} /> : null
-            )}
+            ListFooterComponent={() => <ContactsCard contacts={unregisteredContacts} style={styles.footer} />}
             keyboardShouldPersistTaps="handled"
             style={styles.list}
           />
@@ -115,7 +118,7 @@ export default function Contacts() {
       { !isKeyboardVisible ? 
           <View style={[styles.fab, { backgroundColor: theme.primary }]}>
             <ThemedButton
-              onPress={() => { /**TODO: add navigatio to add contact route */ }}
+              onPress={() => router.push('/contacts/add')}
               height={58}
               width={58}
               shape='circular'
@@ -137,7 +140,16 @@ const styles = StyleSheet.create({
   },
   searchBar: {
     width: "90%",
-    marginBottom: 20
+    marginBottom: 22
+  },
+  emptyResult: {
+    width: "90%",
+    alignSelf: "center",
+    borderRadius: 15,
+  },
+  message: {
+    textAlign: "center",
+    marginVertical: 13
   },
   list: {
     width: "100%"

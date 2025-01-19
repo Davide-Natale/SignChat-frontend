@@ -4,6 +4,7 @@ import { deleteToken, getToken, saveToken } from "@/utils/secureStore";
 import { AppContext } from "./AppContext";
 import profileAPI from "@/api/profileAPI";
 import { User } from "@/types/User";
+import { ContactsContext } from "./ContactsContext";
 
 interface AuthContextType {
     isAuthenticated: boolean;
@@ -19,6 +20,7 @@ export const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const appContext = useContext(AppContext);
+    const contactsContext = useContext(ContactsContext);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [user, setUser] = useState<User>();
 
@@ -104,6 +106,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         setUser(undefined);
         setIsAuthenticated(false);
+        contactsContext?.clearContacts();
     }; 
 
     const fetchProfile = async () => {
@@ -129,6 +132,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         setUser(undefined);
         setIsAuthenticated(false);
+        contactsContext?.clearContacts();
     }
  
     return(

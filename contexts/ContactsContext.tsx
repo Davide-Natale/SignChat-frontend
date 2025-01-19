@@ -5,6 +5,8 @@ import React, { createContext, useState } from "react";
 interface ContactsContextType {
     contacts: Contact[];
     fetchContacts: () => Promise<void>;
+    clearContacts: () => void;
+    fetchContact: (id: string) => Promise<Contact | null> 
 }
 
 export const ContactsContext = createContext<ContactsContextType | undefined>(undefined);
@@ -18,12 +20,23 @@ export const ContactsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
             setContacts(contacts);
         } catch (error) {
             //  No need to do anything
-        }
-        
+        } 
     };
 
+    const clearContacts = () => { setContacts([]); }
+
+    const fetchContact = async (id: string) => {
+        try {
+            const contact = await contactsAPI.getContact(id);
+            return contact;
+        } catch (error) {
+            //  No need to do anything
+            return null;
+        }
+    }
+
     return(
-        <ContactsContext.Provider value={{ contacts, fetchContacts }}>
+        <ContactsContext.Provider value={{ contacts, fetchContacts, clearContacts, fetchContact }}>
             {children}
         </ContactsContext.Provider>
     );
