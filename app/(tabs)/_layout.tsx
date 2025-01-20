@@ -73,7 +73,7 @@ export default function TabLayout() {
                                 <CallIcon stroke={color} />
                         );
                     },
-                    headerRight: () => <OptionsMenu /> 
+                    headerRight: () => <OptionsMenu options={[]}/> 
                 }}
             />
             <Tabs.Screen 

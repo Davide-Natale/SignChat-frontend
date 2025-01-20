@@ -1,7 +1,6 @@
 import { useTheme } from '@/hooks/useTheme';
 import { useRef } from 'react';
-import { Pressable, StyleProp, StyleSheet, TouchableOpacity, View, ViewStyle } from 'react-native';
-import { TextInput } from 'react-native-gesture-handler';
+import { Pressable, StyleProp, StyleSheet, TouchableOpacity, View, ViewStyle, TextInput } from 'react-native';
 import SearchIcon from "@/assets/icons/search.svg";
 import ClearIcon from "@/assets/icons/clear.svg";
 

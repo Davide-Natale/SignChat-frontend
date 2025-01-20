@@ -10,20 +10,20 @@ interface Option {
     title: string;
     trailingIcon: React.ReactNode;
     onPress: () => void;
+    color: string;
 }
 
 interface OptionsMenuProps {
     options: Option[];
 }
 
-export default function OptionsMenu(/*{ options }: OptionsMenuProps*/) {
+export default function OptionsMenu({ options }: OptionsMenuProps) {
     const theme = useTheme();
     const insets = useSafeAreaInsets();
     const [visible, setVisible] = useState(false);
     const openMenu = () => setVisible(true);
     const closeMenu = () => setVisible(false);
 
-    //  TODO: complete implementation
     return (
         <Menu
             visible={visible}
@@ -42,16 +42,15 @@ export default function OptionsMenu(/*{ options }: OptionsMenuProps*/) {
             elevation={1}
             contentStyle={[styles.menu, { backgroundColor: theme.onSurface }]}
         >
-            { /*options.map(option => 
-                <Menu.Item 
-                    title={option.title} 
-                    trailingIcon={() => option.trailingIcon} 
-                    onPress={option.onPress} 
-                />
-            )*/}
-            <Menu.Item onPress={() => { }} title="Item 1" />
-            <Menu.Item onPress={() => { }} title="Item 2" />
-            <Menu.Item onPress={() => { }} title="Item 3" />
+            { options.map(option => 
+                    <Menu.Item 
+                        title={option.title} 
+                        trailingIcon={() => option.trailingIcon} 
+                        onPress={option.onPress}
+                        titleStyle={[styles.title, { color: option.color }]} 
+                    />
+                )
+            }
         </Menu>
     );
 }
@@ -62,5 +61,9 @@ const styles = StyleSheet.create({
     },
     icon: {
         marginRight: 15
+    },
+    title: {
+        fontFamily: 'inter_regular',
+        fontSize: 15
     }
 });

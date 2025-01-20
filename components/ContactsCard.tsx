@@ -11,10 +11,12 @@ import { useRouter } from 'expo-router';
 interface ContactsCardProps {
     label?: string;
     contacts: Contact[];
-    style?: StyleProp<ViewStyle>
+    style?: StyleProp<ViewStyle>;
+    type?: 'view' | 'call';
+    action?: () => void;
 }
 
-export default function ContactsCard({ label, contacts, style }: ContactsCardProps) {
+export default function ContactsCard({ label, contacts, style, type='view', action }: ContactsCardProps) {
     const theme = useTheme();
     const router = useRouter();
 
@@ -53,11 +55,17 @@ export default function ContactsCard({ label, contacts, style }: ContactsCardPro
                                     </ThemedText> : undefined
                                 }
                                 onPress={() => {
+                                    if(action) { action(); }
+
                                     if(label) {
-                                        router.push({
-                                            pathname: "/contacts/[id]/info",
-                                            params: { id: contact.id }
-                                        });
+                                        if(type === 'view') {
+                                            router.push({
+                                                pathname: "/contacts/[id]/info",
+                                                params: { id: contact.id }
+                                            });
+                                        } else {
+                                            
+                                        }
                                     } else {
                                         ToastAndroid.show('Coming Soon!', ToastAndroid.SHORT);
                                     }
