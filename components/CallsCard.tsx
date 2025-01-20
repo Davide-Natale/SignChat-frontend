@@ -15,14 +15,18 @@ import { formatDate } from '@/utils/dateUtils';
 import React from 'react';
 import ThemedText from '@/components/ThemedText';
 import { router } from 'expo-router';
+import { Checkbox } from 'react-native-paper';
 
 interface CallsCardProps {
+    isEdit: boolean;
     label?: string;
     calls: Call[];
+    onEditAction?: (id: number) => void;
+    checkSelected: (id: number) => boolean; 
     style?: StyleProp<ViewStyle>;
 }
 
-export default function CallsCard({ label, calls, style }: CallsCardProps) {
+export default function CallsCard({ isEdit, label, calls, onEditAction, checkSelected, style }: CallsCardProps) {
     const theme = useTheme();
     const scheme = useColorScheme();
 
@@ -41,7 +45,8 @@ export default function CallsCard({ label, calls, style }: CallsCardProps) {
             <View style={[styles.surface, { backgroundColor: theme.onSurface }]}>
                 {   calls.map((call, index) => {
                         const iconSize = 20;
-                        const onPress = call.contact?.user || call.user ? () => { /* TODO: implement to call user */ } : undefined;
+                        const onPress = isEdit && onEditAction ? () => { onEditAction(call.id); } :
+                            call.contact?.user || call.user ? () => { /* TODO: implement to call user */ } : undefined;
                         const contactFullName = call.contact?.lastName ? `${call.contact.firstName} ${call.contact.lastName ?? ""}` : call.contact?.firstName;
                         const userFullName = call.user ? call.user.firstName + " " + call.user.lastName : null;
                         const fullNameColor = call.status === "missed" ? theme.error : theme.primaryText;
@@ -95,7 +100,14 @@ export default function CallsCard({ label, calls, style }: CallsCardProps) {
                                         </View>
                                     }
                                     trailingContent={
-                                        <TouchableOpacity
+                                        ( isEdit && onEditAction ? 
+                                            <Checkbox
+                                                status={checkSelected(call.id) ? 'checked' : 'unchecked'}
+                                                onPress={() => onEditAction(call.id)}
+                                                uncheckedColor={theme.divider}
+                                                color={theme.accent}
+                                            /> : 
+                                            <TouchableOpacity
                                             onPress={() => router.push({ pathname: "/calls/[id]", params: { id: call.id } })}
                                             touchSoundDisabled
                                             activeOpacity={0.8}
@@ -107,7 +119,7 @@ export default function CallsCard({ label, calls, style }: CallsCardProps) {
                                                 style={styles.infoIcon}
                                             />
                                         </TouchableOpacity>
-
+                                        )
                                     }
                                     onPress={onPress}
                                     style={styles.row}

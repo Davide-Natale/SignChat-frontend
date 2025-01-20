@@ -10,7 +10,6 @@ import { useContext, useEffect } from "react";
 import { AppContext } from "@/contexts/AppContext";
 import { AuthContext } from "@/contexts/AuthContext";
 import ImageProfile from "@/components/ImageProfile";
-import OptionsMenu from "@/components/OptionsMenu";
 
 export default function TabLayout() {
     const theme = useTheme();
@@ -43,7 +42,7 @@ export default function TabLayout() {
                 headerTitleAlign: "center",
                 headerTitleStyle: { 
                     fontFamily: "inter_bold",
-                    fontSize: 20,
+                    fontSize: 25,
                     color: theme.primaryText 
                 },
                 headerShadowVisible: false,
@@ -61,31 +60,18 @@ export default function TabLayout() {
                 name="calls"
                 options={{
                     title: 'Calls',
-                    headerTitleStyle: { 
-                        fontFamily: "inter_bold",
-                        fontSize: 30,
-                        color: theme.primaryText 
-                    },
-                    headerTitleAlign: 'left',
                     tabBarIcon: ({ focused, color }) => {
                         return(
                             focused ? <CallIconBold fill={color} /> :
                                 <CallIcon stroke={color} />
                         );
-                    },
-                    headerRight: () => <OptionsMenu options={[]}/> 
+                    } 
                 }}
             />
             <Tabs.Screen 
                 name="contacts" 
                 options={{
                     title: 'Contacts',
-                    headerTitleStyle: { 
-                        fontFamily: "inter_bold",
-                        fontSize: 30,
-                        color: theme.primaryText 
-                    },
-                    headerTitleAlign: 'left',
                     tabBarIcon: ({ focused, color }) => {
                         return(
                             focused ? <ContactIconBold fill={color} /> :

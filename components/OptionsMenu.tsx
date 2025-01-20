@@ -8,9 +8,9 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface Option {
     title: string;
-    trailingIcon: React.ReactNode;
+    trailingIcon?: React.ReactNode;
     onPress: () => void;
-    color: string;
+    color?: string;
 }
 
 interface OptionsMenuProps {
@@ -33,8 +33,9 @@ export default function OptionsMenu({ options }: OptionsMenuProps) {
                     onPress={openMenu}
                     touchSoundDisabled
                     activeOpacity={0.8}
+                    style={styles.icon}
                 >
-                    <OptionsIcon height={30} width={30} stroke={theme.primaryText} style={styles.icon} />
+                    <OptionsIcon height={30} width={30} stroke={theme.primaryText} />
                 </TouchableOpacity>
             }
             anchorPosition="bottom"
@@ -42,8 +43,9 @@ export default function OptionsMenu({ options }: OptionsMenuProps) {
             elevation={1}
             contentStyle={[styles.menu, { backgroundColor: theme.onSurface }]}
         >
-            { options.map(option => 
+            { options.map((option, index) => 
                     <Menu.Item 
+                        key={index}
                         title={option.title} 
                         trailingIcon={() => option.trailingIcon} 
                         onPress={option.onPress}

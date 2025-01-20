@@ -5,13 +5,14 @@ import SearchIcon from "@/assets/icons/search.svg";
 import ClearIcon from "@/assets/icons/clear.svg";
 
 interface SearchBarProps {
-    value: string,
-    onChangeText: (text: string) => void
+    value: string;
+    onChangeText: (text: string) => void;
     clearValue: () => void;
-    style?: StyleProp<ViewStyle>
+    action?: () => void;
+    style?: StyleProp<ViewStyle>;
 }
 
-export default function SearchBar({ value, onChangeText, clearValue, style }: SearchBarProps) {
+export default function SearchBar({ value, onChangeText, clearValue, action, style }: SearchBarProps) {
     const theme = useTheme();
     const textInputRef = useRef<TextInput>(null);
 
@@ -19,6 +20,7 @@ export default function SearchBar({ value, onChangeText, clearValue, style }: Se
         <View style={[styles.main, style]}>
             <Pressable
                 onPress={() => {
+                    if(action) { action(); }
                     textInputRef.current?.focus();
                 }}
                 android_disableSound
@@ -36,6 +38,7 @@ export default function SearchBar({ value, onChangeText, clearValue, style }: Se
                         autoCapitalize='none'
                         keyboardType='default'
                         returnKeyType='search'
+                        onFocus={action}
                         style={[
                             styles.input, 
                             { 

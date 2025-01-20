@@ -4,7 +4,7 @@ import ThemedButton from '@/components/ThemedButton';
 import { useTheme } from '@/hooks/useTheme';
 import { Call } from '@/types/Call';
 import { useFocusEffect, useNavigation } from 'expo-router';
-import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Keyboard, ScrollView, StyleSheet, useColorScheme, View } from 'react-native';
 import NewCallIcon from "@/assets/icons/newCall.svg";
 import ThemedText from '@/components/ThemedText';
@@ -15,6 +15,9 @@ import ContactsCard from '@/components/ContactsCard';
 import CallsCard from '@/components/CallsCard';
 import CallsBottomSheet from '@/components/CallsBottomSheet';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
+import { Checkbox } from 'react-native-paper';
+import OptionsMenu from '@/components/OptionsMenu';
+import ThemedTextButton from '@/components/ThemedTextButton';
 
 export default function Calls() {
   const theme = useTheme();
@@ -25,6 +28,8 @@ export default function Calls() {
   const [filter, setFilter] = useState("");
   const [tabFilter, setTabFilter] = useState("All");
   const [isKeyboardVisible, setKeyboardVisible] = useState(false);
+  const [isEdit, setIsEdit] = useState(false);
+  const [selectedCalls, setSelectedCalls] = useState<number[]>([]);
   const bottomSheetRef = useRef<BottomSheetModal>(null);
   const filters = ['All', 'Incoming', 'Outgoing', 'Missed'];
   const { groupedContacts, unregisteredContacts } = processContacts(contactsContext?.contacts ?? []);
@@ -76,6 +81,46 @@ export default function Calls() {
   const filteredUnregisteredContacts = unregisteredContacts.filter(contact => (
     applyContactFilter(contact.firstName, contact.lastName, contact.phone, filter)
   ));
+
+  const checkSelected = (id: number) => {
+    return selectedCalls.includes(id);
+  };
+
+  const toggleSelection = (id: number) => {
+    setSelectedCalls((prevSelected) =>
+      prevSelected.includes(id) ?
+        prevSelected.filter((callId) => callId !== id) :
+        [...prevSelected, id]
+    );
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedCalls.length === filteredCalls.length) {
+      setSelectedCalls([]);
+    } else {
+      setSelectedCalls(filteredCalls.map((call) => call.id));
+    }
+  };
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerLeft: () => (isEdit ?
+        <ThemedTextButton 
+          text='Cancel'
+          onPress={() => { setSelectedCalls([]) ; setIsEdit(false) }}
+          style={styles.cancelButton}
+        /> : null
+      ),
+      headerRight: () => (!isEdit ? 
+        <OptionsMenu options={[{ title: 'Edit', onPress: () => { setTabFilter('All') ; setFilter("") ; setIsEdit(true)  }}]} /> : 
+          <ThemedTextButton 
+            text='Delete' 
+            onPress={() => { /* TODO: complete */ setIsEdit(false) }} 
+            style={styles.deleteButton}
+          />
+      )
+    });
+  }, [isEdit]);
 
   useFocusEffect(
     useCallback(() => {
@@ -136,6 +181,7 @@ export default function Calls() {
         value={filter}
         onChangeText={f => setFilter(f)}
         clearValue={() => setFilter("")}
+        action={() => { setIsEdit(false) ; setSelectedCalls([]) }}
         style={styles.searchBar}
       />
       { filter === "" ? 
@@ -147,7 +193,7 @@ export default function Calls() {
           keyExtractor={(_item, index) => index.toString()}
           renderItem={({ item, index }) => (
             <ThemedButton
-              onPress={() => setTabFilter(item)}
+              onPress={() => { setIsEdit(false) ; setSelectedCalls([]) ; setTabFilter(item) }}
               height={36}
               shape='circular'
               backgroundColor={tabFilter === item ? theme.backgroundBlue : theme.onBackground}
@@ -164,8 +210,27 @@ export default function Calls() {
             </ThemedButton>
           )}
           contentContainerStyle={styles.filtersContent}
-          style={styles.filtersContainer}
+          style={[styles.filtersContainer, { marginBottom: !isEdit ? 22 : 12 }]}
         /> : null
+      }
+      { isEdit ? 
+        <View style={styles.checkbox}>
+            <ThemedText
+              color={theme.secondaryText}
+              fontSize={15}
+              fontWeight='medium'
+            >
+              All:
+            </ThemedText>
+            <Checkbox 
+              status={ selectedCalls.length === 0 ? 'unchecked' : 
+                selectedCalls.length === filteredCalls.length ? 'checked' : 'indeterminate'
+              }
+              onPress={toggleSelectAll}
+              uncheckedColor={theme.divider}
+              color={theme.accent}            
+            />
+        </View> : null
       }
       <ScrollView
         keyboardShouldPersistTaps='handled'
@@ -187,8 +252,11 @@ export default function Calls() {
             /> : null
         }
         <CallsCard
+          isEdit={isEdit}
           label={ filter !== "" ? "Calls" : undefined }
-          calls={filteredCalls} 
+          calls={filteredCalls}
+          onEditAction={ isEdit ? toggleSelection : undefined }
+          checkSelected={checkSelected}
           style={[styles.callsCard, { marginBottom: filter !== "" && filteredUnregisteredContacts.length > 0 ? 25 : 90 }]} 
         />
         { filter !== "" ?
@@ -203,7 +271,7 @@ export default function Calls() {
         groupedContacts={groupedContacts} 
         unregisteredContacts={unregisteredContacts} 
       />
-      {!isKeyboardVisible ?
+      {!isKeyboardVisible && !isEdit ?
         <View style={[styles.fab, { backgroundColor: theme.primary }]}>
           <ThemedButton
             onPress={() => bottomSheetRef.current?.present()}
@@ -242,7 +310,6 @@ const styles = StyleSheet.create({
   filtersContainer: {
     minHeight: 38,
     maxHeight: 38,
-    marginBottom: 22,
     alignSelf: "flex-start"
   },
   filtersContent: {
@@ -280,5 +347,18 @@ const styles = StyleSheet.create({
   },
   icon: {
     left: 2
+  },
+  cancelButton: {
+    marginLeft: 15
+  },
+  deleteButton: {
+    marginRight: 15
+  },
+  checkbox: {
+    width: "90%",
+    flexDirection: 'row', 
+    justifyContent: "flex-start", 
+    alignItems: "center",
+    paddingHorizontal: 8
   }
 });

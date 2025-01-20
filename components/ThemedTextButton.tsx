@@ -1,15 +1,17 @@
 import { useTheme } from '@/hooks/useTheme';
 import ThemedText from '@/components/ThemedText';
-import { ActivityIndicator } from 'react-native';
+import { ActivityIndicator, StyleProp, ViewStyle } from 'react-native';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import { useContext } from 'react';
 import { AppContext } from '@/contexts/AppContext';
 
-interface ThemedSaveButtonProps {
+interface ThemedTextButtonProps {
+    text: string;
     onPress: () => void;
+    style?: StyleProp<ViewStyle>
 }
 
-export default function ThemedSaveButton({ onPress }: ThemedSaveButtonProps) {
+export default function ThemedTextButton({ text, onPress, style }: ThemedTextButtonProps) {
     const theme = useTheme();
     const appContext = useContext(AppContext);
 
@@ -19,9 +21,10 @@ export default function ThemedSaveButton({ onPress }: ThemedSaveButtonProps) {
                 onPress={onPress}
                 touchSoundDisabled
                 activeOpacity={0.8}
+                style={style}
             >
                 <ThemedText color={theme.accent} fontSize={17} fontWeight="semibold" >
-                    Save
+                    {text}
                 </ThemedText>
             </TouchableOpacity>
     );

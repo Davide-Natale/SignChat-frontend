@@ -10,7 +10,6 @@ import * as ImagePicker from 'expo-image-picker';
 import UserIcon from "@/assets/icons/user-bold.svg";
 import EmailIcon from "@/assets/icons/email-bold.svg";
 import PhoneIcon from "@/assets/icons/call-bold.svg";
-import ThemedSaveButton from '@/components/ThemedSaveButton';
 import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet';
 import Divider from '@/components/Divider';
 import ThemedText from '@/components/ThemedText';
@@ -24,6 +23,7 @@ import profileAPI from '@/api/profileAPI';
 import { ErrorContext } from '@/contexts/ErrorContext';
 import ThemedSnackBar from '@/components/ThemedSnackBar';
 import { ImageProfileType } from '@/types/ImageProfileType';
+import ThemedTextButton from '@/components/ThemedTextButton';
 
 export default function Edit() {
     const theme = useTheme();
@@ -209,7 +209,7 @@ export default function Edit() {
 
     useLayoutEffect(() => {
         navigation.setOptions({
-            headerRight: () => <ThemedSaveButton onPress={handleSubmit} />
+            headerRight: () => <ThemedTextButton text='Save' onPress={handleSubmit} />
         });
     }, [firstName, lastName, email, phone, imageProfile]);
 
