@@ -46,22 +46,10 @@ export default function Contacts() {
 
       const showSubscription = Keyboard.addListener("keyboardDidShow", () => {
         setKeyboardVisible(true);
-        navigation.setOptions({
-          tabBarStyle: { 
-            display: "none" 
-          } 
-        });
       });
 
       const hideSubscription = Keyboard.addListener("keyboardDidHide", () => {
         setKeyboardVisible(false);
-        navigation.setOptions({
-          tabBarStyle:  { 
-            borderTopWidth: undefined, 
-            backgroundColor: theme.secondary,
-            elevation: 10
-          }
-        });
       });
 
       return () => {
@@ -70,17 +58,6 @@ export default function Contacts() {
       };
     }, [scheme])
   );
-
-  useEffect(() => {
-    navigation.setOptions({
-      tabBarStyle: isKeyboardVisible ? { display: "none" } :
-        {
-          borderTopWidth: undefined,
-          backgroundColor: theme.secondary,
-          elevation: 10
-        }
-    });
-  }, [scheme]);
 
   return (
     <View style={[styles.main, { backgroundColor: theme.surface }]}>

@@ -9,10 +9,11 @@ interface SearchBarProps {
     onChangeText: (text: string) => void;
     clearValue: () => void;
     action?: () => void;
+    externalRef?: React.RefObject<TextInput>;
     style?: StyleProp<ViewStyle>;
 }
 
-export default function SearchBar({ value, onChangeText, clearValue, action, style }: SearchBarProps) {
+export default function SearchBar({ value, onChangeText, clearValue, action, externalRef, style }: SearchBarProps) {
     const theme = useTheme();
     const textInputRef = useRef<TextInput>(null);
 
@@ -20,15 +21,18 @@ export default function SearchBar({ value, onChangeText, clearValue, action, sty
         <View style={[styles.main, style]}>
             <Pressable
                 onPress={() => {
-                    if(action) { action(); }
-                    textInputRef.current?.focus();
+                    if(externalRef) {
+                        externalRef.current?.focus();
+                    } else {
+                        textInputRef.current?.focus();
+                    } 
                 }}
                 android_disableSound
             >
                 <View style={[styles.container, { backgroundColor: theme.onBackground }]} >
                     <SearchIcon stroke={theme.secondaryText}/>
                     <TextInput
-                        ref={ textInputRef }
+                        ref={ externalRef ?? textInputRef }
                         value={value}
                         onChangeText={onChangeText}
                         placeholder='Search'
@@ -55,7 +59,12 @@ export default function SearchBar({ value, onChangeText, clearValue, action, sty
                             touchSoundDisabled
                             onPress={() => { 
                                 clearValue();
-                                textInputRef.current?.focus(); 
+
+                                if(externalRef) {
+                                    externalRef.current?.focus();
+                                } else {
+                                    textInputRef.current?.focus();
+                                }
                             }}
                         >
                             <ClearIcon stroke={theme.primaryText} />

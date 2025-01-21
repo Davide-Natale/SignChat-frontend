@@ -55,6 +55,7 @@ export default function TabLayout() {
                 tabBarLabelStyle: { fontFamily: "inter_regular" },
                 tabBarActiveTintColor: theme.accent,
                 tabBarInactiveTintColor: theme.secondaryText,
+                tabBarHideOnKeyboard: true
             }}>
             <Tabs.Screen
                 name="calls"

@@ -1,28 +1,29 @@
 import { useTheme } from '@/hooks/useTheme';
-import React, { useState } from 'react';
+import React from 'react';
 import { StyleSheet } from 'react-native';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import { Menu } from 'react-native-paper';
 import OptionsIcon from "@/assets/icons/options.svg";
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import Divider from './Divider';
 
 interface Option {
     title: string;
-    trailingIcon?: React.ReactNode;
+    color: string;
+    trailingIcon: React.ReactNode;
     onPress: () => void;
-    color?: string;
 }
 
 interface OptionsMenuProps {
+    visible: boolean,
+    openMenu: () => void,
+    closeMenu: () => void,
     options: Option[];
 }
 
-export default function OptionsMenu({ options }: OptionsMenuProps) {
+export default function OptionsMenu({ visible, openMenu, closeMenu, options }: OptionsMenuProps) {
     const theme = useTheme();
     const insets = useSafeAreaInsets();
-    const [visible, setVisible] = useState(false);
-    const openMenu = () => setVisible(true);
-    const closeMenu = () => setVisible(false);
 
     return (
         <Menu
@@ -44,13 +45,20 @@ export default function OptionsMenu({ options }: OptionsMenuProps) {
             contentStyle={[styles.menu, { backgroundColor: theme.onSurface }]}
         >
             { options.map((option, index) => 
-                    <Menu.Item 
-                        key={index}
-                        title={option.title} 
-                        trailingIcon={() => option.trailingIcon} 
-                        onPress={option.onPress}
-                        titleStyle={[styles.title, { color: option.color }]} 
-                    />
+                    <React.Fragment key={index} >
+                        <Menu.Item 
+                            title={option.title} 
+                            trailingIcon={() => option.trailingIcon} 
+                            onPress={option.onPress}
+                            titleStyle={[styles.title, { color: option.color }]} 
+                        />
+                        { index < options.length - 1 ?
+                            <Divider 
+                                height={0.5} 
+                                width="100%"
+                            /> : null
+                        }
+                    </React.Fragment> 
                 )
             }
         </Menu>
@@ -59,13 +67,14 @@ export default function OptionsMenu({ options }: OptionsMenuProps) {
 
 const styles = StyleSheet.create({
     menu: {
-        right: 5
+        right: 5,
+        borderRadius: 15
     },
     icon: {
         marginRight: 15
     },
     title: {
         fontFamily: 'inter_regular',
-        fontSize: 15
+        fontSize: 16
     }
 });

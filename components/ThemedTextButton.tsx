@@ -7,16 +7,17 @@ import { AppContext } from '@/contexts/AppContext';
 
 interface ThemedTextButtonProps {
     text: string;
+    includeLoading?: boolean;
     onPress: () => void;
     style?: StyleProp<ViewStyle>
 }
 
-export default function ThemedTextButton({ text, onPress, style }: ThemedTextButtonProps) {
+export default function ThemedTextButton({ text, includeLoading = true, onPress, style }: ThemedTextButtonProps) {
     const theme = useTheme();
     const appContext = useContext(AppContext);
 
     return (
-        appContext?.loading ? <ActivityIndicator color={theme.accent} size="large" /> :
+        appContext?.loading && includeLoading ? <ActivityIndicator color={theme.accent} size="large" /> :
             <TouchableOpacity
                 onPress={onPress}
                 touchSoundDisabled

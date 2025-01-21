@@ -3,7 +3,7 @@ import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView } from '@gorhom/
 import { StyleSheet, View } from 'react-native';
 import ThemedText from './ThemedText';
 import { Contact } from '@/types/Contact';
-import { forwardRef, useMemo, useState } from 'react';
+import { forwardRef, useCallback, useMemo, useState } from 'react';
 import SearchBar from './SearchBar';
 import ContactsCard from './ContactsCard';
 import { FlatList, ScrollView } from 'react-native-gesture-handler';
@@ -20,25 +20,31 @@ const CallsBottomSheet = forwardRef<Ref, CallsBottomSheetProps>(({ groupedContac
     const [searchFilter, setSearchFilter] = useState("");
     const snapPoints = useMemo(() => ['93%'], []);
 
-    const applyNameFilter = (firstName: string, lastName: string | null, phone: string,  filter: string) => {
+    const applyNameFilter = useCallback((firstName: string, lastName: string | null, phone: string, filter: string) => {
         const fullName = `${firstName} ${lastName || ''}`;
         const nameParts = fullName.split(' ');
-    
+
         const checkFilter = nameParts.some(part => part.toLowerCase().startsWith(filter.toLowerCase().trim())) ||
-          fullName.toLowerCase().startsWith(filter.toLowerCase().trim()) ||
-          lastName?.toLowerCase().startsWith(filter.toLowerCase().trim()) ||
-          phone.startsWith(filter.trim());
-    
+            fullName.toLowerCase().startsWith(filter.toLowerCase().trim()) ||
+            lastName?.toLowerCase().startsWith(filter.toLowerCase().trim()) ||
+            phone.startsWith(filter.trim());
+
         return checkFilter;
-      };
-    
-      const filteredContacts = Object.values(groupedContacts).flatMap(contacts => (
-        contacts.filter(contact => applyNameFilter(contact.firstName, contact.lastName, contact.phone, searchFilter))
-      ));
-    
-      const filteredUnregisteredContacts = unregisteredContacts.filter(contact => (
-        applyNameFilter(contact.firstName, contact.lastName, contact.phone, searchFilter)
-      ));
+    }, []);
+
+    const filteredContacts = useMemo(() =>
+        Object.values(groupedContacts).flatMap(contacts => (
+            contacts.filter(contact =>
+                applyNameFilter(contact.firstName, contact.lastName, contact.phone, searchFilter)
+            )
+        )
+    ), [groupedContacts, searchFilter]);
+
+    const filteredUnregisteredContacts = useMemo(() => 
+        unregisteredContacts.filter(contact => (
+            applyNameFilter(contact.firstName, contact.lastName, contact.phone, searchFilter)
+        )
+    ), [unregisteredContacts, searchFilter]);
 
     return (
         <BottomSheetModal
@@ -50,7 +56,7 @@ const CallsBottomSheet = forwardRef<Ref, CallsBottomSheetProps>(({ groupedContac
             backgroundStyle={{ backgroundColor: theme.surface }}
             handleIndicatorStyle={{ backgroundColor: theme.primaryText }}
             onChange={index => {
-                if(index === -1) {
+                if (index === -1) {
                     setSearchFilter("");
                 }
             }}
@@ -65,53 +71,53 @@ const CallsBottomSheet = forwardRef<Ref, CallsBottomSheetProps>(({ groupedContac
                     clearValue={() => setSearchFilter("")}
                     style={styles.searchBar}
                 />
-            {searchFilter !== "" ?
-                <ScrollView style={styles.list}
-                    showsVerticalScrollIndicator={false}
-                    keyboardShouldPersistTaps="handled"
-                >
-                    {filteredContacts.length === 0 && filteredUnregisteredContacts.length === 0 ?
-                        <View style={[styles.emptyResult, { backgroundColor: theme.onSurface }]}>
-                            <ThemedText color={theme.secondaryText} fontSize={15} fontWeight="medium" style={styles.message}>
-                                No results
-                            </ThemedText>
-                        </View> : null
-                    }
-                    <ContactsCard 
-                        label={"Contacts on SignChat"} 
-                        contacts={filteredContacts} 
-                        style={styles.card}
-                        type='call'
-                        action={() => {
-                            if (ref && "current" in ref && ref.current) {
-                                ref.current.dismiss();
-                            }
-                        }} 
-                    />
-                    <ContactsCard contacts={filteredUnregisteredContacts} style={styles.footer} />
-                </ScrollView> :
-                <FlatList
-                    data={Object.entries(groupedContacts)}
-                    keyExtractor={([letter, _contacts]) => letter}
-                    renderItem={({ item: [letter, contacts] }) => (
-                        <ContactsCard 
-                            label={letter}
-                            contacts={contacts} 
-                            style={styles.card} 
+                {searchFilter !== "" ?
+                    <ScrollView style={styles.list}
+                        showsVerticalScrollIndicator={false}
+                        keyboardShouldPersistTaps="handled"
+                    >
+                        {filteredContacts.length === 0 && filteredUnregisteredContacts.length === 0 ?
+                            <View style={[styles.emptyResult, { backgroundColor: theme.onSurface }]}>
+                                <ThemedText color={theme.secondaryText} fontSize={15} fontWeight="medium" style={styles.message}>
+                                    No results
+                                </ThemedText>
+                            </View> : null
+                        }
+                        <ContactsCard
+                            label={"Contacts on SignChat"}
+                            contacts={filteredContacts}
+                            style={styles.card}
                             type='call'
                             action={() => {
                                 if (ref && "current" in ref && ref.current) {
                                     ref.current.dismiss();
                                 }
-                            }} 
+                            }}
                         />
-                    )}
-                    ListFooterComponent={() => <ContactsCard contacts={unregisteredContacts} style={styles.footer} />}
-                    showsVerticalScrollIndicator={false}
-                    keyboardShouldPersistTaps="handled"
-                    style={styles.list}
-                />
-            }
+                        <ContactsCard contacts={filteredUnregisteredContacts} style={styles.footer} />
+                    </ScrollView> :
+                    <FlatList
+                        data={Object.entries(groupedContacts)}
+                        keyExtractor={([letter, _contacts]) => letter}
+                        renderItem={({ item: [letter, contacts] }) => (
+                            <ContactsCard
+                                label={letter}
+                                contacts={contacts}
+                                style={styles.card}
+                                type='call'
+                                action={() => {
+                                    if (ref && "current" in ref && ref.current) {
+                                        ref.current.dismiss();
+                                    }
+                                }}
+                            />
+                        )}
+                        ListFooterComponent={() => <ContactsCard contacts={unregisteredContacts} style={styles.footer} />}
+                        showsVerticalScrollIndicator={false}
+                        keyboardShouldPersistTaps="handled"
+                        style={styles.list}
+                    />
+                }
             </BottomSheetView>
         </BottomSheetModal>
     );

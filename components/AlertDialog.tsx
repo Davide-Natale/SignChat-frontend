@@ -1,8 +1,9 @@
 import { useTheme } from '@/hooks/useTheme';
-import React from 'react';
-import { Modal, StyleSheet, View, TouchableWithoutFeedback, TouchableOpacity} from 'react-native';
+import React, { useContext } from 'react';
+import { Modal, StyleSheet, View, TouchableWithoutFeedback, TouchableOpacity, ActivityIndicator} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import ThemedText from '@/components/ThemedText';
+import { AppContext } from '@/contexts/AppContext';
 
 interface AlertDialogProps {
     showDialog: boolean;
@@ -24,16 +25,17 @@ export default function AlertDialog(
     }: AlertDialogProps
 ) {
     const theme = useTheme();
+    const appContext = useContext(AppContext);
 
     return (
         <Modal
             transparent
             visible={showDialog}
             animationType="fade"
-            onRequestClose={onDismiss}
+            onRequestClose={!appContext?.loading ? onDismiss : undefined}
             statusBarTranslucent
         >
-            <TouchableWithoutFeedback onPress={onDismiss}>
+            <TouchableWithoutFeedback disabled={appContext?.loading} onPress={onDismiss}>
                 <SafeAreaView style={styles.backdrop}>
                     <TouchableWithoutFeedback>
                         <View style={[styles.dialog, { backgroundColor: theme.onSurface }]}>
@@ -59,18 +61,21 @@ export default function AlertDialog(
                                     onPress={onDismiss}
                                     touchSoundDisabled
                                     activeOpacity={0.8}
+                                    disabled={appContext?.loading}
                                 >
                                     <ThemedText color={theme.accent} fontSize={14} fontWeight='semibold' style={styles.dismissButton}>
                                         Cancel
                                     </ThemedText>
                                 </TouchableOpacity>
-                                <TouchableOpacity
-                                    onPress={onConfirm}
-                                    touchSoundDisabled
-                                    activeOpacity={0.8}
-                                >
-                                    <ThemedText color={theme.accent} fontSize={14} fontWeight='semibold'>{confirmText}</ThemedText>
-                                </TouchableOpacity>
+                                {  appContext?.loading ? <ActivityIndicator color={theme.accent} size="small" style={styles.loading} /> : 
+                                    <TouchableOpacity
+                                        onPress={onConfirm}
+                                        touchSoundDisabled
+                                        activeOpacity={0.8}
+                                    >
+                                        <ThemedText color={theme.accent} fontSize={14} fontWeight='semibold'>{confirmText}</ThemedText>
+                                    </TouchableOpacity>
+                                }
                             </View>
                         </View>
                     </TouchableWithoutFeedback>
@@ -104,5 +109,8 @@ const styles = StyleSheet.create({
     }, 
     dismissButton: {
         marginRight: 25
+    },
+    loading: {
+        marginRight: 8
     }
 });
