@@ -1,6 +1,6 @@
 import { useTheme } from '@/hooks/useTheme';
 import React from 'react';
-import { StyleSheet } from 'react-native';
+import { StyleProp, StyleSheet, ViewStyle } from 'react-native';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import { Menu } from 'react-native-paper';
 import OptionsIcon from "@/assets/icons/options.svg";
@@ -19,9 +19,12 @@ interface OptionsMenuProps {
     openMenu: () => void,
     closeMenu: () => void,
     options: Option[];
+    topOffset?: number;
+    rightOffset?: number
+    style?: StyleProp<ViewStyle>;
 }
 
-export default function OptionsMenu({ visible, openMenu, closeMenu, options }: OptionsMenuProps) {
+export default function OptionsMenu({ visible, openMenu, closeMenu, options, topOffset, rightOffset, style }: OptionsMenuProps) {
     const theme = useTheme();
     const insets = useSafeAreaInsets();
 
@@ -34,15 +37,15 @@ export default function OptionsMenu({ visible, openMenu, closeMenu, options }: O
                     onPress={openMenu}
                     touchSoundDisabled
                     activeOpacity={0.8}
-                    style={styles.icon}
+                    style={style}
                 >
-                    <OptionsIcon height={30} width={30} stroke={theme.primaryText} />
+                    <OptionsIcon height={30} width={30} stroke={theme.accent} />
                 </TouchableOpacity>
             }
             anchorPosition="bottom"
-            statusBarHeight={insets.top + 8}
+            statusBarHeight={insets.top + (topOffset ?? 8)}
             elevation={1}
-            contentStyle={[styles.menu, { backgroundColor: theme.onSurface }]}
+            contentStyle={[styles.menu, { right: rightOffset ?? 8, backgroundColor: theme.onSurface }]}
         >
             { options.map((option, index) => 
                     <React.Fragment key={index} >
@@ -67,11 +70,7 @@ export default function OptionsMenu({ visible, openMenu, closeMenu, options }: O
 
 const styles = StyleSheet.create({
     menu: {
-        right: 5,
         borderRadius: 15
-    },
-    icon: {
-        marginRight: 15
     },
     title: {
         fontFamily: 'inter_regular',

@@ -1,7 +1,7 @@
 import { ContactsContext } from '@/contexts/ContactsContext';
 import { useTheme } from '@/hooks/useTheme';
 import { Contact } from '@/types/Contact';
-import { Link, router, useLocalSearchParams } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useContext, useEffect, useState } from 'react';
 import { StyleSheet, Text, View, Button } from 'react-native';
 

@@ -29,7 +29,7 @@ async function getCalls(contactId?: string, userId?: number, limit?: number): Pr
     return calls;
 }
 
-async function getCall(id: number) {
+async function getCall(id: number): Promise<Call> {
     //  Call GET /api/calls/:id
     const { data } = await axiosInstance(`/calls/${id}`);
 

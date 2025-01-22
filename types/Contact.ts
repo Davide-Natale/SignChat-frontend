@@ -4,7 +4,7 @@ export interface Contact {
     lastName: string | null;
     phone: string;
     user: {
-        id: string,
+        id: number,
         imageProfile: string | null
     } | null;
 }

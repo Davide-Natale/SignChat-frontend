@@ -12,13 +12,13 @@ interface ThemedTextProps {
 
 export default function ThemedText(
     {
-            color,
-            fontSize,
-            numberOfLines = 0,
-            children,
-            fontWeight,
-            style
-        }: ThemedTextProps
+        color,
+        fontSize,
+        numberOfLines = 0,
+        children,
+        fontWeight,
+        style
+    }: ThemedTextProps
 ) {
     return (
         <Text

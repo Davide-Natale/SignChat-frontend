@@ -162,7 +162,8 @@ export default function Calls() {
                 trailingIcon: <TrashIcon height={22} width={22} stroke={theme.error} />,
                 onPress: () => { closeMenu() ; setShowDialog(true)  }
               }
-            ]} 
+            ]}
+            style={styles.optionsIcon}
         /> : 
           <ThemedTextButton 
             text='Delete' 
@@ -195,7 +196,7 @@ export default function Calls() {
       const calls = await callsAPI.getCalls();
       setCalls(calls);
     } catch (error) {
-      //  No need to do anything;
+      //  No need to do anything
     }
   }, []);
 
@@ -443,10 +444,10 @@ const styles = StyleSheet.create({
     left: 2
   },
   cancelButton: {
-    marginLeft: 15
+    marginLeft: 20
   },
   deleteButton: {
-    marginRight: 15
+    marginRight: 20
   },
   checkbox: {
     width: "90%",
@@ -454,5 +455,8 @@ const styles = StyleSheet.create({
     justifyContent: "flex-start", 
     alignItems: "center",
     paddingHorizontal: 8
-  }
+  },
+  optionsIcon: {
+    marginRight: 17
+  },
 });

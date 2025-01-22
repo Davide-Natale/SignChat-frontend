@@ -50,7 +50,7 @@ async function updateContact(contact: Omit<Contact, 'user'>) {
     await axiosInstance({
         method: 'put',
         url: `/contacts/${id}`,
-        data: contact,
+        data: contactData,
         headers: { 'Content-Type': 'application/json' }
     });
 }

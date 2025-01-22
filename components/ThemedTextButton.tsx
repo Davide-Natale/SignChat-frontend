@@ -9,7 +9,7 @@ interface ThemedTextButtonProps {
     text: string;
     includeLoading?: boolean;
     onPress: () => void;
-    style?: StyleProp<ViewStyle>
+    style?: StyleProp<ViewStyle>;
 }
 
 export default function ThemedTextButton({ text, includeLoading = true, onPress, style }: ThemedTextButtonProps) {
@@ -17,7 +17,7 @@ export default function ThemedTextButton({ text, includeLoading = true, onPress,
     const appContext = useContext(AppContext);
 
     return (
-        appContext?.loading && includeLoading ? <ActivityIndicator color={theme.accent} size="large" /> :
+        appContext?.loading && includeLoading ? <ActivityIndicator color={theme.accent} size="large" style={style} /> :
             <TouchableOpacity
                 onPress={onPress}
                 touchSoundDisabled
