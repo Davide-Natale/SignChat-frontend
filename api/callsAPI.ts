@@ -2,7 +2,13 @@ import { Call } from "@/types/Call";
 import axiosInstance from "@/utils/axiosInstance";
 import dayjs from "dayjs";
 
-async function getCalls(contactId?: string, userId?: number, limit?: number): Promise<Call[]> {
+interface Options {
+    contactId?: string;
+    userId?: number;
+    limit?: number;
+}
+
+async function getCalls({ contactId, userId, limit }: Options = {}): Promise<Call[]> {
     //  Call GET /api/calls
     const { data } = await axiosInstance({
         url: '/calls',

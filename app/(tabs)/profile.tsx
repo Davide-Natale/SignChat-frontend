@@ -12,6 +12,7 @@ import PhoneIcon from '@/assets/icons/call.svg';
 import EmailIcon from '@/assets/icons/email.svg';
 import NotificationIcon from '@/assets/icons/notification.svg';
 import AccessibilityIcon from '@/assets/icons/accessibility.svg';
+import EditIcon from '@/assets/icons/edit.svg';
 import TrashIcon from '@/assets/icons/trash.svg';
 import LockIcon from '@/assets/icons/lock.svg';
 import LogoutIcon from '@/assets/icons/logout.svg';
@@ -50,13 +51,15 @@ export default function Profile() {
         </ThemedText>
         <ThemedButton
           onPress={() => router.push("/profile/edit")}
-          height={40}
-          width="60%"
-          shape='circular'
+          height={50}
+          width="70%"
           backgroundColor={theme.accent}
           style={styles.button}
         >
-          <ThemedText color={theme.onAccent} fontSize={15} fontWeight="bold" >Edit Profile</ThemedText>
+          <View style={styles.buttonContent} >
+            <EditIcon height={26} width={26} stroke={theme.onAccent} style={styles.buttonIcon} />
+            <ThemedText color={theme.onAccent} fontSize={16} fontWeight="medium" >Edit Profile</ThemedText>
+          </View>
         </ThemedButton>
         <ThemedText color={theme.secondaryText} fontSize={15} fontWeight="medium" style={styles.label}>
           Info
@@ -211,8 +214,16 @@ const styles = StyleSheet.create({
     marginBottom: 5
   },
   button: {
-    marginTop: 10,
+    marginTop: 15,
     marginBottom: 20,
+  },
+  buttonContent: {
+    flexDirection: "row",
+    justifyContent: "center", 
+    alignItems: "center" 
+  },
+  buttonIcon: {
+    marginRight: 10
   },
   label: {
     marginHorizontal: 8,
