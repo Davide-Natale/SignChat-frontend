@@ -6,7 +6,7 @@ interface ContactsContextType {
     contacts: Contact[];
     fetchContacts: () => Promise<void>;
     clearContacts: () => void;
-    fetchContact: (id: string) => Promise<Contact | null> 
+    fetchContact: (id: number) => Promise<Contact | null> 
 }
 
 export const ContactsContext = createContext<ContactsContextType | undefined>(undefined);
@@ -25,7 +25,7 @@ export const ContactsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
     const clearContacts = () => { setContacts([]); }
 
-    const fetchContact = async (id: string) => {
+    const fetchContact = async (id: number) => {
         try {
             const contact = await contactsAPI.getContact(id);
             return contact;

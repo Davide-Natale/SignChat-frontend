@@ -6,8 +6,8 @@ import { useTheme } from '@/hooks/useTheme';
 import { Call } from '@/types/Call';
 import { Contact } from '@/types/Contact';
 import { formatDate } from '@/utils/dateUtils';
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useContext, useEffect, useState } from 'react';
+import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
+import { useCallback, useContext, useEffect, useState } from 'react';
 import { StyleSheet, View, ScrollView } from 'react-native';
 import VideoCallBoldIcon from '@/assets/icons/videoCall-bold.svg';
 import VideoCallIcon from '@/assets/icons/videoCall.svg';
@@ -22,6 +22,8 @@ import { AppContext } from '@/contexts/AppContext';
 import { ErrorContext } from '@/contexts/ErrorContext';
 import ThemedSnackBar from '@/components/ThemedSnackBar';
 import Divider from '@/components/Divider';
+import * as Contacts from 'expo-contacts';
+import contactsAPI from '@/api/contactsAPI';
 
 export default function InfoContact() {
     const theme = useTheme();
@@ -35,17 +37,19 @@ export default function InfoContact() {
     const [showDialog, setShowDialog] = useState(false);
     const fullName = contact?.lastName ? contact.firstName + " " + contact.lastName : contact?.firstName;
 
-    useEffect(() => {
-        const fetchContactData = async () => {
-            const contactData = await contactsContext?.fetchContact(id);
+    useFocusEffect(
+        useCallback(() => {
+            const fetchContactData = async () => {
+                const contactData = await contactsContext?.fetchContact(parseInt(id));
 
-            if (contactData) {
-                setContact(contactData);
-            }
-        };
+                if (contactData) {
+                    setContact(contactData);
+                }
+            };
 
-        fetchContactData();
-    }, []);
+            fetchContactData();
+        }, [])
+    );
 
     useEffect(() => {
         const fetchRecentCalls = async () => {
@@ -65,6 +69,14 @@ export default function InfoContact() {
 
         fetchRecentCalls();
     }, [contact]);
+
+    const deleteContactLocally = async (): Promise<void> => {
+        //  Request Permissions
+        await Contacts.requestPermissionsAsync();
+
+        //  Delete contact locally
+        await Contacts.removeContactAsync(id);
+    }
 
     return (
         <ScrollView
@@ -211,19 +223,20 @@ export default function InfoContact() {
                     content='Are you sure to delete this contact?'
                     confirmText='Delete'
                     onConfirm={async () => {
-                        setShowDialog(false);
-                        //  TODO: fix this code
-                        /*try {
+                        try {
                             errorContext?.clearErrMsg();
                             appContext?.updateLoading(true);
-                            //  TODO: add code to delete locally and call delete api
+
+                            await deleteContactLocally();
+                            await contactsAPI.deleteContact(parseInt(id));
+                            
                             router.back();
                         } catch (error) {
                             errorContext?.handleError(error);
                         } finally {
-                            appContext?.updateLoading(true);
+                            appContext?.updateLoading(false);
                             setShowDialog(false);
-                        }*/
+                        }
                     }}
                     onDismiss={() => setShowDialog(false)}
                 />

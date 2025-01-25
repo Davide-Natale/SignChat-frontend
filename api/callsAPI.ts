@@ -3,7 +3,7 @@ import axiosInstance from "@/utils/axiosInstance";
 import dayjs from "dayjs";
 
 interface Options {
-    contactId?: string;
+    contactId?: number;
     userId?: number;
     limit?: number;
 }

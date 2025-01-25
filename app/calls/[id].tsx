@@ -4,8 +4,8 @@ import ListItem from '@/components/ListItem';
 import ThemedText from '@/components/ThemedText';
 import { useTheme } from '@/hooks/useTheme';
 import { Call } from '@/types/Call';
-import { useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
-import { useCallback, useContext, useEffect, useLayoutEffect, useState } from 'react';
+import { useFocusEffect, useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
+import { useCallback, useContext, useLayoutEffect, useState } from 'react';
 import { ScrollView, StyleSheet, TouchableOpacity, useColorScheme, View } from 'react-native';
 import VideoCallIcon from '@/assets/icons/videoCall.svg';
 import VideoCallInLight from "@/assets/icons/videoCallIn-light.svg";
@@ -68,18 +68,20 @@ export default function InfoCall() {
     
     const closeMenu = useCallback(() => setVisible(false),[]);
 
-    useEffect(() => {
-        const fetchCall = async () => {
-            try {
-                const call = await callsAPI.getCall(parseInt(id));
-                setCall(call);
-            } catch (error) {
-                //  No need to do anything
-            }
-        };
-
-        fetchCall();
-    }, []);
+    useFocusEffect(
+        useCallback(() => {
+            const fetchCall = async () => {
+                try {
+                    const call = await callsAPI.getCall(parseInt(id));
+                    setCall(call);
+                } catch (error) {
+                    //  No need to do anything
+                }
+            };
+    
+            fetchCall();
+        }, [])
+    );
 
     useLayoutEffect(() => {
         navigation.setOptions({

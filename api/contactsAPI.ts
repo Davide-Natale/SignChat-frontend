@@ -18,7 +18,7 @@ async function getContacts(): Promise<Contact[]> {
     return contacts;
 }
 
-async function getContact(id: string): Promise<Contact> {
+async function getContact(id: number): Promise<Contact> {
     //  Call GET /api/contacts/:id
     const { data } = await axiosInstance(`/contacts/${id}`);
 
@@ -55,7 +55,7 @@ async function updateContact(contact: Omit<Contact, 'user'>) {
     });
 }
 
-async function deleteContact(id: string) {
+async function deleteContact(id: number) {
     //  Call DELETE /api/contacts/:id
     await axiosInstance({
         method: 'delete',
@@ -66,7 +66,7 @@ async function deleteContact(id: string) {
 async function syncContacts(
     newContacts: Omit<Contact, 'user'>[], 
     updatedContacts: Omit<Contact, 'user'>[], 
-    deletedContacts: string[]
+    deletedContacts: number[]
 ) {
     //  Call POST /api/contacts/sync
     await axiosInstance({

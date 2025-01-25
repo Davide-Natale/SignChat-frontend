@@ -9,6 +9,8 @@ import { ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import UserIcon from "@/assets/icons/user-bold.svg";
 import PhoneIcon from "@/assets/icons/call-bold.svg";
 import ThemedSnackBar from '@/components/ThemedSnackBar';
+import * as Contacts from 'expo-contacts';
+import contactsAPI from '@/api/contactsAPI';
 
 export default function AddContact() {
     const theme = useTheme();
@@ -24,6 +26,22 @@ export default function AddContact() {
     const [phoneErrMsg, setPhoneErrMsg] = useState("");
     const textInputRef1 = useRef<TextInput>(null);
     const textInputRef2 = useRef<TextInput>(null);
+
+    const createContactLocally = async (): Promise<string> => {
+        //  Request Permissions
+        await Contacts.requestPermissionsAsync();
+
+        //  Create contact locally
+        const contactId = await Contacts.addContactAsync({
+            [Contacts.Fields.ContactType]: Contacts.ContactTypes.Person,
+            [Contacts.Fields.Name]: lastName ? firstName + " " + lastName : firstName,
+            [Contacts.Fields.FirstName]: firstName,
+            [Contacts.Fields.LastName]: lastName,
+            [Contacts.Fields.PhoneNumbers]: [{ number: phone, label: "mobile", isPrimary: true }]
+        });
+
+        return contactId;
+    }
 
     const checkFirstName = () => { 
         if(firstName === "") {
@@ -61,8 +79,23 @@ export default function AddContact() {
                 errorContext?.clearErrMsg();
                 appContext?.updateLoading(true);
 
-                //  TODO: add code to add contact local and call add contact api
-                //router.back();
+                const contactId = await createContactLocally();
+
+                await contactsAPI.createContact({
+                    id: parseInt(contactId),
+                    firstName,
+                    lastName: lastName ? lastName : null,
+                    phone
+                });
+
+                if(userPhone) {
+                    router.back();
+                }
+
+                router.replace({
+                    pathname: "/contacts/[id]/info",
+                    params: { id: contactId }
+                });
             } catch (error) {
                 errorContext?.handleError(error);
             } finally {

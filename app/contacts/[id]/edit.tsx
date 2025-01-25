@@ -10,6 +10,8 @@ import { ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import UserIcon from "@/assets/icons/user-bold.svg";
 import PhoneIcon from "@/assets/icons/call-bold.svg";
 import ThemedSnackBar from '@/components/ThemedSnackBar';
+import * as Contacts from 'expo-contacts';
+import contactsAPI from '@/api/contactsAPI';
 
 export default function EditContact() {
     const theme = useTheme();
@@ -29,7 +31,7 @@ export default function EditContact() {
 
     useEffect(() => {
         const fetchContactData = async () => {
-            const contact = await contactsContext?.fetchContact(id);
+            const contact = await contactsContext?.fetchContact(parseInt(id));
 
             if (contact) {
                 setFirstName(contact.firstName);
@@ -40,6 +42,21 @@ export default function EditContact() {
 
         fetchContactData();
     }, []);
+
+    const updateContactLocally = async (): Promise<void> => {
+        //  Request Permissions
+        await Contacts.requestPermissionsAsync();
+
+        //  Update contact locally
+        await Contacts.updateContactAsync({
+            id,
+            [Contacts.Fields.ContactType]: Contacts.ContactTypes.Person,
+            [Contacts.Fields.Name]: lastName ? firstName + " " + lastName : firstName,
+            [Contacts.Fields.FirstName]: firstName,
+            [Contacts.Fields.LastName]: lastName,
+            [Contacts.Fields.PhoneNumbers]: [{ number: phone, label: "mobile", isPrimary: true }]
+        });
+    }
 
     const checkFirstName = () => { 
         if(firstName === "") {
@@ -77,8 +94,16 @@ export default function EditContact() {
                 errorContext?.clearErrMsg();
                 appContext?.updateLoading(true);
 
-                //  TODO: add code to edit contact local and call edit contact api
-                //router.back();
+                await updateContactLocally();
+
+                await contactsAPI.updateContact({
+                    id: parseInt(id),
+                    firstName,
+                    lastName: lastName ? lastName : null,
+                    phone
+                });
+
+                router.back();
             } catch (error) {
                 errorContext?.handleError(error);
             } finally {
@@ -88,10 +113,10 @@ export default function EditContact() {
     }
 
     useLayoutEffect(() => {
-            navigation.setOptions({
-                headerRight: () => <ThemedTextButton text='Save' onPress={handleSubmit} />
-            });
-        }, [firstName, lastName, phone]);
+        navigation.setOptions({
+            headerRight: () => <ThemedTextButton text='Save' onPress={handleSubmit} />
+        });
+    }, [firstName, lastName, phone]);
 
     return (
         <ScrollView

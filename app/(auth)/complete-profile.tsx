@@ -211,7 +211,7 @@ export default function CompleteProfile() {
         navigation.setOptions({
             headerRight: () => <ThemedTextButton text='Save' onPress={handleSubmit} />
         });
-    }, [firstName, lastName, email, phone]);
+    }, [firstName, lastName, email, phone, imageProfile]);
 
     return (
         <ScrollView
