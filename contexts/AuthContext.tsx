@@ -5,6 +5,7 @@ import { AppContext } from "./AppContext";
 import profileAPI from "@/api/profileAPI";
 import { User } from "@/types/User";
 import { ContactsContext } from "./ContactsContext";
+import { ErrorContext } from "./ErrorContext";
 
 interface AuthContextType {
     isAuthenticated: boolean;
@@ -20,6 +21,7 @@ export const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const appContext = useContext(AppContext);
+    const errorContext = useContext(ErrorContext);
     const contactsContext = useContext(ContactsContext);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [user, setUser] = useState<User>();
@@ -111,10 +113,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const fetchProfile = async () => {
         try {
+            errorContext?.clearErrMsg();
             const user = await profileAPI.getProfile();
             setUser(user);
         } catch (error) {
-            //  No need to do anything
+            errorContext?.handleError(error);
         }
     };
     

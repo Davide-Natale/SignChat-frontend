@@ -43,7 +43,7 @@ export default function InfoContact() {
             const fetchContactData = async () => {
                 const contactData = await contactsContext?.fetchContact(parseInt(id));
 
-                if (contactData) {
+                if(contactData) {
                     setContact(contactData);
                 }
             };
@@ -54,8 +54,9 @@ export default function InfoContact() {
 
     useEffect(() => {
         const fetchRecentCalls = async () => {
-            if (contact) {
+            if(contact) {
                 try {
+                    errorContext?.clearErrMsg();
                     const recentCalls = await callsAPI.getCalls({
                         contactId: contact.id,
                         limit: 3
@@ -63,7 +64,7 @@ export default function InfoContact() {
 
                     setRecentCalls(recentCalls);
                 } catch (error) {
-                    //  No need to do anything
+                    errorContext?.handleError(error);
                 }
             }
         };

@@ -7,7 +7,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { Call } from '@/types/Call';
 import { User } from '@/types/User';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import AddUserIcon from '@/assets/icons/addUser.svg';
 import VideoCallBoldIcon from '@/assets/icons/videoCall-bold.svg';
@@ -16,12 +16,15 @@ import ArrowRightIcon from '@/assets/icons/arrow-right.svg';
 import { formatDate } from '@/utils/dateUtils';
 import { formatCallDuration, getCallDescription } from '@/utils/callsUtils';
 import ListItem from '@/components/ListItem';
+import { ErrorContext } from '@/contexts/ErrorContext';
+import ThemedSnackBar from '@/components/ThemedSnackBar';
 
 type CustomUser = Omit<User, 'email'> & { id: number };
 
 export default function InfoUser() {
     const theme = useTheme();
     const router = useRouter();
+    const errorContext = useContext(ErrorContext);
     const { id } = useLocalSearchParams<{ id: string }>();
     const [user, setUser] = useState<CustomUser | null >(null);
     const [recentCalls, setRecentCalls] = useState<Call[]>([]);
@@ -30,10 +33,11 @@ export default function InfoUser() {
     useEffect(() => {
         const fetchUserData = async () => {
             try {
+                errorContext?.clearErrMsg();
                 const user = await usersAPI?.getUser(parseInt(id));
                 setUser(user);
             } catch (error) {
-                //  No need to do anything
+                errorContext?.handleError(error);
             }
         };
 
@@ -44,6 +48,7 @@ export default function InfoUser() {
         const fetchRecentCalls = async () => {
             if (user) {
                 try {
+                    errorContext?.clearErrMsg();
                     const recentCalls = await callsAPI.getCalls({
                         userId: user.id,
                         limit: 3
@@ -51,7 +56,7 @@ export default function InfoUser() {
 
                     setRecentCalls(recentCalls);
                 } catch (error) {
-                    //  No need to do anything
+                    errorContext?.handleError(error);
                 }
             }
         };
@@ -183,6 +188,7 @@ export default function InfoUser() {
                         style={styles.row}
                     />
                 </View>
+                <ThemedSnackBar />
             </View>
         </ScrollView>
     );

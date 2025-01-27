@@ -193,10 +193,11 @@ export default function Calls() {
 
   const fetchCalls = useCallback(async () => {
     try {
+      errorContext?.clearErrMsg();
       const calls = await callsAPI.getCalls();
       setCalls(calls);
     } catch (error) {
-      //  No need to do anything
+      errorContext?.handleError(error);
     }
   }, []);
 

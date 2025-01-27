@@ -1,6 +1,7 @@
 import contactsAPI from "@/api/contactsAPI";
 import { Contact } from "@/types/Contact";
-import React, { createContext, useState } from "react";
+import React, { createContext, useContext, useState } from "react";
+import { ErrorContext } from "./ErrorContext";
 
 interface ContactsContextType {
     contacts: Contact[];
@@ -13,13 +14,15 @@ export const ContactsContext = createContext<ContactsContextType | undefined>(un
 
 export const ContactsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [contacts, setContacts] = useState<Contact[]>([]);
+    const errorContext = useContext(ErrorContext);
 
     const fetchContacts = async () => {
         try {
+            errorContext?.clearErrMsg();
             const contacts = await contactsAPI.getContacts();
             setContacts(contacts);
         } catch (error) {
-            //  No need to do anything
+            errorContext?.handleError(error);
         } 
     };
 
@@ -27,10 +30,11 @@ export const ContactsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
     const fetchContact = async (id: number) => {
         try {
+            errorContext?.clearErrMsg();
             const contact = await contactsAPI.getContact(id);
             return contact;
         } catch (error) {
-            //  No need to do anything
+            errorContext?.handleError(error);
             return null;
         }
     }

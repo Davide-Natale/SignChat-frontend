@@ -45,7 +45,7 @@ export default function OptionsMenu({ visible, openMenu, closeMenu, options, top
             anchorPosition="bottom"
             statusBarHeight={insets.top + (topOffset ?? 8)}
             elevation={1}
-            contentStyle={[styles.menu, { right: rightOffset ?? 8, backgroundColor: theme.onSurface }]}
+            contentStyle={[styles.menu, { right: rightOffset ?? 8, backgroundColor: theme.menu }]}
         >
             { options.map((option, index) => 
                     <React.Fragment key={index} >

@@ -72,10 +72,11 @@ export default function InfoCall() {
         useCallback(() => {
             const fetchCall = async () => {
                 try {
+                    errorContext?.clearErrMsg();
                     const call = await callsAPI.getCall(parseInt(id));
                     setCall(call);
                 } catch (error) {
-                    //  No need to do anything
+                    errorContext?.handleError(error);
                 }
             };
     

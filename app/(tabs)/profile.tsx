@@ -20,6 +20,7 @@ import ArrowRightIcon from '@/assets/icons/arrow-right.svg';
 import { Switch } from 'react-native-gesture-handler';
 import AlertDialog from '@/components/AlertDialog';
 import { AppContext } from '@/contexts/AppContext';
+import ThemedSnackBar from '@/components/ThemedSnackBar';
 
 export default function Profile() {
   const theme = useTheme();
@@ -192,6 +193,7 @@ export default function Profile() {
           }}
           onDismiss={() => setShowDialog(false)}
         />
+        <ThemedSnackBar />
       </View>
     </ScrollView>
   );

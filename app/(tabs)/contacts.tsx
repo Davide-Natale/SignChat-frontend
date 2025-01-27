@@ -10,6 +10,7 @@ import { FlatList, Keyboard, StyleSheet, View } from 'react-native';
 import AddUserIcon from "@/assets/icons/addUser-bold.svg";
 import { ScrollView } from 'react-native-gesture-handler';
 import ThemedText from '@/components/ThemedText';
+import ThemedSnackBar from '@/components/ThemedSnackBar';
 
 export default function Contacts() {
   const theme = useTheme();
@@ -105,6 +106,7 @@ export default function Contacts() {
             </ThemedButton>
         </View> : null
       }
+      <ThemedSnackBar />
     </View>
   );
 }
