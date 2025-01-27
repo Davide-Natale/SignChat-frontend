@@ -24,6 +24,7 @@ import ThemedSnackBar from '@/components/ThemedSnackBar';
 import Divider from '@/components/Divider';
 import * as Contacts from 'expo-contacts';
 import contactsAPI from '@/api/contactsAPI';
+import { parsePhoneNumberFromString } from 'libphonenumber-js';
 
 export default function InfoContact() {
     const theme = useTheme();
@@ -74,8 +75,24 @@ export default function InfoContact() {
         //  Request Permissions
         await Contacts.requestPermissionsAsync();
 
-        //  Delete contact locally
-        await Contacts.removeContactAsync(id);
+        //  Search local contact id
+        const { data } = await Contacts.getContactsAsync();
+
+        const contactId = data.find(localContact => {
+            const contactPhone = localContact.phoneNumbers?.[0].number?.replaceAll(" ", "") ?? "";
+            const phoneObj = parsePhoneNumberFromString(contactPhone);
+
+            if (phoneObj) {
+                return contact?.phone === phoneObj.nationalNumber;
+            }
+
+            return contact?.phone === contactPhone;
+        })?.id;
+
+        if(contactId) {
+            //  Delete contact locally
+            await Contacts.removeContactAsync(contactId);
+        }
     }
 
     return (
@@ -102,27 +119,30 @@ export default function InfoContact() {
                     fontSize={18}
                     fontWeight="regular"
                     numberOfLines={1}
+                    style={{ marginBottom: !contact?.user ? 15 : undefined }}
                 >
                     {contact?.phone}
                 </ThemedText>
-                <ThemedButton
-                    onPress={() => { /* TODO: add code to call contact */ }}
-                    height={50}
-                    width="70%"
-                    backgroundColor={theme.accent}
-                    style={styles.button}
-                >
-                    <View style={styles.buttonContent}>
-                        <VideoCallIcon height={26} width={26} stroke={theme.onAccent} style={styles.buttonIcon} />
-                        <ThemedText
-                            color={theme.onAccent}
-                            fontSize={16}
-                            fontWeight="medium"
-                        >
-                            Video Call
-                        </ThemedText>
-                    </View>
-                </ThemedButton>
+                { contact?.user ? 
+                    <ThemedButton
+                        onPress={() => { /* TODO: add code to call contact */ }}
+                        height={50}
+                        width="70%"
+                        backgroundColor={theme.accent}
+                        style={styles.button}
+                    >
+                        <View style={styles.buttonContent}>
+                            <VideoCallIcon height={26} width={26} stroke={theme.onAccent} style={styles.buttonIcon} />
+                            <ThemedText
+                                color={theme.onAccent}
+                                fontSize={16}
+                                fontWeight="medium"
+                            >
+                                Video Call
+                            </ThemedText>
+                        </View>
+                    </ThemedButton> : null
+                }
                 <ThemedText
                     color={theme.secondaryText}
                     fontSize={15}

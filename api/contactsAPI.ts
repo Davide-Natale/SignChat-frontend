@@ -33,14 +33,16 @@ async function getContact(id: number): Promise<Contact> {
     return contact;
 }
 
-async function createContact(contact: Omit<Contact, 'user'>) {
+async function createContact(contact: Omit<Contact, 'id' | 'user'>): Promise<number> {
     //  Call POST /api/contacts
-    await axiosInstance({
+    const { data } = await axiosInstance({
         method: 'post',
         url: '/contacts',
         data: contact,
         headers: { 'Content-Type': 'application/json' }
     });
+
+    return data.contact.id;
 }
 
 async function updateContact(contact: Omit<Contact, 'user'>) {
@@ -64,9 +66,9 @@ async function deleteContact(id: number) {
 }
 
 async function syncContacts(
-    newContacts: Omit<Contact, 'user'>[], 
-    updatedContacts: Omit<Contact, 'user'>[], 
-    deletedContacts: number[]
+    newContacts: Omit<Contact, 'id' | 'user'>[], 
+    updatedContacts: Omit<Contact, 'id' | 'user'>[], 
+    deletedContacts: string[]
 ) {
     //  Call POST /api/contacts/sync
     await axiosInstance({

@@ -27,20 +27,18 @@ export default function AddContact() {
     const textInputRef1 = useRef<TextInput>(null);
     const textInputRef2 = useRef<TextInput>(null);
 
-    const createContactLocally = async (): Promise<string> => {
+    const createContactLocally = async () => {
         //  Request Permissions
         await Contacts.requestPermissionsAsync();
 
         //  Create contact locally
-        const contactId = await Contacts.addContactAsync({
+        await Contacts.addContactAsync({
             [Contacts.Fields.ContactType]: Contacts.ContactTypes.Person,
             [Contacts.Fields.Name]: lastName ? firstName + " " + lastName : firstName,
             [Contacts.Fields.FirstName]: firstName,
             [Contacts.Fields.LastName]: lastName,
             [Contacts.Fields.PhoneNumbers]: [{ number: phone, label: "mobile", isPrimary: true }]
         });
-
-        return contactId;
     }
 
     const checkFirstName = () => { 
@@ -79,10 +77,9 @@ export default function AddContact() {
                 errorContext?.clearErrMsg();
                 appContext?.updateLoading(true);
 
-                const contactId = await createContactLocally();
+                await createContactLocally();
 
-                await contactsAPI.createContact({
-                    id: parseInt(contactId),
+                const contactId = await contactsAPI.createContact({
                     firstName,
                     lastName: lastName ? lastName : null,
                     phone

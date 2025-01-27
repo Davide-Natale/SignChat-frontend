@@ -6,15 +6,105 @@ import ContactIconBold from '@/assets/icons/contact-bold.svg';
 import TranscriptionIcon from '@/assets/icons/transcription.svg';
 import TranscriptionIconBold from '@/assets/icons/transcription-bold.svg';
 import { useTheme } from "@/hooks/useTheme";
-import { useContext, useEffect } from "react";
+import { useCallback, useContext, useEffect } from "react";
 import { AppContext } from "@/contexts/AppContext";
 import { AuthContext } from "@/contexts/AuthContext";
 import ImageProfile from "@/components/ImageProfile";
+import * as Contacts from 'expo-contacts';
+import { parsePhoneNumberFromString } from 'libphonenumber-js';
+import { Contact } from "@/types/Contact";
+import contactsAPI from "@/api/contactsAPI";
+import { ContactsContext } from "@/contexts/ContactsContext";
+
+type CustomContact = Omit<Contact, "id" | "user">;
 
 export default function TabLayout() {
     const theme = useTheme();
     const appContext = useContext(AppContext);
     const authContext = useContext(AuthContext);
+    const contactsContext = useContext(ContactsContext);
+
+    const getLocalContacts = useCallback(async () => {
+        const { status } = await Contacts.requestPermissionsAsync();
+
+        if (status === 'granted') {
+            const { data } = await Contacts.getContactsAsync({
+                fields: [
+                    Contacts.Fields.FirstName, 
+                    Contacts.Fields.LastName, 
+                    Contacts.Fields.PhoneNumbers
+                ]
+            });
+
+            const localContacts = data
+                .filter(contact => contact.firstName && contact.phoneNumbers && contact.phoneNumbers?.length > 0)
+                .map(contact => {
+                    let mappedContact: CustomContact = {
+                        firstName: contact.firstName ?? "",
+                        lastName: contact.lastName ?? null,
+                        phone: contact.phoneNumbers?.[0].number?.replaceAll(" ", "") ?? ""
+                    };
+
+                    const phoneObj = parsePhoneNumberFromString(mappedContact.phone);
+
+                    if (phoneObj) {
+                        mappedContact.phone = phoneObj.nationalNumber;
+                    }
+
+                    return mappedContact;
+                });
+
+            return localContacts;
+        }
+    }, []);
+
+    const fetchServerContacts = useCallback(async () => {
+        const serverContacts = await contactsAPI.getContacts();
+        const mappedServerContacts: CustomContact[] = serverContacts.map(({ id, user, ...contact }) => contact);
+        return mappedServerContacts;
+    }, []);
+
+    const compareContacts = useCallback((localContacts: CustomContact[], serverContacts: CustomContact[]) => {
+        const newContacts = localContacts.filter(localContact => 
+            !serverContacts.some(serverContact => serverContact.phone === localContact.phone)
+        )
+
+        const updatedContacts = localContacts.filter(localContact => {
+            const serverContact = serverContacts.find(serverContact => serverContact.phone === localContact.phone);
+
+            return serverContact && (
+                localContact.firstName !== serverContact.firstName ||
+                localContact.lastName !== serverContact.lastName
+            );
+        });
+
+        const deletedContacts = serverContacts.filter(serverContact => 
+            !localContacts.some(localContact => localContact.phone === serverContact.phone)
+        ).map(contact => contact.phone);
+
+        return { newContacts, updatedContacts, deletedContacts };
+    }, []);
+
+    useEffect(() => {
+        const synchContacts = async () => {
+            try {
+                const localContacts = await getLocalContacts();
+
+                if(localContacts) {
+                    const serverContacts = await fetchServerContacts();
+                    const { newContacts, updatedContacts, deletedContacts } = compareContacts(localContacts, serverContacts);
+
+                    await contactsAPI.syncContacts(newContacts, updatedContacts, deletedContacts);
+
+                    contactsContext?.fetchContacts();
+                }
+            } catch (error) {
+                //  No need to do anything
+            }
+        };
+        
+        synchContacts();
+    }, []);
 
     useEffect(() => {
         const checkPreferences = async () => {
@@ -102,10 +192,10 @@ export default function TabLayout() {
                             <ImageProfile 
                                 uri={authContext?.user?.imageProfile ?? null}
                                 size={24}
-                                style={{ 
+                                style={{
+                                    borderWidth: 1.75,
                                     borderRadius: 12, 
-                                    borderColor: color, 
-                                    borderWidth: 1.75 
+                                    borderColor: color
                                 }}
                             />
                         );

@@ -60,6 +60,15 @@
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "3e55a819-1976-40e4-9a6c-6de1c733b9db"
+      }
+    },
+    "owner": "davide-natale"
   }
 }

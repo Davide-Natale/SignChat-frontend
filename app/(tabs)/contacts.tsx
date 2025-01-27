@@ -4,17 +4,15 @@ import ThemedButton from '@/components/ThemedButton';
 import { ContactsContext } from '@/contexts/ContactsContext';
 import { useTheme } from '@/hooks/useTheme';
 import { processContacts } from '@/utils/contactsUtils';
-import { router, useFocusEffect, useNavigation } from 'expo-router';
-import { useCallback, useContext, useEffect, useState } from 'react';
-import { FlatList, Keyboard, StyleSheet, useColorScheme, View } from 'react-native';
+import { router, useFocusEffect } from 'expo-router';
+import { useCallback, useContext, useState } from 'react';
+import { FlatList, Keyboard, StyleSheet, View } from 'react-native';
 import AddUserIcon from "@/assets/icons/addUser-bold.svg";
 import { ScrollView } from 'react-native-gesture-handler';
 import ThemedText from '@/components/ThemedText';
 
 export default function Contacts() {
   const theme = useTheme();
-  const scheme = useColorScheme();
-  const navigation = useNavigation();
   const contactsContext = useContext(ContactsContext);
   const [filter, setFilter] = useState("");
   const [isKeyboardVisible, setKeyboardVisible] = useState(false);
@@ -56,7 +54,7 @@ export default function Contacts() {
         showSubscription.remove();
         hideSubscription.remove();
       };
-    }, [scheme])
+    }, [])
   );
 
   return (

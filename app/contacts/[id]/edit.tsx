@@ -12,6 +12,7 @@ import PhoneIcon from "@/assets/icons/call-bold.svg";
 import ThemedSnackBar from '@/components/ThemedSnackBar';
 import * as Contacts from 'expo-contacts';
 import contactsAPI from '@/api/contactsAPI';
+import { parsePhoneNumberFromString } from 'libphonenumber-js';
 
 export default function EditContact() {
     const theme = useTheme();
@@ -24,6 +25,7 @@ export default function EditContact() {
     const [firstName, setFirstName] = useState("");
     const [lastName, setLastName] = useState("");
     const [phone, setPhone] = useState("");
+    const [oldPhone, setOldPhone] = useState("");
     const [firstErrMsg, setFirstErrMsg] = useState("");
     const [phoneErrMsg, setPhoneErrMsg] = useState("");
     const textInputRef1 = useRef<TextInput>(null);
@@ -37,6 +39,7 @@ export default function EditContact() {
                 setFirstName(contact.firstName);
                 setLastName(contact.lastName ?? "");
                 setPhone(contact.phone);
+                setOldPhone(contact.phone);
             }
         };
 
@@ -47,15 +50,31 @@ export default function EditContact() {
         //  Request Permissions
         await Contacts.requestPermissionsAsync();
 
-        //  Update contact locally
-        await Contacts.updateContactAsync({
-            id,
-            [Contacts.Fields.ContactType]: Contacts.ContactTypes.Person,
-            [Contacts.Fields.Name]: lastName ? firstName + " " + lastName : firstName,
-            [Contacts.Fields.FirstName]: firstName,
-            [Contacts.Fields.LastName]: lastName,
-            [Contacts.Fields.PhoneNumbers]: [{ number: phone, label: "mobile", isPrimary: true }]
-        });
+        //  Search local contact id
+        const { data } = await Contacts.getContactsAsync();
+
+        const contactId = data.find(contact => {
+            const contactPhone = contact.phoneNumbers?.[0].number?.replaceAll(" ", "") ?? "";
+            const phoneObj = parsePhoneNumberFromString(contactPhone);
+
+            if(phoneObj) {
+                return oldPhone === phoneObj.nationalNumber;
+            }
+
+            return oldPhone === contactPhone;
+        })?.id;
+            
+        if(contactId) {
+            //  Update contact locally
+            await Contacts.updateContactAsync({
+                id: contactId,
+                [Contacts.Fields.ContactType]: Contacts.ContactTypes.Person,
+                [Contacts.Fields.Name]: lastName ? firstName + " " + lastName : firstName,
+                [Contacts.Fields.FirstName]: firstName,
+                [Contacts.Fields.LastName]: lastName,
+                [Contacts.Fields.PhoneNumbers]: [{ number: phone, label: "mobile", isPrimary: true }]
+            });
+        }
     }
 
     const checkFirstName = () => { 
