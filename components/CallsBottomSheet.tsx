@@ -6,7 +6,7 @@ import { Contact } from '@/types/Contact';
 import { forwardRef, useCallback, useMemo, useState } from 'react';
 import SearchBar from './SearchBar';
 import ContactsCard from './ContactsCard';
-import { FlatList, ScrollView } from 'react-native-gesture-handler';
+import { FlatList } from 'react-native-gesture-handler';
 
 interface CallsBottomSheetProps {
     groupedContacts: Record<string, Contact[]>;
@@ -18,7 +18,7 @@ type Ref = BottomSheetModal;
 const CallsBottomSheet = forwardRef<Ref, CallsBottomSheetProps>(({ groupedContacts, unregisteredContacts }, ref) => {
     const theme = useTheme();
     const [searchFilter, setSearchFilter] = useState("");
-    const snapPoints = useMemo(() => ['93%'], []);
+    const snapPoints = useMemo(() => ['95%'], []);
 
     const applyNameFilter = useCallback((firstName: string, lastName: string | null, phone: string, filter: string) => {
         const fullName = `${firstName} ${lastName || ''}`;
@@ -72,30 +72,35 @@ const CallsBottomSheet = forwardRef<Ref, CallsBottomSheetProps>(({ groupedContac
                     style={styles.searchBar}
                 />
                 {searchFilter !== "" ?
-                    <ScrollView style={styles.list}
-                        showsVerticalScrollIndicator={false}
-                        keyboardShouldPersistTaps="handled"
-                    >
-                        {filteredContacts.length === 0 && filteredUnregisteredContacts.length === 0 ?
-                            <View style={[styles.emptyResult, { backgroundColor: theme.onSurface }]}>
-                                <ThemedText color={theme.secondaryText} fontSize={15} fontWeight="medium" style={styles.message}>
-                                    No results
-                                </ThemedText>
-                            </View> : null
-                        }
-                        <ContactsCard
-                            label={"Contacts on SignChat"}
-                            contacts={filteredContacts}
-                            style={styles.card}
-                            type='call'
-                            action={() => {
-                                if (ref && "current" in ref && ref.current) {
-                                    ref.current.dismiss();
-                                }
-                            }}
+                    ( filteredContacts.length === 0 && filteredUnregisteredContacts.length === 0 ?
+                        <View style={[styles.emptyResult, { backgroundColor: theme.onSurface }]}>
+                            <ThemedText color={theme.secondaryText} fontSize={15} fontWeight="medium" style={styles.message}>
+                                No results
+                            </ThemedText>
+                        </View> : 
+                        <FlatList 
+                            data={[{ label: "Contacts on SignChat", contacts: filteredContacts },
+                                { contacts: filteredUnregisteredContacts }
+                            ]}
+                            keyExtractor={(_item, index) => index.toString()}
+                            renderItem={({ item: { label, contacts } }) => (
+                                <ContactsCard
+                                    label={label}
+                                    contacts={contacts}
+                                    type={label ? 'call' : undefined }
+                                    action={label ? () => {
+                                        if (ref && "current" in ref && ref.current) {
+                                            ref.current.dismiss();
+                                        } 
+                                    } : undefined}
+                                    style={label ? styles.card : styles.footer}
+                                />
+                            )}
+                            showsVerticalScrollIndicator={false}
+                            keyboardShouldPersistTaps="handled"
+                            style={styles.list}
                         />
-                        <ContactsCard contacts={filteredUnregisteredContacts} style={styles.footer} />
-                    </ScrollView> :
+                    ) :
                     <FlatList
                         data={Object.entries(groupedContacts)}
                         keyExtractor={([letter, _contacts]) => letter}

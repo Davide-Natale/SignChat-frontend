@@ -1,6 +1,6 @@
 import { useTheme } from '@/hooks/useTheme';
 import { Contact } from '@/types/Contact';
-import { StyleProp, StyleSheet, ToastAndroid, View, ViewStyle } from 'react-native';
+import { FlatList, StyleProp, StyleSheet, ToastAndroid, View, ViewStyle } from 'react-native';
 import ThemedText from './ThemedText';
 import ListItem from './ListItem';
 import Divider from './Divider';
@@ -29,54 +29,58 @@ export default function ContactsCard({ label, contacts, style, type='view', acti
             <ThemedText color={theme.secondaryText} fontSize={15} fontWeight="medium" style={styles.label}>
                 {label ?? "Invite on SignChat"}
             </ThemedText>
-            <View style={[styles.surface, { backgroundColor: theme.onSurface }]} >
-                {   contacts.map((contact, index) => (
-                        <React.Fragment key={contact.id}>
-                            <ListItem
-                                leadingContent={
-                                    <ImageProfile 
-                                        uri={contact.user?.imageProfile ?? null} 
-                                        size={35}
-                                        style={styles.image}
-                                    />
-                                }
-                                headlineContent={
-                                    <ThemedText color={theme.primaryText} fontSize={16} fontWeight="semibold" numberOfLines={1} >
-                                        {contact.lastName ? contact.firstName + " " + contact.lastName : contact.firstName}
-                                    </ThemedText>
-                                }
-                                trailingContent={ !label ? 
-                                    <ThemedText 
-                                        color={theme.accent} 
-                                        fontSize={13} 
-                                        fontWeight="regular"
-                                    >
-                                        Invite
-                                    </ThemedText> : undefined
-                                }
-                                onPress={() => {
-                                    if(action) { action(); }
-
-                                    if(label) {
-                                        if(type === 'view') {
-                                            router.push({
-                                                pathname: "/contacts/[id]/info",
-                                                params: { id: contact.id }
-                                            });
-                                        } else {
-                                            
-                                        }
-                                    } else {
-                                        ToastAndroid.show('Coming Soon!', ToastAndroid.SHORT);
-                                    }
-                                }}
-                                style={styles.row}
+            <FlatList 
+                data={contacts}
+                keyExtractor={contact => contact.id.toString()}
+                renderItem={({ item: contact }) => (
+                    <ListItem
+                        leadingContent={
+                            <ImageProfile
+                                uri={contact.user?.imageProfile ?? null}
+                                size={35}
+                                style={styles.image}
                             />
-                            { index < contacts.length - 1 ? <Divider height={0.5} width="83%" style={styles.divider} /> : null }
-                        </React.Fragment>
-                    ))
-                }
-            </View>
+                        }
+                        headlineContent={
+                            <ThemedText color={theme.primaryText} fontSize={16} fontWeight="semibold" numberOfLines={1} >
+                                {contact.lastName ? contact.firstName + " " + contact.lastName : contact.firstName}
+                            </ThemedText>
+                        }
+                        trailingContent={!label ?
+                            <ThemedText
+                                color={theme.accent}
+                                fontSize={13}
+                                fontWeight="regular"
+                            >
+                                Invite
+                            </ThemedText> : undefined
+                        }
+                        onPress={() => {
+                            if (action) { action(); }
+
+                            if (label) {
+                                if (type === 'view') {
+                                    router.push({
+                                        pathname: "/contacts/[id]/info",
+                                        params: { id: contact.id }
+                                    });
+                                } else {
+                                    //  TODO: add code to call user
+                                }
+                            } else {
+                                ToastAndroid.show('Coming Soon!', ToastAndroid.SHORT);
+                            }
+                        }}
+                        style={styles.row}
+                    />
+
+                )}
+                ItemSeparatorComponent={() => (
+                    <Divider height={0.5} width="83%" style={styles.divider} />
+                )}
+                style={[styles.surface, { backgroundColor: theme.onSurface }]}
+                contentContainerStyle={styles.surfaceContent}
+            />
         </View>
     );
 }
@@ -91,10 +95,12 @@ const styles = StyleSheet.create({
         alignSelf: "flex-start"
     },
     surface: {
+        borderRadius: 15
+    },
+    surfaceContent: {
         width: "100%",
         justifyContent: "flex-start",
-        alignItems: "flex-start",
-        borderRadius: 15
+        alignItems: "flex-start"
     },
     row: {
         marginVertical: 8,

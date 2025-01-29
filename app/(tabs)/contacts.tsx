@@ -5,10 +5,9 @@ import { ContactsContext } from '@/contexts/ContactsContext';
 import { useTheme } from '@/hooks/useTheme';
 import { processContacts } from '@/utils/contactsUtils';
 import { router, useFocusEffect } from 'expo-router';
-import { useCallback, useContext, useState } from 'react';
+import { useCallback, useContext, useMemo, useState } from 'react';
 import { FlatList, Keyboard, StyleSheet, View } from 'react-native';
 import AddUserIcon from "@/assets/icons/addUser-bold.svg";
-import { ScrollView } from 'react-native-gesture-handler';
 import ThemedText from '@/components/ThemedText';
 import ThemedSnackBar from '@/components/ThemedSnackBar';
 
@@ -19,7 +18,7 @@ export default function Contacts() {
   const [isKeyboardVisible, setKeyboardVisible] = useState(false);
   const { groupedContacts, unregisteredContacts } = processContacts(contactsContext?.contacts ?? []);
 
-  const applyNameFilter = (firstName: string, lastName: string | null, phone: string,  filter: string) => {
+  const applyNameFilter = useCallback((firstName: string, lastName: string | null, phone: string,  filter: string) => {
     const fullName = `${firstName} ${lastName || ''}`;
     const nameParts = fullName.split(' ');
 
@@ -29,15 +28,21 @@ export default function Contacts() {
       phone.startsWith(filter.trim());
 
     return checkFilter;
-  };
+  }, []);
 
-  const filteredContacts = Object.values(groupedContacts).flatMap(contacts => (
-    contacts.filter(contact => applyNameFilter(contact.firstName, contact.lastName, contact.phone, filter))
-  ));
+  const filteredContacts = useMemo(() => 
+    Object.values(groupedContacts).flatMap(contacts => (
+      contacts.filter(contact => 
+        applyNameFilter(contact.firstName, contact.lastName, contact.phone, filter)
+      )
+    )
+  ), [groupedContacts, filter]);
 
-  const filteredUnregisteredContacts = unregisteredContacts.filter(contact => (
-    applyNameFilter(contact.firstName, contact.lastName, contact.phone, filter)
-  ));
+  const filteredUnregisteredContacts = useMemo(() => 
+    unregisteredContacts.filter(contact => (
+      applyNameFilter(contact.firstName, contact.lastName, contact.phone, filter)
+    )
+  ), [unregisteredContacts, filter]);
   
   useFocusEffect(
     useCallback(() => { 
@@ -66,32 +71,41 @@ export default function Contacts() {
         clearValue={() => setFilter("")}
         style={styles.searchBar}
       />
-      { filter !== "" ?  
-          <ScrollView style={styles.list}
-            showsVerticalScrollIndicator={false}
-            keyboardShouldPersistTaps="handled"
-          >
-            { filteredContacts.length === 0 && filteredUnregisteredContacts.length === 0 ? 
-              <View style={[styles.emptyResult, { backgroundColor: theme.onSurface }]}>
-                <ThemedText color={theme.secondaryText} fontSize={15} fontWeight="medium" style={styles.message}>
-                  No results
-                </ThemedText>
-              </View> : null
-            }
-            <ContactsCard label={"Contacts on SignChat"} contacts={filteredContacts} style={styles.card} />
-            <ContactsCard contacts={filteredUnregisteredContacts} style={styles.footer} />
-          </ScrollView> :
-          <FlatList
-            data={Object.entries(groupedContacts)}
-            keyExtractor={([letter, _contacts]) => letter}
-            renderItem={({ item: [letter, contacts] }) => (
-              <ContactsCard label={letter} contacts={contacts} style={styles.card} />
-            )}
-            ListFooterComponent={() => <ContactsCard contacts={unregisteredContacts} style={styles.footer} />}
-            showsVerticalScrollIndicator={false}
-            keyboardShouldPersistTaps="handled"
-            style={styles.list}
-          />
+      { filter !== "" ?
+        ( filteredContacts.length === 0 && filteredUnregisteredContacts.length === 0 ? 
+            <View style={[styles.emptyResult, { backgroundColor: theme.onSurface }]}>
+              <ThemedText color={theme.secondaryText} fontSize={15} fontWeight="medium" style={styles.message}>
+                No results
+              </ThemedText>
+            </View> :
+            <FlatList
+              data={[{ label: "Contacts on SignChat", contacts: filteredContacts },
+                { contacts: filteredUnregisteredContacts }
+              ]}
+              keyExtractor={(_item, index) => index.toString()}
+              renderItem={({ item: { label, contacts } }) => (
+                <ContactsCard
+                  label={label}
+                  contacts={contacts}
+                  style={label ? styles.card : styles.footer}
+                />
+              )}
+              showsVerticalScrollIndicator={false}
+              keyboardShouldPersistTaps="handled"
+              style={styles.list}
+            /> 
+        ) :
+        <FlatList
+          data={Object.entries(groupedContacts)}
+          keyExtractor={([letter, _contacts]) => letter}
+          renderItem={({ item: [letter, contacts] }) => (
+            <ContactsCard label={letter} contacts={contacts} style={styles.card} />
+          )}
+          ListFooterComponent={() => <ContactsCard contacts={unregisteredContacts} style={styles.footer} />}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          style={styles.list}
+        />
       }
       { !isKeyboardVisible ? 
           <View style={[styles.fab, { backgroundColor: theme.primary }]}>

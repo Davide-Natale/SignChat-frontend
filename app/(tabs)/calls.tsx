@@ -26,6 +26,7 @@ import AlertDialog from '@/components/AlertDialog';
 import ThemedSnackBar from '@/components/ThemedSnackBar';
 import { AppContext } from '@/contexts/AppContext';
 import { ErrorContext } from '@/contexts/ErrorContext';
+import { Contact } from '@/types/Contact';
 
 export default function Calls() {
   const theme = useTheme();
@@ -280,54 +281,62 @@ export default function Calls() {
             />
         </View> : null
       }
-      <ScrollView
-        keyboardShouldPersistTaps='handled'
-        showsVerticalScrollIndicator={false}
-        style={styles.list}
-      >
-        { filter === "" && calls.length === 0 ? 
+      { filter === "" && calls.length === 0 ?
+        <ScrollView 
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+          style={styles.list} 
+        >
           <View style={styles.emptyMessageContainer}>
             <ThemedText color={theme.secondaryText} fontSize={18} fontWeight="medium" style={styles.emptyMessage}>
-                {"To start a video call with your contacts on SignChat, tap "}
-                <View style={styles.emptyMessageIcon}>
-                  { scheme === "dark" ? 
-                    <NewCallIconDark fill={theme.surface} /> :
-                    <NewCallIconLight fill={theme.surface} />
-                  }
-                </View>
-                {" at the bottom."}
-              </ThemedText>
-          </View> : null
-        }
-        { filter !== "" && filteredContacts.length === 0 && filteredUnregisteredContacts.length === 0 && filteredCalls.length === 0 ?
-            <View style={[styles.emptyResult, { backgroundColor: theme.onSurface }]}>
-              <ThemedText color={theme.secondaryText} fontSize={15} fontWeight="medium" style={styles.message}>
-                No results
-              </ThemedText>
-            </View> : null
-        }
-        { filter !== "" ? 
+              {"To start a video call with your contacts on SignChat, tap "}
+              <View style={styles.emptyMessageIcon}>
+                {scheme === "dark" ?
+                  <NewCallIconDark fill={theme.surface} /> :
+                  <NewCallIconLight fill={theme.surface} />
+                }
+              </View>
+              {" at the bottom."}
+            </ThemedText>
+          </View>
+        </ScrollView>
+         : null
+      }
+      {filter !== "" && filteredContacts.length === 0 && filteredUnregisteredContacts.length === 0 && filteredCalls.length === 0 ?
+        <View style={[styles.emptyResult, { backgroundColor: theme.onSurface }]}>
+          <ThemedText color={theme.secondaryText} fontSize={15} fontWeight="medium" style={styles.message}>
+            No results
+          </ThemedText>
+        </View> : null
+      }
+
+      <FlatList
+        data={[
+            { label: "Contacts on SignChat", values: filter !== "" ? filteredContacts : [] },
+            { label: (filter !== "" ? "Calls" : undefined), values: filteredCalls },
+            { values: filter !== "" ? filteredUnregisteredContacts : [] }
+        ]}
+        keyExtractor={(_item, index) => index.toString()}
+        renderItem={({ item: { label, values }, index }) => (
+          index === 1 ? 
+            <CallsCard
+              isEdit={isEdit}
+              label={label}
+              calls={values as Call[]}
+              onEditAction={isEdit ? toggleSelection : undefined}
+              checkSelected={checkSelected}
+              style={[styles.callsCard, { marginBottom: filter !== "" || isKeyboardVisible || isEdit ? 25 : 90 }]}
+            /> :
             <ContactsCard 
-              label={"Contacts on SignChat"} 
-              contacts={filteredContacts} 
-              style={styles.contactsCard} 
-            /> : null
-        }
-        <CallsCard
-          isEdit={isEdit}
-          label={ filter !== "" ? "Calls" : undefined }
-          calls={filteredCalls}
-          onEditAction={ isEdit ? toggleSelection : undefined }
-          checkSelected={checkSelected}
-          style={[styles.callsCard, { marginBottom: filter !== "" || isKeyboardVisible || isEdit ? 25 : 90 }]} 
-        />
-        { filter !== "" ?
-            <ContactsCard 
-              contacts={filteredUnregisteredContacts} 
-              style={styles.unregisteredContactsCard} 
-            /> : null
-        }
-      </ScrollView>
+              label={label} 
+              contacts={values as Contact[]} 
+              style={label ? styles.contactsCard : styles.unregisteredContactsCard} 
+            />
+        )}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+        style={styles.list}
+      />
       <AlertDialog
         showDialog={showDialog}
         title='Clear Call History'
@@ -384,7 +393,7 @@ const styles = StyleSheet.create({
   emptyMessageContainer: {
     width: "80%", 
     alignSelf: "center", 
-    marginTop: "50%"
+    marginVertical: "50%"
   },
   emptyMessage: {
     textAlign: "center"
@@ -431,7 +440,7 @@ const styles = StyleSheet.create({
   unregisteredContactsCard: {
     width: "90%",
     alignSelf: "center",
-    marginBottom: 25
+    marginBottom: 90
   },
   fab: {
     height: 58,
