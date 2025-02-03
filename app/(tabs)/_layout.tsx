@@ -15,6 +15,7 @@ import { parsePhoneNumberFromString } from 'libphonenumber-js';
 import { Contact } from "@/types/Contact";
 import contactsAPI from "@/api/contactsAPI";
 import { ContactsContext } from "@/contexts/ContactsContext";
+import { connectSocket, disconnectToken } from "@/utils/webSocket";
 
 type CustomContact = Omit<Contact, "id" | "user">;
 
@@ -124,6 +125,12 @@ export default function TabLayout() {
 
     useEffect(() => {
         authContext?.fetchProfile();
+    }, []);
+
+    useEffect(() => {
+        connectSocket();
+
+        return () => { disconnectToken(); };
     }, []);
 
     return (
