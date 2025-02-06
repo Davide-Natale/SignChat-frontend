@@ -38,5 +38,3 @@ app-example
 # local development build
 ios/
 android/
-
-google-services.json

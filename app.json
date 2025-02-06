@@ -17,7 +17,8 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "it.polito.SignChat"
+      "package": "it.polito.SignChat",
+      "googleServicesFile": "./google-services.json"
     },
     "web": {
       "bundler": "metro",
