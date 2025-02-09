@@ -6,8 +6,6 @@ interface AppContextType {
     updateIsReady: (ready: boolean) => void;
     loading: boolean;
     updateLoading: (loading: boolean) => void;
-    isNotificationsEnabled: boolean | null;
-    updateNotifications: (value: boolean) => Promise<void>;
     isAccessibilityEnabled: boolean | null;
     updateAccessibility: (value: boolean) => Promise<void>;
 }
@@ -17,36 +15,23 @@ export const AppContext = createContext<AppContextType | undefined>(undefined);
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [isReady, setIsReady] = useState(false);
     const [loading, setLoading] = useState(false);
-    const [isNotificationsEnabled, setIsNotificationsEnabled] = useState<boolean | null>(null);
     const [isAccessibilityEnabled, setIsAccessibilityEnabled] = useState<boolean | null>(null);
     
     useEffect(() => {
-        const loadPreferences = async () => {
+        const loadAccessibilityPreference = async () => {
             try {
-                //  Read preferences from Async Storage
-                const notificationsPreference = await getPreference('pushNotifications');
+                //  Read preference from Async Storage
                 const accessibilityPreference = await getPreference('accessibility');
     
-                //  Update states
-                setIsNotificationsEnabled(notificationsPreference);
+                //  Update preference state
                 setIsAccessibilityEnabled(accessibilityPreference);
             } catch (error) {
-                //  No need to do anything: unable to retreive preferences
+                //  No need to do anything: unable to retreive accessibility preference
             }
         };
 
-        loadPreferences();
+        loadAccessibilityPreference();
     }, []);
-
-    const updateNotifications = async (value: boolean) => {
-        try {
-            setIsNotificationsEnabled(value);
-            await savePreference('pushNotifications', value);
-        } catch (error) {
-            setIsNotificationsEnabled(!value);
-            throw error;
-        }
-    };
 
     const updateAccessibility = async (value: boolean) => {
         try {
@@ -65,8 +50,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
                 updateIsReady: setIsReady, 
                 loading, 
                 updateLoading: setLoading,
-                isNotificationsEnabled,
-                updateNotifications,
                 isAccessibilityEnabled,
                 updateAccessibility
             }

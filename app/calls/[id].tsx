@@ -22,6 +22,7 @@ import { AppContext } from '@/contexts/AppContext';
 import { ErrorContext } from '@/contexts/ErrorContext';
 import ThemedSnackBar from '@/components/ThemedSnackBar';
 import OptionsMenu from '@/components/OptionsMenu';
+import { socket } from '@/utils/webSocket';
 
 export default function InfoCall() {
     const theme = useTheme();
@@ -136,7 +137,7 @@ export default function InfoCall() {
                         trailingContent={
                             ( call?.contact?.user || call?.user ?
                                 <TouchableOpacity
-                                    onPress={() => { /* TODO: add code to call user */ }}
+                                    onPress={() => { /* TODO: fix this */socket.emit("call-user", { to: call.contact?.user?.id ?? call.user?.id }); }}
                                     touchSoundDisabled
                                     activeOpacity={0.8}
                                 >

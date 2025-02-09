@@ -4,7 +4,7 @@ import authAPI from '@/api/authAPI';
 
 const SERVER_URL = 'http://192.168.178.183:3000';
 
-const socket = io(SERVER_URL, {
+export const socket = io(SERVER_URL, {
     autoConnect: false,
     reconnection: true,
     reconnectionAttempts: 5, 

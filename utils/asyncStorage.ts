@@ -9,3 +9,7 @@ export const getPreference = async (key: string) => {
     const jsonValue = await AsyncStorage.getItem(key);
     return jsonValue !== null ? JSON.parse(jsonValue) : null;
 };
+
+export const removePreference = async (key: string) => {
+    await AsyncStorage.removeItem(key);
+};

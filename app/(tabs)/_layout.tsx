@@ -16,6 +16,7 @@ import { Contact } from "@/types/Contact";
 import contactsAPI from "@/api/contactsAPI";
 import { ContactsContext } from "@/contexts/ContactsContext";
 import { connectSocket, disconnectToken } from "@/utils/webSocket";
+import { NotificationsContext } from "@/contexts/NotificationsContext";
 
 type CustomContact = Omit<Contact, "id" | "user">;
 
@@ -24,6 +25,7 @@ export default function TabLayout() {
     const appContext = useContext(AppContext);
     const authContext = useContext(AuthContext);
     const contactsContext = useContext(ContactsContext);
+    const notificationsContext = useContext(NotificationsContext);
 
     const getLocalContacts = useCallback(async () => {
         const { status } = await Contacts.requestPermissionsAsync();
@@ -110,10 +112,15 @@ export default function TabLayout() {
     useEffect(() => {
         const checkPreferences = async () => {
             try {
-                if(appContext?.isNotificationsEnabled === null || appContext?.isAccessibilityEnabled === null) {
-                    //  If preferences are not set yet, initialize them with default values.
-                    await appContext.updateNotifications(false);
-                    await appContext.updateAccessibility(true);
+                if(appContext?.isAccessibilityEnabled === null) {
+                    //  If accessibility preference is not set yet, initialize it with a default value.
+                    await appContext?.updateAccessibility(true);
+                }
+
+                if(notificationsContext?.isNotificationsEnabled !== false) {
+                    //  If notifications preference is true, we initialize notifications
+                    //  Otherwise if is not set yet, we ask user if he wanto to use push notifications
+                    await notificationsContext?.initializeNotifications();
                 }
             } catch (error) {
                 //  No need to do anything: unable to update preferences

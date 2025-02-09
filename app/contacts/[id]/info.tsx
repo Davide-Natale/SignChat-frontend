@@ -25,6 +25,7 @@ import Divider from '@/components/Divider';
 import * as Contacts from 'expo-contacts';
 import contactsAPI from '@/api/contactsAPI';
 import { parsePhoneNumberFromString } from 'libphonenumber-js';
+import { socket } from '@/utils/webSocket';
 
 export default function InfoContact() {
     const theme = useTheme();
@@ -126,7 +127,7 @@ export default function InfoContact() {
                 </ThemedText>
                 { contact?.user ? 
                     <ThemedButton
-                        onPress={() => { /* TODO: add code to call contact */ }}
+                        onPress={() => { /* TODO: fix this */socket.emit("call-user", { to: contact?.user?.id }); }}
                         height={50}
                         width="70%"
                         backgroundColor={theme.accent}

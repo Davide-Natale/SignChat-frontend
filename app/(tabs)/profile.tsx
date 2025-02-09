@@ -21,12 +21,14 @@ import { Switch } from 'react-native-gesture-handler';
 import AlertDialog from '@/components/AlertDialog';
 import { AppContext } from '@/contexts/AppContext';
 import ThemedSnackBar from '@/components/ThemedSnackBar';
+import { NotificationsContext } from '@/contexts/NotificationsContext';
 
 export default function Profile() {
   const theme = useTheme();
   const [showDialog, setShowDialog] = useState(false);
   const authContext = useContext(AuthContext);
   const appContext = useContext(AppContext);
+  const notificationsContext = useContext(NotificationsContext);
   const fullName = authContext?.user ? authContext?.user.firstName + " " + authContext?.user.lastName : "";
 
   useFocusEffect(useCallback(() => { authContext?.fetchProfile(); }, []));
@@ -99,8 +101,8 @@ export default function Profile() {
             }
             trailingContent={
               <Switch 
-                value={appContext?.isNotificationsEnabled ?? false} 
-                onValueChange={appContext?.updateNotifications}
+                value={notificationsContext?.isNotificationsEnabled ?? false} 
+                onValueChange={notificationsContext?.updateNotifications}
                 thumbColor={theme.onAccent}
                 trackColor={{false: theme.divider, true: theme.confirm}}
                 style={styles.switch} 
@@ -158,6 +160,7 @@ export default function Profile() {
           <ListItem
             onPress={async () => {
               try {
+                await notificationsContext?.handleLogout();
                 await authContext?.logout();
               } catch (error) {
                 //  No need to do anything
@@ -183,6 +186,7 @@ export default function Profile() {
           onConfirm={async () => { 
             setShowDialog(false); 
             try {
+              await notificationsContext?.handleDeleteAccount();
               await authContext?.deleteAccount();
             } catch (error) {
               //  No need to do anything
