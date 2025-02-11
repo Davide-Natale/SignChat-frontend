@@ -4,6 +4,7 @@ import * as Notifications from 'expo-notifications';
 import { Platform } from "react-native";
 import { registerForPushNotificationsAsync } from "@/utils/notifications";
 import tokensAPI from "@/api/tokensAPI";
+import { showIncomingCall } from "@/utils/callKeep";
 
 interface NotificationsContextType {
     notification: Notifications.Notification | undefined;
@@ -68,6 +69,10 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
           notificationListener.current = Notifications.addNotificationReceivedListener(notification => {
             console.log("Notifica ricevuta:", notification);
             setNotification(notification);
+
+            if(notification.request.content.data.type === 'incoming-call') {
+                showIncomingCall('2', '1234', 'Lorenzo Lenti');
+            }
           });
     
           responseListener.current = Notifications.addNotificationResponseReceivedListener(response => {

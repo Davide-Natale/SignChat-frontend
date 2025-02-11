@@ -64,7 +64,7 @@ export const connectSocket = async () => {
     }
 };
 
-export const disconnectToken = () => {
+export const disconnectSocket = () => {
     if(socket.connected) {
         socket.disconnect();
         socket.off();

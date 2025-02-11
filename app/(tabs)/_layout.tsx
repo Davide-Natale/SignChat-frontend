@@ -15,8 +15,9 @@ import { parsePhoneNumberFromString } from 'libphonenumber-js';
 import { Contact } from "@/types/Contact";
 import contactsAPI from "@/api/contactsAPI";
 import { ContactsContext } from "@/contexts/ContactsContext";
-import { connectSocket, disconnectToken } from "@/utils/webSocket";
+import { connectSocket, disconnectSocket } from "@/utils/webSocket";
 import { NotificationsContext } from "@/contexts/NotificationsContext";
+import { setupCallKeep } from "@/utils/callKeep";
 
 type CustomContact = Omit<Contact, "id" | "user">;
 
@@ -137,8 +138,11 @@ export default function TabLayout() {
     useEffect(() => {
         connectSocket();
 
-        return () => { disconnectToken(); };
+        return () => { disconnectSocket(); };
     }, []);
+
+    //  TODO: complete this
+    useEffect(() => { setupCallKeep(); }, []);
 
     return (
         <Tabs
