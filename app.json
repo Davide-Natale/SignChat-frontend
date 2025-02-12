@@ -72,7 +72,8 @@
           "icon": "./assets/images/notification_icon.png",
           "color": "#007cff"
         }
-      ]
+      ],
+      "@config-plugins/react-native-callkeep"
     ],
     "experiments": {
       "typedRoutes": true

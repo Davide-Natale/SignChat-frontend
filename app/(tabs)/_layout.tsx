@@ -123,6 +123,7 @@ export default function TabLayout() {
                     //  Otherwise if is not set yet, we ask user if he wanto to use push notifications
                     await notificationsContext?.initializeNotifications();
                 }
+                await setupCallKeep();
             } catch (error) {
                 //  No need to do anything: unable to update preferences
             }
@@ -140,9 +141,6 @@ export default function TabLayout() {
 
         return () => { disconnectSocket(); };
     }, []);
-
-    //  TODO: complete this
-    useEffect(() => { setupCallKeep(); }, []);
 
     return (
         <Tabs
