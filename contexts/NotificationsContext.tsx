@@ -1,13 +1,12 @@
 import { getPreference, removePreference, savePreference } from "@/utils/asyncStorage";
 import React, { createContext, useEffect, useRef, useState } from "react";
-import * as Notifications from 'expo-notifications';
-import { Platform } from "react-native";
-import { registerForPushNotificationsAsync } from "@/utils/notifications";
+import { deleteToken, onMessage, onTokenRefresh } from '@react-native-firebase/messaging';
+import { messaging, registerForPushNotificationsAsync } from "@/utils/firebaseMessaging";
 import tokensAPI from "@/api/tokensAPI";
 import { showIncomingCall } from "@/utils/callKeep";
+import DeviceInfo from 'react-native-device-info';
 
 interface NotificationsContextType {
-    notification: Notifications.Notification | undefined;
     isNotificationsEnabled: boolean | null;
     initializeNotifications: () => Promise<void>;
     updateNotifications: (value: boolean) => Promise<void>;
@@ -18,11 +17,10 @@ interface NotificationsContextType {
 export const NotificationsContext = createContext<NotificationsContextType | undefined>(undefined);
 
 export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const [expoToken, setExpoToken] = useState<string | null>(null);
-    const [notification, setNotification] = useState<Notifications.Notification>();
+    const [fcmToken, setFcmToken] = useState<string | null>(null);
     const [isNotificationsEnabled, setIsNotificationsEnabled] = useState<boolean | null>(null);
-    const notificationListener = useRef<Notifications.EventSubscription>();
-    const responseListener = useRef<Notifications.EventSubscription>();
+    const unsubscribeNotificationListener = useRef<() => void>();
+    const unsubscribeRefreshListener = useRef<() => void>();
 
     useEffect(() => {
         const loadNotificationsPreference = async () => {
@@ -41,74 +39,54 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
     }, []);
 
     useEffect(() => {
-        const configureNotifications = async () => {
-            //  Set up notifications handler
-            Notifications.setNotificationHandler({
-                handleNotification: async () => ({
-                    shouldShowAlert: true,
-                    shouldPlaySound: true,
-                    shouldSetBadge: false,
-                }),
+        if(isNotificationsEnabled) {
+            unsubscribeNotificationListener.current = onMessage(messaging, message => {
+                if(message.data?.type === 'incoming-call') {
+                    showIncomingCall('2', '1234', 'Lorenzo Lenti');
+                }
             });
 
-            //  Set up notifications channel
-            if (Platform.OS === 'android') {
-                await Notifications.setNotificationChannelAsync('default', {
-                    name: 'default',
-                    importance: Notifications.AndroidImportance.MAX,
-                    vibrationPattern: [0, 250, 250, 250]
-                });
-            }
-        };
-        
-        configureNotifications();
-    }, []);
-
-    useEffect(() => {
-        if(isNotificationsEnabled) {
-          notificationListener.current = Notifications.addNotificationReceivedListener(notification => {
-            console.log("Notifica ricevuta:", notification);
-            setNotification(notification);
-
-            if(notification.request.content.data.type === 'incoming-call') {
-                showIncomingCall('2', '1234', 'Lorenzo Lenti');
-            }
-          });
-    
-          responseListener.current = Notifications.addNotificationResponseReceivedListener(response => {
-            console.log("L'utente ha interagito con la notifica:", JSON.stringify( 
-                response.notification.request.content, null, 2
-            ));
-          });
+            unsubscribeRefreshListener.current = onTokenRefresh(messaging, async token => {
+                try {
+                    const deviceId = await DeviceInfo.getUniqueId();
+                    await tokensAPI.syncToken(token, deviceId);
+                    setFcmToken(token);
+                } catch (error) {
+                    //  No need to do anything
+                }
+            });
         } else {
-          if(notificationListener.current) {
-            Notifications.removeNotificationSubscription(notificationListener.current);
-            notificationListener.current = undefined;
+          if(unsubscribeNotificationListener.current) {
+            unsubscribeNotificationListener.current();
+            unsubscribeNotificationListener.current = undefined;
           }
 
-          if(responseListener.current) {
-            Notifications.removeNotificationSubscription(responseListener.current);
-            responseListener.current = undefined;
+          if(unsubscribeRefreshListener.current) {
+            unsubscribeRefreshListener.current();
+            unsubscribeNotificationListener.current = undefined;
           }
         }
     
         return () => {
-          if(notificationListener.current) {
-            Notifications.removeNotificationSubscription(notificationListener.current);
-            notificationListener.current = undefined;
-          }
+            if(unsubscribeNotificationListener.current) {
+                unsubscribeNotificationListener.current();
+                unsubscribeNotificationListener.current = undefined;
+            }
 
-          if(responseListener.current) {
-            Notifications.removeNotificationSubscription(responseListener.current);
-            responseListener.current = undefined;
-          }
+            if(unsubscribeRefreshListener.current) {
+                unsubscribeRefreshListener.current();
+                unsubscribeNotificationListener.current = undefined;
+            }
         };
       }, [isNotificationsEnabled]);
 
     const initializeNotifications = async () => {
         if(isNotificationsEnabled) {
+            const deviceId = await DeviceInfo.getUniqueId();
             const token = await registerForPushNotificationsAsync();
-            setExpoToken(token);
+
+            await tokensAPI.syncToken(token, deviceId);
+            setFcmToken(token);
         } else {
             try {
                 await updateNotifications(true);
@@ -124,12 +102,15 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
             setIsNotificationsEnabled(value);
 
             if(value) {
+                const deviceId = await DeviceInfo.getUniqueId();
                 const token = await registerForPushNotificationsAsync();
-                await tokensAPI.createToken(token);
-                setExpoToken(token);
+
+                await tokensAPI.createToken(token, deviceId);
+                setFcmToken(token);
             } else {
-                await tokensAPI.deleteToken(expoToken ?? '');
-                setExpoToken(null);
+                await tokensAPI.deleteToken(fcmToken ?? '');
+                await deleteToken(messaging);
+                setFcmToken(null);
             }
 
             await savePreference('pushNotifications', value);
@@ -142,8 +123,9 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
     const handleLogout = async () => {
         try {
             if(isNotificationsEnabled) {
-                await tokensAPI.deleteToken(expoToken ?? '');
-                setExpoToken(null);
+                await tokensAPI.deleteToken(fcmToken ?? '');
+                await deleteToken(messaging);
+                setFcmToken(null);
             }
         } catch (error) {
             throw error;
@@ -154,15 +136,22 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
     };
 
     const handleDeleteAccount = async () => {
-        if(expoToken) setExpoToken(null);
-        await removePreference('pushNotifications');
-        setIsNotificationsEnabled(null);
+        try {
+            if(fcmToken) {
+                await deleteToken(messaging);
+                setFcmToken(null);
+            }
+        } catch (error) {
+            throw error;
+        } finally {
+            await removePreference('pushNotifications');
+            setIsNotificationsEnabled(null);
+        } 
     };
 
     return(
         <NotificationsContext.Provider value={
             {
-                notification,
                 isNotificationsEnabled,
                 initializeNotifications,
                 updateNotifications,

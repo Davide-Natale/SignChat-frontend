@@ -89,47 +89,48 @@ export default function TabLayout() {
         return { newContacts, updatedContacts, deletedContacts };
     }, []);
 
-    useEffect(() => {
-        const synchContacts = async () => {
-            try {
-                const localContacts = await getLocalContacts();
+    const synchContacts = async () => {
+        try {
+            const localContacts = await getLocalContacts();
 
-                if(localContacts) {
-                    const serverContacts = await fetchServerContacts();
-                    const { newContacts, updatedContacts, deletedContacts } = compareContacts(localContacts, serverContacts);
+            if(localContacts) {
+                const serverContacts = await fetchServerContacts();
+                const { newContacts, updatedContacts, deletedContacts } = compareContacts(localContacts, serverContacts);
 
-                    await contactsAPI.syncContacts(newContacts, updatedContacts, deletedContacts);
+                await contactsAPI.syncContacts(newContacts, updatedContacts, deletedContacts);
 
-                    contactsContext?.fetchContacts();
-                }
-            } catch (error) {
-                //  No need to do anything
+                contactsContext?.fetchContacts();
             }
+        } catch (error) {
+            //  No need to do anything
+        }
+    };
+
+    const checkPreferences = async () => {
+        try {
+            if(appContext?.isAccessibilityEnabled === null) {
+                //  If accessibility preference is not set yet, initialize it with a default value.
+                await appContext?.updateAccessibility(true);
+            }
+
+            if(notificationsContext?.isNotificationsEnabled !== false) {
+                //  If notifications preference is true, we initialize notifications
+                //  Otherwise if is not set yet, we ask user if he wanto to use push notifications
+                await notificationsContext?.initializeNotifications();
+            }
+        } catch (error) {
+            //  No need to do anything: unable to update preferences
+        }
+    };
+
+    useEffect(() => {
+        const initializeApp = async () => {
+            await synchContacts();
+            await checkPreferences();
+            await setupCallKeep();
         };
         
-        synchContacts();
-    }, []);
-
-    useEffect(() => {
-        const checkPreferences = async () => {
-            try {
-                if(appContext?.isAccessibilityEnabled === null) {
-                    //  If accessibility preference is not set yet, initialize it with a default value.
-                    await appContext?.updateAccessibility(true);
-                }
-
-                if(notificationsContext?.isNotificationsEnabled !== false) {
-                    //  If notifications preference is true, we initialize notifications
-                    //  Otherwise if is not set yet, we ask user if he wanto to use push notifications
-                    await notificationsContext?.initializeNotifications();
-                }
-                await setupCallKeep();
-            } catch (error) {
-                //  No need to do anything: unable to update preferences
-            }
-        };
-        
-        checkPreferences();
+        initializeApp();
     }, []);
 
     useEffect(() => {

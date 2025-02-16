@@ -25,6 +25,10 @@
       "output": "static",
       "favicon": "./assets/images/favicon.png"
     },
+    "notification": {
+      "icon": "./assets/images/notification_icon.png",
+      "color": "#007cff"
+    },
     "plugins": [
       "expo-router",
       [
@@ -66,14 +70,9 @@
           }
         }
       ],
-      [
-        "expo-notifications",
-        {
-          "icon": "./assets/images/notification_icon.png",
-          "color": "#007cff"
-        }
-      ],
-      "@config-plugins/react-native-callkeep"
+      "@config-plugins/react-native-callkeep",
+      "@react-native-firebase/app",
+      "@react-native-firebase/messaging"
     ],
     "experiments": {
       "typedRoutes": true
@@ -86,6 +85,12 @@
         "projectId": "3e55a819-1976-40e4-9a6c-6de1c733b9db"
       }
     },
-    "owner": "davide-natale"
+    "owner": "davide-natale",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/3e55a819-1976-40e4-9a6c-6de1c733b9db"
+    }
   }
 }
