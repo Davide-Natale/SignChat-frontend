@@ -18,6 +18,7 @@ import { ContactsContext } from "@/contexts/ContactsContext";
 import { connectSocket, disconnectSocket } from "@/utils/webSocket";
 import { NotificationsContext } from "@/contexts/NotificationsContext";
 import { setupCallKeep } from "@/utils/callKeep";
+import { checkInitialNotification } from "@/utils/notifications";
 
 type CustomContact = Omit<Contact, "id" | "user">;
 
@@ -128,6 +129,7 @@ export default function TabLayout() {
             await synchContacts();
             await checkPreferences();
             await setupCallKeep();
+            await checkInitialNotification();
         };
         
         initializeApp();

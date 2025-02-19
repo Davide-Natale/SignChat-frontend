@@ -5,6 +5,8 @@ import { messaging, registerForPushNotificationsAsync } from "@/utils/firebaseMe
 import tokensAPI from "@/api/tokensAPI";
 import { showIncomingCall } from "@/utils/callKeep";
 import DeviceInfo from 'react-native-device-info';
+import { displayNotification } from "@/utils/notifications";
+import notifee, { EventType } from '@notifee/react-native';
 
 interface NotificationsContextType {
     isNotificationsEnabled: boolean | null;
@@ -19,6 +21,7 @@ export const NotificationsContext = createContext<NotificationsContextType | und
 export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [fcmToken, setFcmToken] = useState<string | null>(null);
     const [isNotificationsEnabled, setIsNotificationsEnabled] = useState<boolean | null>(null);
+    const unsubscribeMessageListener = useRef<() => void>();
     const unsubscribeNotificationListener = useRef<() => void>();
     const unsubscribeRefreshListener = useRef<() => void>();
 
@@ -40,9 +43,22 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
 
     useEffect(() => {
         if(isNotificationsEnabled) {
-            unsubscribeNotificationListener.current = onMessage(messaging, message => {
-                if(message.data?.type === 'incoming-call') {
+            unsubscribeMessageListener.current = onMessage(messaging, async message => {
+                if(message.data?.notifee) {
+                    await displayNotification(typeof message.data.notifee === 'string' ?
+                        JSON.parse(message.data.notifee) :
+                        message.data.notifee
+                    );
+                } else if(message.data?.type === 'incoming-call') {
                     showIncomingCall('2', '1234', 'Lorenzo Lenti');
+                }
+            }); 
+
+            unsubscribeNotificationListener.current = notifee.onForegroundEvent(({ type, detail }) => {
+                if(type === EventType.PRESS) {
+                    //  TODO: you might want to redirect user to correct route
+                    console.log("Foreground Notification pressed");
+                    console.log(JSON.stringify(detail.notification));
                 }
             });
 
@@ -56,6 +72,11 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
                 }
             });
         } else {
+          if(unsubscribeMessageListener.current) {
+            unsubscribeMessageListener.current();
+            unsubscribeMessageListener.current = undefined;
+          }
+
           if(unsubscribeNotificationListener.current) {
             unsubscribeNotificationListener.current();
             unsubscribeNotificationListener.current = undefined;
@@ -63,19 +84,24 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
 
           if(unsubscribeRefreshListener.current) {
             unsubscribeRefreshListener.current();
-            unsubscribeNotificationListener.current = undefined;
+            unsubscribeRefreshListener.current = undefined;
           }
         }
     
         return () => {
+            if(unsubscribeMessageListener.current) {
+                unsubscribeMessageListener.current();
+                unsubscribeMessageListener.current = undefined;
+            }
+
             if(unsubscribeNotificationListener.current) {
                 unsubscribeNotificationListener.current();
                 unsubscribeNotificationListener.current = undefined;
-            }
+              }
 
             if(unsubscribeRefreshListener.current) {
                 unsubscribeRefreshListener.current();
-                unsubscribeNotificationListener.current = undefined;
+                unsubscribeRefreshListener.current = undefined;
             }
         };
       }, [isNotificationsEnabled]);
