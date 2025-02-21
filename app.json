@@ -18,17 +18,7 @@
         "backgroundColor": "#ffffff"
       },
       "package": "it.polito.SignChat",
-      "googleServicesFile": "./google-services.json",
-      "permissions": [
-        "android.permission.BIND_TELECOM_CONNECTION_SERVICE",
-        "android.permission.FOREGROUND_SERVICE",
-        "android.permission.READ_PHONE_STATE",
-        "android.permission.CALL_PHONE",
-        "android.permission.BIND_TELECOM_CONNECTION_SERVICE",
-        "android.permission.FOREGROUND_SERVICE",
-        "android.permission.READ_PHONE_STATE",
-        "android.permission.CALL_PHONE"
-      ]
+      "googleServicesFile": "./google-services.json"
     },
     "web": {
       "bundler": "metro",
@@ -80,7 +70,6 @@
           }
         }
       ],
-      "@config-plugins/react-native-callkeep",
       "@react-native-firebase/app",
       "@react-native-firebase/messaging",
       "./plugins/notifeePlugin.js"

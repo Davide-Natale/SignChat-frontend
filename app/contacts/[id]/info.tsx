@@ -25,7 +25,7 @@ import Divider from '@/components/Divider';
 import * as Contacts from 'expo-contacts';
 import contactsAPI from '@/api/contactsAPI';
 import { parsePhoneNumberFromString } from 'libphonenumber-js';
-import { socket } from '@/utils/webSocket';
+import { VideoCallContext } from '@/contexts/VideoCallContext';
 
 export default function InfoContact() {
     const theme = useTheme();
@@ -33,6 +33,7 @@ export default function InfoContact() {
     const appContext = useContext(AppContext);
     const errorContext = useContext(ErrorContext);
     const contactsContext = useContext(ContactsContext);
+    const videoCallContext = useContext(VideoCallContext)
     const { id } = useLocalSearchParams<{ id: string }>();
     const [contact, setContact] = useState<Contact | null>(null);
     const [recentCalls, setRecentCalls] = useState<Call[]>([]);
@@ -127,7 +128,17 @@ export default function InfoContact() {
                 </ThemedText>
                 { contact?.user ? 
                     <ThemedButton
-                        onPress={() => { /* TODO: fix this */socket.emit("call-user", { to: contact?.user?.id }); }}
+                        onPress={() => {
+                            const callId = `user-${contact.user?.id}`;
+
+                            videoCallContext?.startCall(
+                                callId,
+                                contact.phone,
+                                fullName ?? "",
+                                contact.id, 
+                                true
+                            ); 
+                        }}
                         height={50}
                         width="70%"
                         backgroundColor={theme.accent}
