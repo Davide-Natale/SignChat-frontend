@@ -14,6 +14,10 @@ import VideoCallOutLight from "@/assets/icons/videoCallOut-light.svg";
 import VideoCallOutDark from "@/assets/icons/videoCallOut-dark.svg";
 import VideoCallMissedLight from "@/assets/icons/videoCallMissed-light.svg";
 import VideoCallMissedDark from "@/assets/icons/videoCallMissed-dark.svg";
+import VideoCallInOnLight from "@/assets/icons/videoCallInOn-light.svg";
+import VideoCallInOnDark from "@/assets/icons/videoCallInOn-dark.svg";
+import VideoCallOutOnLight from "@/assets/icons/videoCallOutOn-light.svg";
+import VideoCallOutOnDark from "@/assets/icons/videoCallOutOn-dark.svg";
 import TrashIcon from '@/assets/icons/trash.svg';
 import { formatDate } from '@/utils/dateUtils';
 import { formatCallDuration, getCallDescription } from '@/utils/callsUtils';
@@ -23,6 +27,9 @@ import { ErrorContext } from '@/contexts/ErrorContext';
 import ThemedSnackBar from '@/components/ThemedSnackBar';
 import OptionsMenu from '@/components/OptionsMenu';
 import { socket } from '@/utils/webSocket';
+
+type CallType = 'incoming' | 'outgoing';
+type CallStatus = 'completed' | 'missed' | 'rejected' | 'unanswered' | 'ongoing';
 
 export default function InfoCall() {
     const theme = useTheme();
@@ -54,16 +61,35 @@ export default function InfoCall() {
             missed: VideoCallMissedLight,
             incoming: VideoCallInLight,
             outgoing: VideoCallOutLight,
+            ongoing: {
+                incoming: VideoCallInOnLight,
+                outgoing: VideoCallOutOnLight
+            }
         },
         dark: {
             missed: VideoCallMissedDark,
             incoming: VideoCallInDark,
             outgoing: VideoCallOutDark,
+            ongoing: {
+                incoming: VideoCallInOnDark,
+                outgoing: VideoCallOutOnDark
+            }
         },
     };
 
-    const IconComponent = call ? 
-        iconComponents[scheme ?? 'light'][call.status === "missed" ? "missed" : call.type] : null;
+    const getIconComponent = useCallback((type: CallType, status: CallStatus) => {
+        const colorScheme = scheme ?? 'light';
+
+        if(status === 'missed') {
+            return iconComponents[colorScheme].missed;
+        } else if(status === 'ongoing') { 
+            return iconComponents[colorScheme].ongoing[type];
+        } else {
+            return iconComponents[colorScheme][type];
+        }
+    }, [scheme]);
+
+    const IconComponent = call ? getIconComponent(call.type, call.status) : null;
 
     const openMenu = useCallback(() => setVisible(true), []);
     
@@ -86,26 +112,28 @@ export default function InfoCall() {
     );
 
     useLayoutEffect(() => {
-        navigation.setOptions({
-          headerRight: () => 
-            <OptionsMenu
-                visible={visible}
-                openMenu={openMenu}
-                closeMenu={closeMenu}
-                options={
-                    [
-                        {
-                            title: 'Remove',
-                            color: theme.error,
-                            trailingIcon: <TrashIcon height={22} width={22} stroke={theme.error} />,
-                            onPress: () => { closeMenu(); setShowDialog(true) }
-                        }
-                    ]}
-                topOffset={42}
-                rightOffset={-1}
-            />
-        });
-      }, [visible]);
+        if(call && call.status !== 'ongoing') {
+            navigation.setOptions({
+            headerRight: () => 
+                <OptionsMenu
+                    visible={visible}
+                    openMenu={openMenu}
+                    closeMenu={closeMenu}
+                    options={
+                        [
+                            {
+                                title: 'Remove',
+                                color: theme.error,
+                                trailingIcon: <TrashIcon height={22} width={22} stroke={theme.error} />,
+                                onPress: () => { closeMenu(); setShowDialog(true) }
+                            }
+                        ]}
+                    topOffset={42}
+                    rightOffset={-1}
+                />
+            });
+        }
+      }, [visible, call]);
 
     return (
         <ScrollView
@@ -135,7 +163,7 @@ export default function InfoCall() {
                             </View>
                         }
                         trailingContent={
-                            ( call?.contact?.user || call?.user ?
+                            ( (call?.contact?.user || call?.user) && call.status !== 'ongoing' ?
                                 <TouchableOpacity
                                     onPress={() => { /* TODO: fix this */socket.emit("call-user", { to: call.contact?.user?.id ?? call.user?.id }); }}
                                     touchSoundDisabled
@@ -164,7 +192,7 @@ export default function InfoCall() {
                                 fontWeight="medium" 
                                 numberOfLines={1}
                             >   
-                                { call ? getCallDescription(call?.type, call?.status) : "" }
+                                { call ? getCallDescription(call.type, call.status) : "" }
                             </ThemedText>
                         </View>
                         <ThemedText

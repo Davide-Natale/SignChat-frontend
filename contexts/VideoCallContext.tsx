@@ -2,27 +2,32 @@ import { Contact } from "@/types/Contact";
 import { User } from "@/types/User";
 import { socket } from "@/utils/webSocket";
 import { useRouter } from "expo-router";
-import React, { createContext, useState } from "react";
+import React, { createContext, useEffect, useRef, useState } from "react";
 import InCallManager from 'react-native-incall-manager';
 import { Audio } from 'expo-av';
+import DeviceInfo from "react-native-device-info";
 
+type EndCallStatus = "unanswered" | "rejected";
 type CustomUser = Omit<User, 'email'> & { id: number };
 
-const checkContact = (obj: CustomUser | Contact): obj is Contact => {
+const isContact = (obj: CustomUser | Contact): obj is Contact => {
     return 'user' in obj;
 }
 
-interface VideoCallContextType {
+export interface VideoCallContextType {
     callId: string | undefined;
     isRinging: boolean;
-    caller: Contact | CustomUser | undefined;
+    isRingingRef: React.MutableRefObject<boolean>,
+    otherUser: Contact | CustomUser | undefined;
+    endCallStatus: EndCallStatus | undefined,
     updateCallId: React.Dispatch<React.SetStateAction<string | undefined>>;
     updateIsRinging: React.Dispatch<React.SetStateAction<boolean>>;
-    updateCaller: React.Dispatch<React.SetStateAction<CustomUser | Contact | undefined>>;
-    startCall: (callId: string, callerPhone: string, callerFullName: string, callerId: number, isContact: boolean) => Promise<void>;
+    updateOtherUser: React.Dispatch<React.SetStateAction<CustomUser | Contact | undefined>>;
+    updateEndCallStatus: React.Dispatch<React.SetStateAction<EndCallStatus | undefined>>,
+    startCall: (targetUserId: number, targetPhone: string, contactId?: number) => void;
     endCall: () => void;
-    answerCall: () => void;
-    rejectCall: () => void;
+    answerCall: (callId: number, callerUserId: number, contactId?: number) => Promise<void>;
+    rejectCall: (callId: number, callerUserId: number) => Promise<void>;
 }
 
 export const VideoCallContext = createContext<VideoCallContextType | undefined>(undefined);
@@ -31,51 +36,85 @@ export const VideoCallProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     const router = useRouter();
     const [callId, setCallId] = useState<string>();
     const [isRinging, setIsRinging] = useState(false);
-    const [caller, setCaller] = useState<Contact | CustomUser>();
+    const isRingingRef = useRef(isRinging);
+    const [ringbackSound, setRingbackSound] = useState<Audio.Sound>();
+    const [otherUser, setOtherUser] = useState<Contact | CustomUser>();
+    const [endCallStatus, setEndCallStatus] = useState<EndCallStatus>();
 
-    const startCall = async (callId: string, callerPhone: string, callerFullName: string, callerId: number, isContact: boolean) => {
-        console.log(callId);
+    useEffect(() => {
+        const loadRingbackSound = async () => {
+            const { sound } = await Audio.Sound.createAsync(require('@/assets/audios/ringback.wav'), { shouldPlay: false, isLooping: true });
+            setRingbackSound(sound);
+        };
 
-        const { sound } = await Audio.Sound.createAsync(require('@/assets/audios/ringback.wav'), { shouldPlay: false, isLooping: true });
+        loadRingbackSound();
 
-        await sound.playAsync();
+        return () => { if(ringbackSound) { ringbackSound.unloadAsync(); }};
+    }, []);
 
-        setTimeout(() => { sound.stopAsync() ; sound.unloadAsync() }, 60000);
+    useEffect(() => {
+        isRingingRef.current = isRinging;
 
-        const userId = callId.split("-")[1];
+        if(isRinging) {
+            ringbackSound?.playAsync();
+        } else {
+            ringbackSound?.stopAsync();
+        }
+    }, [isRinging]);
 
-        //  Emit message to server through WebSocket
-        socket.emit("call-user", { to: userId });
-
-        //  Start call ringing
+    const startCall = (targetUserId: number, targetPhone: string, contactId?: number) => {
+        socket.emit("call-user", { targetUserId, targetPhone });
         InCallManager.start({ media: 'video' });
-
-        setCallId(callId);
-        router.push({ pathname: '/video-call', params: { callerId, isContact: String(isContact) } });
+        router.push({ 
+            pathname: '/video-call', 
+            params: { 
+                contactId, 
+                userId: !contactId ? targetUserId : undefined 
+            } 
+        });
     };
 
     const endCall = () => {
-        if(callId) {
-            setCallId(undefined);
-            setIsRinging(false);
-            setCaller(undefined);
-            InCallManager.stop(); 
+        if(callId && otherUser) {
+            const checkContact = isContact(otherUser);
+            socket.emit("end-call", { 
+                callId, 
+                otherUserId: checkContact ? otherUser.user?.id : otherUser.id
+            }); 
         }  
     };
 
-    const answerCall = () => {};
+    const answerCall = async (callId: number, callerUserId: number, contactId?: number) => {
+        const deviceId = await DeviceInfo.getUniqueId();
+        
+        socket.emit("answer-call", { callId, callerUserId, deviceId});
+        InCallManager.start({ media: 'video' });
+        router.push({
+            pathname: '/video-call', 
+            params: { 
+                contactId, 
+                userId: !contactId ? callerUserId : undefined 
+            } 
+        });
+    };
 
-    const rejectCall = () => {};
+    const rejectCall = async (callId: number, callerUserId: number) => {
+        const deviceId = await DeviceInfo.getUniqueId();
+        socket.emit("reject-call", { callId, callerUserId, deviceId});
+    };
 
     return(
         <VideoCallContext.Provider value={
             {
                 callId,
                 isRinging,
-                caller,
+                isRingingRef,
+                otherUser,
+                endCallStatus,
                 updateCallId: setCallId,
                 updateIsRinging: setIsRinging,
-                updateCaller: setCaller,
+                updateOtherUser: setOtherUser,
+                updateEndCallStatus: setEndCallStatus,
                 startCall,
                 endCall,
                 answerCall,

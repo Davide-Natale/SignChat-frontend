@@ -1,44 +1,40 @@
 import contactsAPI from '@/api/contactsAPI';
 import usersAPI from '@/api/usersAPI';
+import ThemedSnackBar from '@/components/ThemedSnackBar';
 import { ErrorContext } from '@/contexts/ErrorContext';
 import { VideoCallContext } from '@/contexts/VideoCallContext';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useContext, useEffect } from 'react';
 import { Button, StyleSheet, View } from 'react-native';
-import InCallManager from 'react-native-incall-manager';
 
 export default function VideoCall() {
     const router = useRouter();
     const errorContext = useContext(ErrorContext);
     const videoCallContext = useContext(VideoCallContext);
-    const { callerId, isContact } = useLocalSearchParams<{ callerId: string, isContact: string }>();
+    const { contactId, userId } = useLocalSearchParams<{ contactId: string, userId: string }>();
 
     useEffect(() => {
-        const fetchCaller = async () => {
+        const fetchOtherUser = async () => {
             try {
-                const callerData =  isContact === 'true' ?
-                    await contactsAPI.getContact(parseInt(callerId)) :
-                    await usersAPI.getUser(parseInt(callerId));
+                errorContext?.clearErrMsg();
+                const otherUser = contactId ?
+                    await contactsAPI.getContact(parseInt(contactId)) :
+                    await usersAPI.getUser(parseInt(userId));
 
-                videoCallContext?.updateCaller(callerData);
+                videoCallContext?.updateOtherUser(otherUser);
             } catch (error) {
-                //  TODO: add SnackBar in this page
                 errorContext?.handleError(error);
             }
         };
         
-        fetchCaller();
+        fetchOtherUser();
     }, []);
-
-    useEffect(() => { console.log(videoCallContext?.caller); }, [videoCallContext?.caller]);
 
     return (
         <View style={styles.main}>
             <Button title='Incoming' onPress={() => router.push("/video-call/incoming")} />
-            <Button title='Start Rington' onPress={() => InCallManager.startRingtone('_DEFAULT_', [1000, 2000], 'PlayAndRecord', 30)} />
-            <Button title='Stop Rington' onPress={() => InCallManager.stopRingtone()} />
-            <Button title='Stop RingBack' onPress={() => InCallManager.stopRingback()} />
             <Button title='Stop Call' onPress={() => videoCallContext?.endCall()} />
+            <ThemedSnackBar />
         </View>
     );
 }

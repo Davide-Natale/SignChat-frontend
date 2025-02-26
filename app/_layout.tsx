@@ -19,7 +19,8 @@ export default function RootLayout() {
     colors: {
       ...DefaultTheme.colors,
       primary: '#2C2C2C',
-      onSurfaceVariant: '#FFFFFF'
+      onSurfaceVariant: '#FFFFFF',
+      onSurfaceDisabled: theme.onBackground
     },
   };
 

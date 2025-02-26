@@ -45,62 +45,62 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
     useEffect(() => {
         if(isNotificationsEnabled) {
             unsubscribeMessageListener.current = onMessage(messaging, async message => {
-                if(message.data?.notifee) {
+                if (message.data?.notifee) {
                     await displayNotification(typeof message.data.notifee === 'string' ?
                         JSON.parse(message.data.notifee) :
                         message.data.notifee
                     );
-                } else if(message.data?.type === 'incoming-call') {
+                } else if (message.data?.type === 'incoming-call') {
                     const callUUID = '2'; //    TODO: fix this
-        console.log('Chiamata in arrivo', callUUID);
+                    console.log('Chiamata in arrivo', callUUID);
 
-        InCallManager.startRingtone('_DEFAULT_', [1000, 2000], 'PlayAndRecord', 30)
+                    InCallManager.startRingtone('_DEFAULT_', [1000, 2000], 'PlayAndRecord', 30)
 
-        //  Create a channel
-        const channelId = await notifee.createChannel({
-            id: 'incoming-calls',
-            name: 'Incoming Calls Channel',
-            badge: false,
-            importance: AndroidImportance.HIGH
-        });
+                    //  Create a channel
+                    const channelId = await notifee.createChannel({
+                        id: 'incoming-calls',
+                        name: 'Incoming Calls Channel',
+                        badge: false,
+                        importance: AndroidImportance.HIGH
+                    });
 
-        await notifee.displayNotification({
-            id: callUUID,
-            title: 'Lorenzo Lenti', //  TODO: fix this
-            body: 'Incoming Video Call',
-            android: {
-                channelId,
-                color: '#007cff',
-                smallIcon: 'notification_icon',
-                importance: AndroidImportance.HIGH,
-                category: AndroidCategory.CALL,
-                autoCancel: false,
-                ongoing: true,
-                lightUpScreen: true,
-                circularLargeIcon: true,
-                largeIcon: 'http://192.168.178.183:3000/uploads/1737924911737-348673612.png',
-                showTimestamp: true,
-                timestamp: dayjs().valueOf(),
-                fullScreenAction: {
-                    id: 'default'
-                },
-                pressAction: {
-                    id: 'default',
-                    mainComponent: 'profile'
-                },
-                actions: [
-                    {
+                    await notifee.displayNotification({
+                        id: callUUID,
+                        title: 'Lorenzo Lenti', //  TODO: fix this
+                        body: 'Incoming Video Call',
+                        android: {
+                            channelId,
+                            color: '#007cff',
+                            smallIcon: 'notification_icon',
+                            importance: AndroidImportance.HIGH,
+                            category: AndroidCategory.CALL,
+                            autoCancel: false,
+                            ongoing: true,
+                            lightUpScreen: true,
+                            circularLargeIcon: true,
+                            largeIcon: 'http://192.168.178.183:3000/uploads/1737924911737-348673612.png',
+                            showTimestamp: true,
+                            timestamp: dayjs().valueOf(),
+                            fullScreenAction: {
+                                id: 'default'
+                            },
+                            pressAction: {
+                                id: 'default',
+                                mainComponent: 'profile'
+                            },
+                            actions: [
+                                {
 
-                        title: '✅ Rispondi',
-                        pressAction: { id: 'answer' },
-                    },
-                    {
-                        title: '❌ Rifiuta',
-                        pressAction: { id: 'reject' },
-                    },
-                ],
-            },
-        });
+                                    title: '✅ Rispondi',
+                                    pressAction: { id: 'answer' },
+                                },
+                                {
+                                    title: '❌ Rifiuta',
+                                    pressAction: { id: 'reject' },
+                                },
+                            ],
+                        },
+                    });
                 }
             }); 
 

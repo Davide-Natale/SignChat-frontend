@@ -129,15 +129,9 @@ export default function InfoContact() {
                 { contact?.user ? 
                     <ThemedButton
                         onPress={() => {
-                            const callId = `user-${contact.user?.id}`;
-
-                            videoCallContext?.startCall(
-                                callId,
-                                contact.phone,
-                                fullName ?? "",
-                                contact.id, 
-                                true
-                            ); 
+                            if(contact.user) {
+                                videoCallContext?.startCall(contact.user.id, contact.phone, contact.id);
+                            }  
                         }}
                         height={50}
                         width="70%"

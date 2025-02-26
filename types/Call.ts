@@ -6,7 +6,7 @@ export interface Call {
     id: number;
     phone: string;
     type: 'incoming' | 'outgoing';
-    status: 'completed' | 'missed' | 'rejected' | 'unanswered';
+    status: 'completed' | 'missed' | 'rejected' | 'unanswered' | 'ongoing';
     date: dayjs.Dayjs;
     duration: number;
     contact: Contact | null;

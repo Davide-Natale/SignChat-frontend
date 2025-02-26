@@ -1,14 +1,16 @@
 
 type Type = 'incoming' | 'outgoing';
-type Status = 'completed' | 'missed' | 'rejected' | 'unanswered';
+type Status = 'completed' | 'missed' | 'rejected' | 'unanswered' | 'ongoing';
 
 export function getCallDescription(type: Type, status: Status): string {
     const descriptions: Record<string, string> = {
         'incoming_completed': 'Incoming Video Call',
         'incoming_missed': 'Missed Video Call',
+        'incoming_ongoing': 'Ongoing Video Call',
         'outgoing_completed': 'Outgoing Video Call',
         'outgoing_rejected': 'Rejected Video Call',
-        'outgoing_unanswered': 'Unanswered Video Call'
+        'outgoing_unanswered': 'Unanswered Video Call',
+        'outgoing_ongoing': 'Ongoing Video Call'
     }
 
     return descriptions[`${type}_${status}`];

@@ -1,4 +1,4 @@
-import { Tabs } from "expo-router";
+import { Tabs, useRouter } from "expo-router";
 import CallIcon from '@/assets/icons/call.svg';
 import CallIconBold from '@/assets/icons/call-bold.svg';
 import ContactIcon from '@/assets/icons/contact.svg';
@@ -15,17 +15,20 @@ import { parsePhoneNumberFromString } from 'libphonenumber-js';
 import { Contact } from "@/types/Contact";
 import contactsAPI from "@/api/contactsAPI";
 import { ContactsContext } from "@/contexts/ContactsContext";
-import { connectSocket, disconnectSocket } from "@/utils/webSocket";
+import { connectSocket, disconnectSocket, socket } from "@/utils/webSocket";
 import { NotificationsContext } from "@/contexts/NotificationsContext";
 import { checkInitialNotification } from "@/utils/notifications";
+import { VideoCallContext } from "@/contexts/VideoCallContext";
 
 type CustomContact = Omit<Contact, "id" | "user">;
 
 export default function TabLayout() {
     const theme = useTheme();
+    const router = useRouter();
     const appContext = useContext(AppContext);
     const authContext = useContext(AuthContext);
     const contactsContext = useContext(ContactsContext);
+    const videoCallContext = useContext(VideoCallContext);
     const notificationsContext = useContext(NotificationsContext);
 
     const getLocalContacts = useCallback(async () => {
@@ -138,7 +141,7 @@ export default function TabLayout() {
     }, []);
 
     useEffect(() => {
-        connectSocket();
+        connectSocket(videoCallContext, router);
 
         return () => { disconnectSocket(); };
     }, []);

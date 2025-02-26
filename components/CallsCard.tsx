@@ -10,12 +10,20 @@ import VideoCallOutLight from "@/assets/icons/videoCallOut-light.svg";
 import VideoCallOutDark from "@/assets/icons/videoCallOut-dark.svg";
 import VideoCallMissedLight from "@/assets/icons/videoCallMissed-light.svg";
 import VideoCallMissedDark from "@/assets/icons/videoCallMissed-dark.svg";
+import VideoCallInOnLight from "@/assets/icons/videoCallInOn-light.svg";
+import VideoCallInOnDark from "@/assets/icons/videoCallInOn-dark.svg";
+import VideoCallOutOnLight from "@/assets/icons/videoCallOutOn-light.svg";
+import VideoCallOutOnDark from "@/assets/icons/videoCallOutOn-dark.svg";
 import InfoIcon from "@/assets/icons/info.svg";
 import { formatDate } from '@/utils/dateUtils';
-import React, { useMemo } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import ThemedText from '@/components/ThemedText';
 import { router } from 'expo-router';
 import { Checkbox } from 'react-native-paper';
+import { getCallDescription } from '@/utils/callsUtils';
+
+type CallType = 'incoming' | 'outgoing';
+type CallStatus = 'completed' | 'missed' | 'rejected' | 'unanswered' | 'ongoing';
 
 interface CallsCardProps {
     isEdit: boolean;
@@ -34,13 +42,33 @@ export default function CallsCard({ isEdit, label, calls, onEditAction, checkSel
             missed: VideoCallMissedLight,
             incoming: VideoCallInLight,
             outgoing: VideoCallOutLight,
+            ongoing: {
+                incoming: VideoCallInOnLight,
+                outgoing: VideoCallOutOnLight
+            }
         },
         dark: {
             missed: VideoCallMissedDark,
             incoming: VideoCallInDark,
             outgoing: VideoCallOutDark,
+            ongoing: {
+                incoming: VideoCallInOnDark,
+                outgoing: VideoCallOutOnDark
+            }
         }
     }), []);
+
+    const getIconComponent = useCallback((type: CallType, status: CallStatus) => {
+        const colorScheme = scheme ?? 'light';
+
+        if(status === 'missed') {
+            return iconComponents[colorScheme].missed;
+        } else if(status === 'ongoing') { 
+            return iconComponents[colorScheme].ongoing[type];
+        } else {
+            return iconComponents[colorScheme][type];
+        }
+    }, [scheme]);
 
     if(calls.length === 0) {
         return null;
@@ -60,9 +88,10 @@ export default function CallsCard({ isEdit, label, calls, onEditAction, checkSel
                     const contactFullName = call.contact?.lastName ? `${call.contact.firstName} ${call.contact.lastName ?? ""}` : call.contact?.firstName;
                     const userFullName = call.user ? call.user.firstName + " " + call.user.lastName : null;
                     const fullNameColor = call.status === "missed" ? theme.error : theme.primaryText;
-                    const IconComponent = iconComponents[scheme ?? 'light'][call.status === "missed" ? "missed" : call.type];
-                    const onPress = isEdit && onEditAction ? () => { onEditAction(call.id); } :
-                        call.contact?.user || call.user ? () => { /* TODO: implement to call user */ } : undefined;
+                    const IconComponent = getIconComponent(call.type, call.status);
+                    const onPress = isEdit && onEditAction && call.status !== 'ongoing' ? () => { onEditAction(call.id); } :
+                        (call.contact?.user || call.user) && call.status !== 'ongoing' ? () => { /* TODO: implement to call user */ } : 
+                        undefined;
 
                     return (
                         <ListItem
@@ -92,7 +121,7 @@ export default function CallsCard({ isEdit, label, calls, onEditAction, checkSel
                                             numberOfLines={1}
                                             style={styles.date}
                                         >
-                                            {formatDate(call.date)}
+                                            {call.status !== 'ongoing' ? formatDate(call.date) : getCallDescription(call.type, call.status)}
                                         </ThemedText>
                                     </View>
                                 </View>
@@ -103,6 +132,7 @@ export default function CallsCard({ isEdit, label, calls, onEditAction, checkSel
                                         status={checkSelected(call.id) ? 'checked' : 'unchecked'}
                                         onPress={() => onEditAction(call.id)}
                                         uncheckedColor={theme.divider}
+                                        disabled={call.status === 'ongoing'}
                                         color={theme.accent}
                                     /> :
                                     <TouchableOpacity

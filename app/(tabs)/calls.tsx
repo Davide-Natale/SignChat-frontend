@@ -122,10 +122,13 @@ export default function Calls() {
   }, []);
 
   const toggleSelectAll = useCallback(() => {
-    if (selectedCalls.length === filteredCalls.length) {
+    if (selectedCalls.length === filteredCalls.filter(call => call.status !== 'ongoing').length) {
       setSelectedCalls([]);
     } else {
-      setSelectedCalls(filteredCalls.map((call) => call.id));
+      setSelectedCalls(filteredCalls
+        .filter(call => call.status !== 'ongoing')
+        .map((call) => call.id)
+      );
     }
   }, [selectedCalls, filteredCalls]);
 
@@ -273,7 +276,9 @@ export default function Calls() {
             </ThemedText>
             <Checkbox 
               status={ selectedCalls.length === 0 ? 'unchecked' : 
-                selectedCalls.length === filteredCalls.length ? 'checked' : 'indeterminate'
+                selectedCalls.length === filteredCalls
+                  .filter(call => call.status !== 'ongoing').length ? 'checked' : 
+                'indeterminate'
               }
               onPress={toggleSelectAll}
               uncheckedColor={theme.divider}
