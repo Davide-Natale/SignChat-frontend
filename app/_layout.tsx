@@ -196,7 +196,20 @@ export default function RootLayout() {
                             headerLeft: () => <ThemedBackButton />
                           }}
                         />
-                        <Stack.Screen name="video-call" options={{ headerShown: false }} />
+                        <Stack.Screen 
+                          name="video-call/index" 
+                          options={{
+                            headerShown: false,
+                            orientation: 'portrait'
+                          }} 
+                        />
+                        <Stack.Screen
+                          name="video-call/incoming"
+                          options={{
+                            headerShown: false,
+                            orientation: 'portrait'
+                          }}
+                        />
                       </Stack>
                       <StatusBar style="auto" />
                     </VideoCallProvider>
