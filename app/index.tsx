@@ -30,8 +30,7 @@ export default function Index() {
   }
 
   if (authContext?.isAuthenticated) {
-    //return <Redirect href="/calls" />;
-    return <Redirect href={{ pathname: "/video-call", params: { contactId: 60 } }} />;
+    return <Redirect href="/calls" />;
   }
 
   return (

@@ -97,7 +97,7 @@ export default function VideoCall() {
         },
         {
             backgroundColor: darkTheme.error,
-            onPress: () => { if(videoCallContext?.isCallStarted) startTimer() ; console.log('End Call') },
+            onPress: () => { clearTimer() ; videoCallContext?.endCall() },
             icon: <EndCallBoldIcon height={28} width={28} fill={lightTheme.primary} />
         }
     ], [videoCallContext?.isCallStarted, videoCallContext?.isCameraOff, videoCallContext?.isMicMuted]);
@@ -306,13 +306,6 @@ export default function VideoCall() {
             borderRadius: withTiming(borderRadius, { duration: 300 })
         }
     });
-
-    //  TODO: remove then
-    useEffect(() => {
-        setTimeout(() => { 
-            videoCallContext?.updateIsCallStarted(true);
-        }, 1000);
-    }, []);
 
     useEffect(() => {
         if(videoCallContext?.isCallStarted) {

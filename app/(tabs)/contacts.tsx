@@ -10,10 +10,12 @@ import { FlatList, Keyboard, StyleSheet, View } from 'react-native';
 import AddUserIcon from "@/assets/icons/addUser-bold.svg";
 import ThemedText from '@/components/ThemedText';
 import ThemedSnackBar from '@/components/ThemedSnackBar';
+import { VideoCallContext } from '@/contexts/VideoCallContext';
 
 export default function Contacts() {
   const theme = useTheme();
   const contactsContext = useContext(ContactsContext);
+  const videoCallContext = useContext(VideoCallContext);
   const [filter, setFilter] = useState("");
   const [isKeyboardVisible, setKeyboardVisible] = useState(false);
   const { groupedContacts, unregisteredContacts } = processContacts(contactsContext?.contacts ?? []);
@@ -87,6 +89,7 @@ export default function Contacts() {
                 <ContactsCard
                   label={label}
                   contacts={contacts}
+                  videoCallContext={videoCallContext}
                   style={label ? styles.card : styles.footer}
                 />
               )}
@@ -99,9 +102,9 @@ export default function Contacts() {
           data={Object.entries(groupedContacts)}
           keyExtractor={([letter, _contacts]) => letter}
           renderItem={({ item: [letter, contacts] }) => (
-            <ContactsCard label={letter} contacts={contacts} style={styles.card} />
+            <ContactsCard label={letter} contacts={contacts} videoCallContext={videoCallContext} style={styles.card} />
           )}
-          ListFooterComponent={() => <ContactsCard contacts={unregisteredContacts} style={styles.footer} />}
+          ListFooterComponent={() => <ContactsCard contacts={unregisteredContacts} videoCallContext={videoCallContext} style={styles.footer} />}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
           style={styles.list}

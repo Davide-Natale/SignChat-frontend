@@ -18,6 +18,7 @@ import { formatCallDuration, getCallDescription } from '@/utils/callsUtils';
 import ListItem from '@/components/ListItem';
 import { ErrorContext } from '@/contexts/ErrorContext';
 import ThemedSnackBar from '@/components/ThemedSnackBar';
+import { VideoCallContext } from '@/contexts/VideoCallContext';
 
 type CustomUser = Omit<User, 'email'> & { id: number };
 
@@ -25,6 +26,7 @@ export default function InfoUser() {
     const theme = useTheme();
     const router = useRouter();
     const errorContext = useContext(ErrorContext);
+    const videoCallContext = useContext(VideoCallContext);
     const { id } = useLocalSearchParams<{ id: string }>();
     const [user, setUser] = useState<CustomUser | null >(null);
     const [recentCalls, setRecentCalls] = useState<Call[]>([]);
@@ -92,7 +94,11 @@ export default function InfoUser() {
                     {fullName}
                 </ThemedText>
                 <ThemedButton
-                    onPress={() => { /* TODO: add code to call contact */ }}
+                    onPress={() => {
+                        if(user) {
+                            videoCallContext?.startCall(user.id, user.phone);
+                        }
+                    }}
                     height={50}
                     width="70%"
                     backgroundColor={theme.accent}

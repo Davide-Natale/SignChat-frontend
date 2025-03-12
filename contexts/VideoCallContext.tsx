@@ -51,6 +51,14 @@ export const VideoCallProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     const [isCameraOff, setIsCameraOff] = useState(false);
     const isRingingRef = useRef(isRinging);
     const ringbackSoundRef = useRef<Audio.Sound>();
+    const intervalRef = useRef<NodeJS.Timeout>();
+    const stopInterval = () => {
+        if(intervalRef.current) {
+            clearInterval(intervalRef.current);
+            intervalRef.current = undefined;
+            setDuration(0);
+        }
+    };
 
     useEffect(() => {
         const loadRingbackSound = async () => {
@@ -75,13 +83,15 @@ export const VideoCallProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
     useEffect(() => {
         if(isCallStarted) {
-            const interval = setInterval(() => {
+            intervalRef.current = setInterval(() => {
                 setDuration(prev => prev + 1);
             }, 1000);
+        } else {
+            stopInterval();
+        }    
 
-            return () => clearInterval(interval);
-        }
-    }, [duration, isCallStarted]);
+        return () => stopInterval();
+    }, [isCallStarted]);
 
     const startCall = (targetUserId: number, targetPhone: string, contactId?: number) => {
         //socket.emit("call-user", { targetUserId, targetPhone });
@@ -96,12 +106,18 @@ export const VideoCallProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     };
 
     const endCall = () => {
+        //  TODO: move this code in socket handler
+        setCallId(undefined);
+        setIsCallStarted(false);
+        setOtherUser(undefined);
+        router.back();
+
         if(callId && otherUser) {
-            const checkContact = isContact(otherUser);
+            /*const checkContact = isContact(otherUser);
             socket.emit("end-call", { 
                 callId, 
                 otherUserId: checkContact ? otherUser.user?.id : otherUser.id
-            }); 
+            });*/ 
         }  
     };
 

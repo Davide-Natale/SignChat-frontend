@@ -16,11 +16,12 @@ import VideoCallOutOnLight from "@/assets/icons/videoCallOutOn-light.svg";
 import VideoCallOutOnDark from "@/assets/icons/videoCallOutOn-dark.svg";
 import InfoIcon from "@/assets/icons/info.svg";
 import { formatDate } from '@/utils/dateUtils';
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useContext, useMemo } from 'react';
 import ThemedText from '@/components/ThemedText';
 import { router } from 'expo-router';
 import { Checkbox } from 'react-native-paper';
 import { getCallDescription } from '@/utils/callsUtils';
+import { VideoCallContext } from '@/contexts/VideoCallContext';
 
 type CallType = 'incoming' | 'outgoing';
 type CallStatus = 'completed' | 'missed' | 'rejected' | 'unanswered' | 'ongoing';
@@ -37,6 +38,7 @@ interface CallsCardProps {
 export default function CallsCard({ isEdit, label, calls, onEditAction, checkSelected, style }: CallsCardProps) {
     const theme = useTheme();
     const scheme = useColorScheme();
+    const videoCallContext = useContext(VideoCallContext);
     const iconComponents = useMemo(() => ({
         light: {
             missed: VideoCallMissedLight,
@@ -90,8 +92,13 @@ export default function CallsCard({ isEdit, label, calls, onEditAction, checkSel
                     const fullNameColor = call.status === "missed" ? theme.error : theme.primaryText;
                     const IconComponent = getIconComponent(call.type, call.status);
                     const onPress = isEdit && onEditAction && call.status !== 'ongoing' ? () => { onEditAction(call.id); } :
-                        (call.contact?.user || call.user) && call.status !== 'ongoing' ? () => { /* TODO: implement to call user */ } : 
-                        undefined;
+                        (call.contact?.user || call.user) && call.status !== 'ongoing' ? () => { 
+                            if(call.contact?.user) {
+                                videoCallContext?.startCall(call.contact.user.id, call.phone, call.contact.id);
+                            } else if(call.user) {
+                                videoCallContext?.startCall(call.user.id, call.phone);
+                            }
+                        } : undefined;
 
                     return (
                         <ListItem

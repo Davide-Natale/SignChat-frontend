@@ -26,7 +26,7 @@ import { AppContext } from '@/contexts/AppContext';
 import { ErrorContext } from '@/contexts/ErrorContext';
 import ThemedSnackBar from '@/components/ThemedSnackBar';
 import OptionsMenu from '@/components/OptionsMenu';
-import { socket } from '@/utils/webSocket';
+import { VideoCallContext } from '@/contexts/VideoCallContext';
 
 type CallType = 'incoming' | 'outgoing';
 type CallStatus = 'completed' | 'missed' | 'rejected' | 'unanswered' | 'ongoing';
@@ -38,6 +38,7 @@ export default function InfoCall() {
     const navigation = useNavigation();
     const appContext = useContext(AppContext);
     const errorContext = useContext(ErrorContext);
+    const videoCallContext = useContext(VideoCallContext);
     const { id } = useLocalSearchParams<{ id: string }>();
     const [call, setCall] = useState<Call>();
     const [visible, setVisible] = useState(false);
@@ -165,7 +166,13 @@ export default function InfoCall() {
                         trailingContent={
                             ( (call?.contact?.user || call?.user) && call.status !== 'ongoing' ?
                                 <TouchableOpacity
-                                    onPress={() => { /* TODO: fix this */socket.emit("call-user", { to: call.contact?.user?.id ?? call.user?.id }); }}
+                                    onPress={() => { 
+                                        if(call.contact?.user) {
+                                            videoCallContext?.startCall(call.contact.user.id, call.phone, call.contact.id);
+                                        } else if(call.user) {
+                                            videoCallContext?.startCall(call.user.id, call.phone);
+                                        }
+                                    }}
                                     touchSoundDisabled
                                     activeOpacity={0.8}
                                 >

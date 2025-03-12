@@ -3,10 +3,11 @@ import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView } from '@gorhom/
 import { StyleSheet, View } from 'react-native';
 import ThemedText from './ThemedText';
 import { Contact } from '@/types/Contact';
-import { forwardRef, useCallback, useMemo, useState } from 'react';
+import { forwardRef, useCallback, useContext, useMemo, useState } from 'react';
 import SearchBar from './SearchBar';
 import ContactsCard from './ContactsCard';
 import { FlatList } from 'react-native-gesture-handler';
+import { VideoCallContext } from '@/contexts/VideoCallContext';
 
 interface CallsBottomSheetProps {
     groupedContacts: Record<string, Contact[]>;
@@ -17,6 +18,7 @@ type Ref = BottomSheetModal;
 
 const CallsBottomSheet = forwardRef<Ref, CallsBottomSheetProps>(({ groupedContacts, unregisteredContacts }, ref) => {
     const theme = useTheme();
+    const videoCallContext = useContext(VideoCallContext);
     const [searchFilter, setSearchFilter] = useState("");
     const snapPoints = useMemo(() => ['95%'], []);
 
@@ -93,6 +95,7 @@ const CallsBottomSheet = forwardRef<Ref, CallsBottomSheetProps>(({ groupedContac
                                             ref.current.dismiss();
                                         } 
                                     } : undefined}
+                                    videoCallContext={videoCallContext}
                                     style={label ? styles.card : styles.footer}
                                 />
                             )}
@@ -115,9 +118,10 @@ const CallsBottomSheet = forwardRef<Ref, CallsBottomSheetProps>(({ groupedContac
                                         ref.current.dismiss();
                                     }
                                 }}
+                                videoCallContext={videoCallContext}
                             />
                         )}
-                        ListFooterComponent={() => <ContactsCard contacts={unregisteredContacts} style={styles.footer} />}
+                        ListFooterComponent={() => <ContactsCard contacts={unregisteredContacts} videoCallContext={videoCallContext} style={styles.footer} />}
                         showsVerticalScrollIndicator={false}
                         keyboardShouldPersistTaps="handled"
                         style={styles.list}

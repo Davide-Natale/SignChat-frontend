@@ -7,6 +7,7 @@ import Divider from './Divider';
 import React from 'react';
 import ImageProfile from './ImageProfile';
 import { useRouter } from 'expo-router';
+import { VideoCallContextType } from '@/contexts/VideoCallContext';
 
 interface ContactsCardProps {
     label?: string;
@@ -14,9 +15,10 @@ interface ContactsCardProps {
     style?: StyleProp<ViewStyle>;
     type?: 'view' | 'call';
     action?: () => void;
+    videoCallContext: VideoCallContextType | undefined;
 }
 
-export default function ContactsCard({ label, contacts, style, type='view', action }: ContactsCardProps) {
+export default function ContactsCard({ label, contacts, style, type='view', action, videoCallContext }: ContactsCardProps) {
     const theme = useTheme();
     const router = useRouter();
 
@@ -56,7 +58,7 @@ export default function ContactsCard({ label, contacts, style, type='view', acti
                             </ThemedText> : undefined
                         }
                         onPress={() => {
-                            if (action) { action(); }
+                            if(action) { action(); }
 
                             if (label) {
                                 if (type === 'view') {
@@ -64,16 +66,15 @@ export default function ContactsCard({ label, contacts, style, type='view', acti
                                         pathname: "/contacts/[id]/info",
                                         params: { id: contact.id }
                                     });
-                                } else {
-                                    //  TODO: add code to call user
+                                } else if(contact.user) {
+                                    videoCallContext?.startCall(contact.user.id, contact.phone, contact.id);
                                 }
                             } else {
                                 ToastAndroid.show('Coming Soon!', ToastAndroid.SHORT);
-                            }
+                            } 
                         }}
                         style={styles.row}
                     />
-
                 )}
                 ItemSeparatorComponent={() => (
                     <Divider height={0.5} width="83%" style={styles.divider} />

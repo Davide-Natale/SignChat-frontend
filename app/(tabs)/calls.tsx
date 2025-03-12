@@ -27,6 +27,7 @@ import ThemedSnackBar from '@/components/ThemedSnackBar';
 import { AppContext } from '@/contexts/AppContext';
 import { ErrorContext } from '@/contexts/ErrorContext';
 import { Contact } from '@/types/Contact';
+import { VideoCallContext } from '@/contexts/VideoCallContext';
 
 export default function Calls() {
   const theme = useTheme();
@@ -35,6 +36,7 @@ export default function Calls() {
   const appContext = useContext(AppContext);
   const errorContext = useContext(ErrorContext);
   const contactsContext = useContext(ContactsContext);
+  const videoCallContext = useContext(VideoCallContext);
   const [calls, setCalls] = useState<Call[]>([]);
   const [filter, setFilter] = useState("");
   const [tabFilter, setTabFilter] = useState("All");
@@ -334,8 +336,9 @@ export default function Calls() {
             /> :
             <ContactsCard 
               label={label} 
-              contacts={values as Contact[]} 
-              style={label ? styles.contactsCard : styles.unregisteredContactsCard} 
+              contacts={values as Contact[]}
+              videoCallContext={videoCallContext}
+              style={label ? styles.contactsCard : styles.unregisteredContactsCard}
             />
         )}
         showsVerticalScrollIndicator={false}
