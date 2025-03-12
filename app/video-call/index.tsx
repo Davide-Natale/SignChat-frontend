@@ -3,7 +3,7 @@ import usersAPI from '@/api/usersAPI';
 import ThemedSnackBar from '@/components/ThemedSnackBar';
 import { ErrorContext } from '@/contexts/ErrorContext';
 import { isContact, VideoCallContext } from '@/contexts/VideoCallContext';
-import { useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import MoreIcon from '@/assets/icons/more.svg';
@@ -44,6 +44,7 @@ const CAMERA_SIZE = {
 }
 
 export default function VideoCall() {
+    const router = useRouter();
     const darkTheme = useTheme('dark');
     const lightTheme = useTheme('light');
     const insets = useSafeAreaInsets();
@@ -443,7 +444,11 @@ export default function VideoCall() {
                     <View style={styles.buttonRow} >
                         <View style={styles.buttonGroup} >
                             <ThemedButton
-                                onPress={() => {}}
+                                onPress={() => { 
+                                    videoCallContext.updateEndCallStatus(undefined); 
+                                    videoCallContext.updateOtherUser(undefined);
+                                    router.back();
+                                }}
                                 height={65}
                                 width={65}
                                 shape='circular'
@@ -464,7 +469,17 @@ export default function VideoCall() {
                         { videoCallContext.endCallStatus === 'unanswered' ?
                             <View style={styles.buttonGroup} >
                                 <ThemedButton
-                                    onPress={() => { }}
+                                    onPress={() => {
+                                        const contactId = videoCallContext.otherUser && isContact(videoCallContext.otherUser) ? videoCallContext.otherUser.id : undefined;
+                                        const targetUserId = videoCallContext.otherUser && isContact(videoCallContext.otherUser) ? videoCallContext.otherUser.user?.id :
+                                            videoCallContext.otherUser?.id;
+                                        const targetPhone = videoCallContext.otherUser?.phone;    
+
+                                        if(targetUserId && targetPhone) {
+                                            videoCallContext.updateEndCallStatus(undefined);
+                                            videoCallContext.startCall(targetUserId, targetPhone, contactId, true);
+                                        }
+                                    }}
                                     height={65}
                                     width={65}
                                     shape='circular'

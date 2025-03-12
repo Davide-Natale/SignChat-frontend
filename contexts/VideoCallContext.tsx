@@ -1,5 +1,5 @@
 import { Contact } from "@/types/Contact";
-import { User } from "@/types/User";
+import { CustomUser } from "@/types/User";
 import { socket } from "@/utils/webSocket";
 import { useRouter } from "expo-router";
 import React, { createContext, useEffect, useRef, useState } from "react";
@@ -8,7 +8,6 @@ import { Audio } from 'expo-av';
 import DeviceInfo from "react-native-device-info";
 
 type EndCallStatus = "unanswered" | "rejected";
-type CustomUser = Omit<User, 'email'> & { id: number };
 
 export const isContact = (obj: CustomUser | Contact): obj is Contact => {
     return 'user' in obj;
@@ -31,7 +30,7 @@ export interface VideoCallContextType {
     updateEndCallStatus: React.Dispatch<React.SetStateAction<EndCallStatus | undefined>>;
     toggleIsMicMuted: () => void;
     toggleIsCameraOff: () => void;
-    startCall: (targetUserId: number, targetPhone: string, contactId?: number) => void;
+    startCall: (targetUserId: number, targetPhone: string, contactId?: number, isRetry?: boolean) => void;
     endCall: () => void;
     answerCall: (callId: number, callerUserId: number, contactId?: number) => Promise<void>;
     rejectCall: (callId: number, callerUserId: number) => Promise<void>;
@@ -93,16 +92,19 @@ export const VideoCallProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         return () => stopInterval();
     }, [isCallStarted]);
 
-    const startCall = (targetUserId: number, targetPhone: string, contactId?: number) => {
-        //socket.emit("call-user", { targetUserId, targetPhone });
-        //InCallManager.start({ media: 'video' });
-        router.push({ 
-            pathname: '/video-call', 
-            params: { 
-                contactId, 
-                userId: !contactId ? targetUserId : undefined 
-            } 
-        });
+    const startCall = (targetUserId: number, targetPhone: string, contactId?: number, isRetry: boolean = false) => {
+        socket.emit("call-user", { targetUserId, targetPhone });
+        InCallManager.start({ media: 'video' });
+        
+        if(!isRetry) {
+            router.push({ 
+                pathname: '/video-call', 
+                params: { 
+                    contactId, 
+                    userId: !contactId ? targetUserId : undefined 
+                } 
+            });
+        }
     };
 
     const endCall = () => {

@@ -127,10 +127,13 @@ export default function TabLayout() {
     };
 
     useEffect(() => {
+        checkInitialNotification();
+    }, []);
+
+    useEffect(() => {
         const initializeApp = async () => {
             await synchContacts();
             await checkPreferences();
-            await checkInitialNotification();
         };
         
         initializeApp();

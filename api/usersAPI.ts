@@ -1,7 +1,5 @@
-import { User } from "@/types/User";
+import { CustomUser } from "@/types/User";
 import axiosInstance from "@/utils/axiosInstance";
-
-type CustomUser = Omit<User, 'email'> & { id: number }
 
 async function getUser(id: number): Promise<CustomUser> {
     //  Call GET /api/users/:id

@@ -5,3 +5,5 @@ export interface User {
     phone: string;
     imageProfile: string | null;
 }
+
+export type CustomUser = Omit<User, 'email'> & { id: number };

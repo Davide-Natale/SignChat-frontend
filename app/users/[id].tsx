@@ -5,7 +5,7 @@ import ThemedButton from '@/components/ThemedButton';
 import ThemedText from '@/components/ThemedText';
 import { useTheme } from '@/hooks/useTheme';
 import { Call } from '@/types/Call';
-import { User } from '@/types/User';
+import { CustomUser } from '@/types/User';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useContext, useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
@@ -19,8 +19,6 @@ import ListItem from '@/components/ListItem';
 import { ErrorContext } from '@/contexts/ErrorContext';
 import ThemedSnackBar from '@/components/ThemedSnackBar';
 import { VideoCallContext } from '@/contexts/VideoCallContext';
-
-type CustomUser = Omit<User, 'email'> & { id: number };
 
 export default function InfoUser() {
     const theme = useTheme();

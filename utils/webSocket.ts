@@ -3,6 +3,7 @@ import { getToken } from './secureStore';
 import authAPI from '@/api/authAPI';
 import { VideoCallContextType } from '@/contexts/VideoCallContext'
 import { Router } from 'expo-router';
+import InCallManager from 'react-native-incall-manager';
 
 const SERVER_URL = 'http://192.168.178.183:3000';
 
@@ -65,7 +66,6 @@ export const connectSocket = async (context: VideoCallContextType | undefined, r
 
         //  TODO: remove logging once tested
         socket.on('call-started', async ({ callId }) => {
-            console.log("Call Started: ", callId);
             context?.updateCallId(callId);
             context?.updateIsRinging(true);
         });
@@ -73,6 +73,8 @@ export const connectSocket = async (context: VideoCallContextType | undefined, r
         socket.on('call-ended', async ({ reason }) => {
             console.log("Call Ended: ", reason);
             context?.updateCallId(undefined);
+            context?.updateIsCallStarted(false);
+            InCallManager.stop();
             if(context?.isRingingRef.current) {
                 context.updateIsRinging(false);
             }

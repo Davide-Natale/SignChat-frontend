@@ -4,10 +4,12 @@ import { deleteToken, onMessage, onTokenRefresh } from '@react-native-firebase/m
 import { messaging, registerForPushNotificationsAsync } from "@/utils/firebaseMessaging";
 import tokensAPI from "@/api/tokensAPI";
 import DeviceInfo from 'react-native-device-info';
-import { displayNotification } from "@/utils/notifications";
-import notifee, { AndroidCategory, AndroidImportance, EventType } from '@notifee/react-native';
+import { displayIncomingCallNotification, displayNotification } from "@/utils/notifications";
+import notifee, { EventType } from '@notifee/react-native';
 import InCallManager from 'react-native-incall-manager';
-import dayjs from "dayjs";
+import { router } from 'expo-router';
+import { Contact } from "@/types/Contact";
+import { CustomUser } from "@/types/User";
 
 interface NotificationsContextType {
     isNotificationsEnabled: boolean | null;
@@ -45,74 +47,48 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
     useEffect(() => {
         if(isNotificationsEnabled) {
             unsubscribeMessageListener.current = onMessage(messaging, async message => {
-                if (message.data?.notifee) {
+                if(message.data?.notifee) {
                     await displayNotification(typeof message.data.notifee === 'string' ?
                         JSON.parse(message.data.notifee) :
                         message.data.notifee
                     );
-                } else if (message.data?.type === 'incoming-call') {
-                    const callUUID = '2'; //    TODO: fix this
-                    console.log('Chiamata in arrivo', callUUID);
-
+                } else if(message.data?.type === 'incoming-call') {
                     InCallManager.startRingtone('_DEFAULT_', [1000, 2000], 'PlayAndRecord', 30)
-
-                    //  Create a channel
-                    const channelId = await notifee.createChannel({
-                        id: 'incoming-calls',
-                        name: 'Incoming Calls Channel',
-                        badge: false,
-                        importance: AndroidImportance.HIGH
-                    });
-
-                    await notifee.displayNotification({
-                        id: callUUID,
-                        title: 'Lorenzo Lenti', //  TODO: fix this
-                        body: 'Incoming Video Call',
-                        android: {
-                            channelId,
-                            color: '#007cff',
-                            smallIcon: 'notification_icon',
-                            importance: AndroidImportance.HIGH,
-                            category: AndroidCategory.CALL,
-                            autoCancel: false,
-                            ongoing: true,
-                            lightUpScreen: true,
-                            circularLargeIcon: true,
-                            largeIcon: 'http://192.168.178.183:3000/uploads/1737924911737-348673612.png',
-                            showTimestamp: true,
-                            timestamp: dayjs().valueOf(),
-                            fullScreenAction: {
-                                id: 'default'
-                            },
-                            pressAction: {
-                                id: 'default',
-                                mainComponent: 'profile'
-                            },
-                            actions: [
-                                {
-
-                                    title: '✅ Rispondi',
-                                    pressAction: { id: 'answer' },
-                                },
-                                {
-                                    title: '❌ Rifiuta',
-                                    pressAction: { id: 'reject' },
-                                },
-                            ],
-                        },
-                    });
+                    await displayIncomingCallNotification(message.data);
+                } else if(message.data?.type === 'incoming-call-handled') {
+                    const callId = message.data.callId as string;
+                    InCallManager.stopRingtone();
+                    notifee.cancelNotification(callId);
                 }
             }); 
 
             unsubscribeNotificationListener.current = notifee.onForegroundEvent(({ type, detail }) => {
                 if(type === EventType.PRESS) {
-                    //  TODO: you might want to redirect user to correct route
-                    console.log("Foreground Notification pressed");
-                    console.log(JSON.stringify(detail.notification));
+                    if(detail.notification?.data?.type === 'missed-call') {
+                        const callId = detail.notification.data.callId as string;
+                        router.push({ pathname: '/calls/[id]', params: { id: callId } });
+                    } else if(detail.notification?.data?.type === 'incoming-call') {
+                        const callId = detail.notification.data.callId as string;
+                        const contact = detail.notification.data.contact && typeof detail.notification.data.contact === 'string' ? 
+                            JSON.parse(detail.notification.data.contact) as Contact : detail.notification.data.contact ? 
+                                detail.notification.data.contact as Contact : undefined;
+                        const user = detail.notification.data.user && typeof detail.notification.data.user === 'string' ? 
+                            JSON.parse(detail.notification.data.user) as CustomUser : detail.notification.data.user ? 
+                                detail.notification.data.user as CustomUser : undefined;
+
+                        router.push({ 
+                            pathname: '/video-call/incoming', 
+                            params: { 
+                                callId,
+                                contactId: contact ? contact.id : undefined,
+                                userId: user ? user.id : undefined
+                            } 
+                        });
+                    }
                 } else if(type === EventType.ACTION_PRESS && detail.pressAction?.id === 'reject') {
                     console.log('Chiamata rifiutata');
                     InCallManager.stopRingtone();
-                    notifee.cancelDisplayedNotification(detail.notification?.id ?? "");
+                    notifee.cancelNotification(detail.notification?.id ?? "");
                 }
             });
 
