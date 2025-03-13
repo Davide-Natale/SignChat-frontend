@@ -29,11 +29,11 @@ export default function RootLayout() {
       <GestureHandlerRootView>
         <BottomSheetModalProvider>
           <AppProvider>
-            <NotificationsProvider>
-              <ErrorProvider>
-                <ContactsProvider>
-                  <AuthProvider>
-                    <VideoCallProvider>
+            <VideoCallProvider>
+              <NotificationsProvider>
+                <ErrorProvider>
+                  <ContactsProvider>
+                    <AuthProvider>
                       <Stack>
                         <Stack.Screen name="index" options={{ headerShown: false }} />
                         <Stack.Screen
@@ -212,11 +212,11 @@ export default function RootLayout() {
                         />
                       </Stack>
                       <StatusBar style="auto" />
-                    </VideoCallProvider>
-                  </AuthProvider>
-                </ContactsProvider>
-              </ErrorProvider>
-            </NotificationsProvider>
+                    </AuthProvider>
+                  </ContactsProvider>
+                </ErrorProvider>
+              </NotificationsProvider>
+            </VideoCallProvider>
           </AppProvider>
         </BottomSheetModalProvider>
       </GestureHandlerRootView>

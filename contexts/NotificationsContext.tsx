@@ -1,5 +1,5 @@
 import { getPreference, removePreference, savePreference } from "@/utils/asyncStorage";
-import React, { createContext, useEffect, useRef, useState } from "react";
+import React, { createContext, useContext, useEffect, useRef, useState } from "react";
 import { deleteToken, onMessage, onTokenRefresh } from '@react-native-firebase/messaging';
 import { messaging, registerForPushNotificationsAsync } from "@/utils/firebaseMessaging";
 import tokensAPI from "@/api/tokensAPI";
@@ -10,6 +10,7 @@ import InCallManager from 'react-native-incall-manager';
 import { router } from 'expo-router';
 import { Contact } from "@/types/Contact";
 import { CustomUser } from "@/types/User";
+import { VideoCallContext } from "./VideoCallContext";
 
 interface NotificationsContextType {
     isNotificationsEnabled: boolean | null;
@@ -22,6 +23,7 @@ interface NotificationsContextType {
 export const NotificationsContext = createContext<NotificationsContextType | undefined>(undefined);
 
 export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+    const videoCallContext = useContext(VideoCallContext);
     const [fcmToken, setFcmToken] = useState<string | null>(null);
     const [isNotificationsEnabled, setIsNotificationsEnabled] = useState<boolean | null>(null);
     const unsubscribeMessageListener = useRef<() => void>();
@@ -85,10 +87,21 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
                             } 
                         });
                     }
-                } else if(type === EventType.ACTION_PRESS && detail.pressAction?.id === 'reject') {
-                    console.log('Chiamata rifiutata');
-                    InCallManager.stopRingtone();
-                    notifee.cancelNotification(detail.notification?.id ?? "");
+                } else if(type === EventType.ACTION_PRESS) {
+                    if(detail.pressAction?.id === 'reject') {
+                        const callId = detail.notification?.data?.callId as string;
+                        const contact = detail.notification?.data?.contact && typeof detail.notification.data.contact === 'string' ? 
+                            JSON.parse(detail.notification.data.contact) as Contact : detail.notification?.data?.contact ? 
+                                detail.notification.data.contact as Contact : undefined;
+                        const user = detail.notification?.data?.user && typeof detail.notification.data.user === 'string' ? 
+                            JSON.parse(detail.notification.data.user) as CustomUser : detail.notification?.data?.user ? 
+                                detail.notification?.data?.user as CustomUser : undefined;
+
+                        videoCallContext?.rejectCall(
+                            parseInt(callId),
+                            contact?.user ? contact.user.id : user ? user.id : -1
+                        );
+                    }
                 }
             });
 

@@ -7,6 +7,8 @@ import InCallManager from 'react-native-incall-manager';
 import { router } from 'expo-router';
 import { Contact } from "@/types/Contact";
 import { CustomUser } from "@/types/User";
+import DeviceInfo from 'react-native-device-info';
+import { socket } from './utils/webSocket';
 
 setBackgroundMessageHandler(messaging, async message => {
     if(message.data?.notifee) {
@@ -48,8 +50,21 @@ notifee.onBackgroundEvent(async ({ type, detail }) => {
             });
         }
     } else if(type === EventType.ACTION_PRESS && detail.pressAction?.id === 'reject') {
-        console.log('Chiamata rifiutata');
+        const deviceId = await DeviceInfo.getUniqueId();
+        const callId = detail.notification?.data?.callId as string;
+        const contact = detail.notification?.data?.contact && typeof detail.notification.data.contact === 'string' ? 
+            JSON.parse(detail.notification.data.contact) as Contact : detail.notification?.data?.contact ? 
+                detail.notification.data.contact as Contact : undefined;
+        const user = detail.notification?.data?.user && typeof detail.notification.data.user === 'string' ? 
+            JSON.parse(detail.notification.data.user) as CustomUser : detail.notification?.data?.user ? 
+                detail.notification?.data?.user as CustomUser : undefined;
+
+        socket.emit("reject-call", { 
+            callId,
+            callerUserId: contact?.user ? contact.user.id : user?.id,
+            deviceId
+        });
         InCallManager.stopRingtone();
-        notifee.cancelNotification(detail.notification?.id ?? "");
+        notifee.cancelNotification(callId.toString());
     }
 });

@@ -91,7 +91,7 @@ export default function IncomingVideoCall() {
                         <ThemedButton
                             onPress={() => { 
                                 cancelAnimation(shake);
-                                //videoCallContext?.rejectCall();
+                                videoCallContext?.rejectCall(parseInt(callId), callerUserId ?? -1, true);
                             }}
                             height={65}
                             width={65}

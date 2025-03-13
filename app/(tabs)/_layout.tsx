@@ -15,7 +15,7 @@ import { parsePhoneNumberFromString } from 'libphonenumber-js';
 import { Contact } from "@/types/Contact";
 import contactsAPI from "@/api/contactsAPI";
 import { ContactsContext } from "@/contexts/ContactsContext";
-import { connectSocket, disconnectSocket, socket } from "@/utils/webSocket";
+import { connectSocket, disconnectSocket } from "@/utils/webSocket";
 import { NotificationsContext } from "@/contexts/NotificationsContext";
 import { checkInitialNotification } from "@/utils/notifications";
 import { VideoCallContext } from "@/contexts/VideoCallContext";

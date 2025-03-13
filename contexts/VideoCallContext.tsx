@@ -6,6 +6,7 @@ import React, { createContext, useEffect, useRef, useState } from "react";
 import InCallManager from 'react-native-incall-manager';
 import { Audio } from 'expo-av';
 import DeviceInfo from "react-native-device-info";
+import notifee from '@notifee/react-native';
 
 type EndCallStatus = "unanswered" | "rejected";
 
@@ -33,7 +34,7 @@ export interface VideoCallContextType {
     startCall: (targetUserId: number, targetPhone: string, contactId?: number, isRetry?: boolean) => void;
     endCall: () => void;
     answerCall: (callId: number, callerUserId: number, contactId?: number) => Promise<void>;
-    rejectCall: (callId: number, callerUserId: number) => Promise<void>;
+    rejectCall: (callId: number, callerUserId: number, goBack?: boolean) => Promise<void>;
 }
 
 export const VideoCallContext = createContext<VideoCallContextType | undefined>(undefined);
@@ -137,9 +138,16 @@ export const VideoCallProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         });
     };
 
-    const rejectCall = async (callId: number, callerUserId: number) => {
+    const rejectCall = async (callId: number, callerUserId: number, goBack: boolean = false) => {
         const deviceId = await DeviceInfo.getUniqueId();
         socket.emit("reject-call", { callId, callerUserId, deviceId});
+        InCallManager.stopRingtone();
+        notifee.cancelNotification(callId.toString());
+        
+        if(goBack) {
+            setOtherUser(undefined);
+            router.back();
+        }
     };
 
     const toggleIsMicMuted = () => {
