@@ -1,7 +1,7 @@
 import { Contact } from "@/types/Contact";
 import { CustomUser } from "@/types/User";
 import { socket } from "@/utils/webSocket";
-import { useRouter } from "expo-router";
+import { Href, useRouter } from "expo-router";
 import React, { createContext, useEffect, useRef, useState } from "react";
 import InCallManager from 'react-native-incall-manager';
 import { Audio } from 'expo-av';
@@ -9,13 +9,14 @@ import DeviceInfo from "react-native-device-info";
 import notifee from '@notifee/react-native';
 
 type EndCallStatus = "unanswered" | "rejected";
+type NavigateMode = 'push' | 'replace';
 
 export const isContact = (obj: CustomUser | Contact): obj is Contact => {
     return 'user' in obj;
 }
 
 export interface VideoCallContextType {
-    callId: string | undefined;
+    callIdRef: React.MutableRefObject<number | undefined>;
     isRinging: boolean;
     isRingingRef: React.MutableRefObject<boolean>;
     isCallStarted: boolean;
@@ -24,7 +25,6 @@ export interface VideoCallContextType {
     endCallStatus: EndCallStatus | undefined;
     isMicMuted: boolean;
     isCameraOff: boolean;
-    updateCallId: React.Dispatch<React.SetStateAction<string | undefined>>;
     updateIsRinging: React.Dispatch<React.SetStateAction<boolean>>;
     updateIsCallStarted: React.Dispatch<React.SetStateAction<boolean>>;
     updateOtherUser: React.Dispatch<React.SetStateAction<CustomUser | Contact | undefined>>;
@@ -33,7 +33,7 @@ export interface VideoCallContextType {
     toggleIsCameraOff: () => void;
     startCall: (targetUserId: number, targetPhone: string, contactId?: number, isRetry?: boolean) => void;
     endCall: () => void;
-    answerCall: (callId: number, callerUserId: number, contactId?: number) => Promise<void>;
+    answerCall: (callId: number, callerUserId: number, contactId?: number, navigateMode?: NavigateMode) => Promise<void>;
     rejectCall: (callId: number, callerUserId: number, goBack?: boolean) => Promise<void>;
 }
 
@@ -41,7 +41,6 @@ export const VideoCallContext = createContext<VideoCallContextType | undefined>(
 
 export const VideoCallProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const router = useRouter();
-    const [callId, setCallId] = useState<string>();
     const [isRinging, setIsRinging] = useState(false);
     const [isCallStarted, setIsCallStarted] = useState(false);
     const [duration, setDuration] = useState(0);
@@ -49,6 +48,7 @@ export const VideoCallProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     const [endCallStatus, setEndCallStatus] = useState<EndCallStatus>();
     const [isMicMuted, setIsMicMuted] = useState(false);
     const [isCameraOff, setIsCameraOff] = useState(false);
+    const callIdRef = useRef<number>();
     const isRingingRef = useRef(isRinging);
     const ringbackSoundRef = useRef<Audio.Sound>();
     const intervalRef = useRef<NodeJS.Timeout>();
@@ -109,33 +109,35 @@ export const VideoCallProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     };
 
     const endCall = () => {
-        //  TODO: move this code in socket handler
-        setCallId(undefined);
-        setIsCallStarted(false);
-        setOtherUser(undefined);
-        router.back();
-
-        if(callId && otherUser) {
-            /*const checkContact = isContact(otherUser);
+        if(callIdRef.current && otherUser) {
+            const checkContact = isContact(otherUser);
             socket.emit("end-call", { 
-                callId, 
+                callId: callIdRef.current, 
                 otherUserId: checkContact ? otherUser.user?.id : otherUser.id
-            });*/ 
+            });
         }  
     };
 
-    const answerCall = async (callId: number, callerUserId: number, contactId?: number) => {
-        //const deviceId = await DeviceInfo.getUniqueId();
-        
-        //socket.emit("answer-call", { callId, callerUserId, deviceId});
-        //InCallManager.start({ media: 'video' });
-        router.push({
+    const answerCall = async (callId: number, callerUserId: number, contactId?: number, navigateMode: NavigateMode = 'push') => {
+        const deviceId = await DeviceInfo.getUniqueId();
+        const navigationConfig: Href= {
             pathname: '/video-call', 
             params: { 
                 contactId, 
                 userId: !contactId ? callerUserId : undefined 
             } 
-        });
+        };
+
+        socket.emit("answer-call", { callId, callerUserId, deviceId});
+        InCallManager.stopRingtone();
+        notifee.cancelNotification(callId.toString());
+        InCallManager.start({ media: 'video' });
+
+        if(navigateMode === 'replace') {
+            router.replace(navigationConfig);
+        } else {
+            router.push(navigationConfig);
+        }
     };
 
     const rejectCall = async (callId: number, callerUserId: number, goBack: boolean = false) => {
@@ -161,7 +163,7 @@ export const VideoCallProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     return(
         <VideoCallContext.Provider value={
             {
-                callId,
+                callIdRef,
                 isRinging,
                 isRingingRef,
                 isCallStarted,
@@ -170,7 +172,6 @@ export const VideoCallProvider: React.FC<{ children: React.ReactNode }> = ({ chi
                 endCallStatus,
                 isMicMuted,
                 isCameraOff,
-                updateCallId: setCallId,
                 updateIsRinging: setIsRinging,
                 updateIsCallStarted: setIsCallStarted,
                 updateOtherUser: setOtherUser,

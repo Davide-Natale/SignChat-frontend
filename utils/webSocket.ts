@@ -64,34 +64,45 @@ export const connectSocket = async (context: VideoCallContextType | undefined, r
              } 
         });
 
-        //  TODO: remove logging once tested
         socket.on('call-started', async ({ callId }) => {
-            context?.updateCallId(callId);
-            context?.updateIsRinging(true);
+            if(context) {
+                context.callIdRef.current = callId;
+                context?.updateIsRinging(true);
+            } 
         });
 
         socket.on('call-ended', async ({ reason }) => {
-            console.log("Call Ended: ", reason);
-            context?.updateCallId(undefined);
-            context?.updateIsCallStarted(false);
-            InCallManager.stop();
-            if(context?.isRingingRef.current) {
-                context.updateIsRinging(false);
-            }
+            if(context) {
+                context.callIdRef.current = undefined;
+                InCallManager.stop();
 
-            if(reason === 'completed') {
-                context?.updateOtherUser(undefined);
-                router.back();
-            } else {
-                context?.updateEndCallStatus(reason);
+                if(context?.isRingingRef.current) {
+                    context.updateIsRinging(false);
+                }
+
+                if(reason === 'completed') {
+                    context?.updateIsCallStarted(false);
+                    context?.updateOtherUser(undefined);
+                    router.back();
+                } else {
+                    context?.updateEndCallStatus(reason);
+                }
+            } 
+        });
+
+        socket.on('call-joined', async ({ callId }) => {
+            if(callId && context) {
+                context.callIdRef.current = callId;
+                context.updateIsCallStarted(true);
             }
         });
 
         socket.on('call-answered', async () => {
-            console.log("Call Answered");
             if (context?.isRingingRef.current) {
                 context.updateIsRinging(false);
             }
+
+            context?.updateIsCallStarted(true);
         });
 
         socket.on('call-error', async ({ message }) => {

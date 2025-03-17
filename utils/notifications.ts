@@ -90,12 +90,12 @@ export const displayIncomingCallNotification = async (data: Data) => {
             actions: [
                 {
                     title: '<p style="color: #FF4D4D"><b>Decline</b></p>',
-                    pressAction: { id: 'reject' },
+                    pressAction: { id: 'decline' },
                 },
                 {
 
                     title: '<p style="color: #4CAF50"><b>Accept</b></p>',
-                    pressAction: { id: 'answer' },
+                    pressAction: { id: 'accept' },
                 }
             ],
         },

@@ -49,22 +49,50 @@ notifee.onBackgroundEvent(async ({ type, detail }) => {
                 } 
             });
         }
-    } else if(type === EventType.ACTION_PRESS && detail.pressAction?.id === 'reject') {
-        const deviceId = await DeviceInfo.getUniqueId();
-        const callId = detail.notification?.data?.callId as string;
-        const contact = detail.notification?.data?.contact && typeof detail.notification.data.contact === 'string' ? 
-            JSON.parse(detail.notification.data.contact) as Contact : detail.notification?.data?.contact ? 
-                detail.notification.data.contact as Contact : undefined;
-        const user = detail.notification?.data?.user && typeof detail.notification.data.user === 'string' ? 
-            JSON.parse(detail.notification.data.user) as CustomUser : detail.notification?.data?.user ? 
-                detail.notification?.data?.user as CustomUser : undefined;
+    } else if(type === EventType.ACTION_PRESS) {    //  TODO: fix this because socket isn't already connected when app is killed
+        if(detail.pressAction?.id === 'decline') {
+            const deviceId = await DeviceInfo.getUniqueId();
+            const callId = detail.notification?.data?.callId as string;
+            const contact = detail.notification?.data?.contact && typeof detail.notification.data.contact === 'string' ? 
+                JSON.parse(detail.notification.data.contact) as Contact : detail.notification?.data?.contact ? 
+                    detail.notification.data.contact as Contact : undefined;
+            const user = detail.notification?.data?.user && typeof detail.notification.data.user === 'string' ? 
+                JSON.parse(detail.notification.data.user) as CustomUser : detail.notification?.data?.user ? 
+                    detail.notification?.data?.user as CustomUser : undefined;
 
-        socket.emit("reject-call", { 
-            callId,
-            callerUserId: contact?.user ? contact.user.id : user?.id,
-            deviceId
-        });
-        InCallManager.stopRingtone();
-        notifee.cancelNotification(callId.toString());
+            socket.emit("reject-call", { 
+                callId,
+                callerUserId: contact?.user ? contact.user.id : user?.id,
+                deviceId
+            });
+            InCallManager.stopRingtone();
+            notifee.cancelNotification(callId.toString());
+        } else if(detail.pressAction?.id === 'accept') {
+            const deviceId = await DeviceInfo.getUniqueId();
+            const callId = detail.notification?.data?.callId as string;
+            const contact = detail.notification?.data?.contact && typeof detail.notification.data.contact === 'string' ? 
+                JSON.parse(detail.notification.data.contact) as Contact : detail.notification?.data?.contact ? 
+                    detail.notification.data.contact as Contact : undefined;
+            const user = detail.notification?.data?.user && typeof detail.notification.data.user === 'string' ? 
+                JSON.parse(detail.notification.data.user) as CustomUser : detail.notification?.data?.user ? 
+                    detail.notification?.data?.user as CustomUser : undefined;
+
+            socket.emit("answer-call", { 
+                callId,
+                callerUserId: contact?.user ? contact.user.id : user?.id,
+                deviceId
+            });
+            InCallManager.stopRingtone();
+            notifee.cancelNotification(callId.toString());
+            InCallManager.start({ media: 'video' });
+            //  TODO: add back to foreground for app
+            router.push({
+                pathname: '/video-call', 
+                params: { 
+                    contactId: contact ? contact.id : undefined, 
+                    userId: !contact ? user?.id : undefined 
+                } 
+            });
+        }
     }
 });

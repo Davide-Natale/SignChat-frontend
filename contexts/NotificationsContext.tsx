@@ -88,7 +88,7 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
                         });
                     }
                 } else if(type === EventType.ACTION_PRESS) {
-                    if(detail.pressAction?.id === 'reject') {
+                    if(detail.pressAction?.id === 'decline') {
                         const callId = detail.notification?.data?.callId as string;
                         const contact = detail.notification?.data?.contact && typeof detail.notification.data.contact === 'string' ? 
                             JSON.parse(detail.notification.data.contact) as Contact : detail.notification?.data?.contact ? 
@@ -101,6 +101,20 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
                             parseInt(callId),
                             contact?.user ? contact.user.id : user ? user.id : -1
                         );
+                    } else if(detail.pressAction?.id === 'accept') {
+                        const callId = detail.notification?.data?.callId as string;
+                        const contact = detail.notification?.data?.contact && typeof detail.notification.data.contact === 'string' ? 
+                            JSON.parse(detail.notification.data.contact) as Contact : detail.notification?.data?.contact ? 
+                                detail.notification.data.contact as Contact : undefined;
+                        const user = detail.notification?.data?.user && typeof detail.notification.data.user === 'string' ? 
+                            JSON.parse(detail.notification.data.user) as CustomUser : detail.notification?.data?.user ? 
+                                detail.notification?.data?.user as CustomUser : undefined;
+
+                        videoCallContext?.answerCall(
+                            parseInt(callId),
+                            contact?.user ? contact.user.id : user ? user.id : -1,
+                            contact ? contact.id : undefined
+                        );    
                     }
                 }
             });

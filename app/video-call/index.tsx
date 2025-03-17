@@ -101,7 +101,7 @@ export default function VideoCall() {
             onPress: () => { clearTimer() ; videoCallContext?.endCall() },
             icon: <EndCallBoldIcon height={28} width={28} fill={lightTheme.primary} />
         }
-    ], [videoCallContext?.isCallStarted, videoCallContext?.isCameraOff, videoCallContext?.isMicMuted]);
+    ], [videoCallContext?.otherUser, videoCallContext?.isCallStarted, videoCallContext?.isCameraOff, videoCallContext?.isMicMuted]);
 
     const onControlBarLayout = useCallback((event: LayoutChangeEvent) => {
         const { height } = event.nativeEvent.layout;

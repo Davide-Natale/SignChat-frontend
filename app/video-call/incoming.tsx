@@ -115,11 +115,12 @@ export default function IncomingVideoCall() {
                             <ThemedButton
                                 onPress={() => { 
                                     cancelAnimation(shake);
-                                    if(videoCallContext?.otherUser) {
+                                    if(videoCallContext?.otherUser && callerUserId) {
                                         videoCallContext?.answerCall(
                                             parseInt(callId),
-                                            callerUserId ?? -1,
-                                            contactId ? parseInt(contactId) : undefined
+                                            callerUserId,
+                                            contactId ? parseInt(contactId) : undefined,
+                                            'replace'
                                         );
                                     }
                                 }}
