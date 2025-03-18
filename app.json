@@ -72,7 +72,8 @@
       ],
       "@react-native-firebase/app",
       "@react-native-firebase/messaging",
-      "./plugins/notifeePlugin.js"
+      "./plugins/notifeePlugin.js",
+      "@config-plugins/react-native-webrtc"
     ],
     "experiments": {
       "typedRoutes": true

@@ -7,6 +7,7 @@ import InCallManager from 'react-native-incall-manager';
 import { Audio } from 'expo-av';
 import DeviceInfo from "react-native-device-info";
 import notifee from '@notifee/react-native';
+import * as mediasoup from 'mediasoup-client';
 
 type EndCallStatus = "unanswered" | "rejected";
 type NavigateMode = 'push' | 'replace';
@@ -31,6 +32,7 @@ export interface VideoCallContextType {
     updateEndCallStatus: React.Dispatch<React.SetStateAction<EndCallStatus | undefined>>;
     toggleIsMicMuted: () => void;
     toggleIsCameraOff: () => void;
+    initializeDevice: () => Promise<void>;
     startCall: (targetUserId: number, targetPhone: string, contactId?: number, isRetry?: boolean) => void;
     endCall: () => void;
     answerCall: (callId: number, callerUserId: number, contactId?: number, navigateMode?: NavigateMode) => Promise<void>;
@@ -51,6 +53,11 @@ export const VideoCallProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     const callIdRef = useRef<number>();
     const isRingingRef = useRef(isRinging);
     const ringbackSoundRef = useRef<Audio.Sound>();
+    const deviceRef = useRef<mediasoup.types.Device>();
+    const sendTransportRef = useRef();
+    const recvTransportRef = useRef();
+    const producerRef = useRef();
+    const consumerRef = useRef();
     const intervalRef = useRef<NodeJS.Timeout>();
     const stopInterval = () => {
         if(intervalRef.current) {
@@ -92,6 +99,15 @@ export const VideoCallProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
         return () => stopInterval();
     }, [isCallStarted]);
+
+    const initializeDevice = async () => {
+        socket.emit('getRouterRtpCapabilities', async (capabilities: mediasoup.types.RtpCapabilities | null) => {
+            if(capabilities) {
+                deviceRef.current = new mediasoup.Device();
+                await deviceRef.current.load({ routerRtpCapabilities: capabilities});
+            }
+        });
+    };
 
     const startCall = (targetUserId: number, targetPhone: string, contactId?: number, isRetry: boolean = false) => {
         socket.emit("call-user", { targetUserId, targetPhone });
@@ -178,6 +194,7 @@ export const VideoCallProvider: React.FC<{ children: React.ReactNode }> = ({ chi
                 updateEndCallStatus: setEndCallStatus,
                 toggleIsMicMuted,
                 toggleIsCameraOff,
+                initializeDevice,
                 startCall,
                 endCall,
                 answerCall,

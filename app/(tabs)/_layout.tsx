@@ -144,8 +144,12 @@ export default function TabLayout() {
     }, []);
 
     useEffect(() => {
-        connectSocket(videoCallContext, router);
+        const initializeWebSocket = async () => {
+            await connectSocket(videoCallContext, router);
+            await videoCallContext?.initializeDevice();
+        };
 
+        initializeWebSocket();
         return () => { disconnectSocket(); };
     }, []);
 

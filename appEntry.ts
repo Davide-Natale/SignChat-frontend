@@ -9,6 +9,10 @@ import { Contact } from "@/types/Contact";
 import { CustomUser } from "@/types/User";
 import DeviceInfo from 'react-native-device-info';
 import { socket } from './utils/webSocket';
+import { registerGlobals } from 'react-native-webrtc';
+
+//  Setup react-native-webrtc to expose all its classes to the global scope
+registerGlobals();
 
 setBackgroundMessageHandler(messaging, async message => {
     if(message.data?.notifee) {
