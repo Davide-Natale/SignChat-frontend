@@ -36,6 +36,8 @@ export const displayNotification = async (messagePayload: MessagePayload) => {
             smallIcon: 'notification_icon',
             circularLargeIcon: true,
             largeIcon: imageProfile ?? placeholder,
+            showTimestamp: true,
+            timestamp: dayjs().valueOf(),
             pressAction: {
                 id: 'default'
             }

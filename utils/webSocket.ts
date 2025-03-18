@@ -4,6 +4,12 @@ import authAPI from '@/api/authAPI';
 import { VideoCallContextType } from '@/contexts/VideoCallContext'
 import { Router } from 'expo-router';
 import InCallManager from 'react-native-incall-manager';
+import * as mediasoup from 'mediasoup-client';
+
+type Response = { 
+    success: boolean,
+    error?: string
+}
 
 const SERVER_URL = 'http://192.168.178.183:3000';
 
@@ -28,6 +34,21 @@ const checkAuth = async () => {
         return null;
     }
 }
+
+const connectTransport = (
+    transportId: string, 
+    dtlsParameters: mediasoup.types.DtlsParameters, 
+    callback: () => void, 
+    errback: (error: Error) => void
+) => {
+    socket.emit('connectTransport', { transportId, dtlsParameters }, (response: Response) => {
+        if(response.success) {
+            callback();
+        } else {
+            errback(new Error(response.error));
+        }
+    });
+};
 
 export const connectSocket = async (context: VideoCallContextType | undefined, router: Router) => {
     const accessToken = await getToken('accessToken');
@@ -64,10 +85,22 @@ export const connectSocket = async (context: VideoCallContextType | undefined, r
              } 
         });
 
-        socket.on('call-started', async ({ callId }) => {
+        socket.on('call-started', async ({ callId, sendTransportParams, recvTransportParams }) => {
             if(context) {
+                const sendTransport = context.deviceRef.current?.createSendTransport(sendTransportParams);
+                sendTransport?.on('connect', async ({ dtlsParameters }, callback, errback) => {
+                    connectTransport(sendTransport.id, dtlsParameters, callback, errback);
+                });
+
+                const recvTransport = context.deviceRef.current?.createRecvTransport(recvTransportParams);
+                recvTransport?.on('connect', async ({ dtlsParameters }, callback, errback) => {
+                    connectTransport(recvTransport.id, dtlsParameters, callback, errback);
+                });
+
                 context.callIdRef.current = callId;
-                context?.updateIsRinging(true);
+                context.sendTransportRef.current = sendTransport;
+                context.recvTransportRef.current = recvTransport;
+                context.updateIsRinging(true);
             } 
         });
 
@@ -85,6 +118,12 @@ export const connectSocket = async (context: VideoCallContextType | undefined, r
                     context?.updateOtherUser(undefined);
                     router.back();
                 } else {
+                    context.sendTransportRef.current?.close();
+                    context.sendTransportRef.current = undefined;
+
+                    context.recvTransportRef.current?.close();
+                    context.recvTransportRef.current = undefined;
+
                     context?.updateEndCallStatus(reason);
                 }
             } 

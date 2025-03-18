@@ -26,6 +26,9 @@ export interface VideoCallContextType {
     endCallStatus: EndCallStatus | undefined;
     isMicMuted: boolean;
     isCameraOff: boolean;
+    deviceRef: React.MutableRefObject<mediasoup.types.Device | undefined>;
+    sendTransportRef: React.MutableRefObject<mediasoup.types.Transport<mediasoup.types.AppData> | undefined>;
+    recvTransportRef: React.MutableRefObject<mediasoup.types.Transport<mediasoup.types.AppData> | undefined>;
     updateIsRinging: React.Dispatch<React.SetStateAction<boolean>>;
     updateIsCallStarted: React.Dispatch<React.SetStateAction<boolean>>;
     updateOtherUser: React.Dispatch<React.SetStateAction<CustomUser | Contact | undefined>>;
@@ -54,8 +57,8 @@ export const VideoCallProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     const isRingingRef = useRef(isRinging);
     const ringbackSoundRef = useRef<Audio.Sound>();
     const deviceRef = useRef<mediasoup.types.Device>();
-    const sendTransportRef = useRef();
-    const recvTransportRef = useRef();
+    const sendTransportRef = useRef<mediasoup.types.Transport<mediasoup.types.AppData>>();
+    const recvTransportRef = useRef<mediasoup.types.Transport<mediasoup.types.AppData>>();
     const producerRef = useRef();
     const consumerRef = useRef();
     const intervalRef = useRef<NodeJS.Timeout>();
@@ -99,6 +102,17 @@ export const VideoCallProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
         return () => stopInterval();
     }, [isCallStarted]);
+
+    //  TODO: remove this
+    useEffect(() => {
+        console.log(sendTransportRef.current?.id);
+        
+    }, [sendTransportRef.current]);
+
+    //  TODO: remove this
+    useEffect(() => {
+        console.log(recvTransportRef.current?.id);
+    }, [recvTransportRef.current]);
 
     const initializeDevice = async () => {
         socket.emit('getRouterRtpCapabilities', async (capabilities: mediasoup.types.RtpCapabilities | null) => {
@@ -188,6 +202,9 @@ export const VideoCallProvider: React.FC<{ children: React.ReactNode }> = ({ chi
                 endCallStatus,
                 isMicMuted,
                 isCameraOff,
+                deviceRef,
+                sendTransportRef,
+                recvTransportRef,
                 updateIsRinging: setIsRinging,
                 updateIsCallStarted: setIsCallStarted,
                 updateOtherUser: setOtherUser,
