@@ -5,6 +5,7 @@ import { VideoCallContextType } from '@/contexts/VideoCallContext'
 import { Router } from 'expo-router';
 import InCallManager from 'react-native-incall-manager';
 import * as mediasoup from 'mediasoup-client';
+import { mediaDevices } from "react-native-webrtc";
 
 type Response = { 
     success: boolean,
@@ -107,6 +108,12 @@ export const connectSocket = async (context: VideoCallContextType | undefined, r
         socket.on('call-ended', async ({ reason }) => {
             if(context) {
                 context.callIdRef.current = undefined;
+                context.localStream?.getTracks().forEach(track => track.stop());
+                context.updateLocalStream(undefined);
+                context.sendTransportRef.current?.close();
+                context.sendTransportRef.current = undefined;
+                context.recvTransportRef.current?.close();
+                context.recvTransportRef.current = undefined;
                 InCallManager.stop();
 
                 if(context?.isRingingRef.current) {
@@ -118,20 +125,29 @@ export const connectSocket = async (context: VideoCallContextType | undefined, r
                     context?.updateOtherUser(undefined);
                     router.back();
                 } else {
-                    context.sendTransportRef.current?.close();
-                    context.sendTransportRef.current = undefined;
-
-                    context.recvTransportRef.current?.close();
-                    context.recvTransportRef.current = undefined;
-
                     context?.updateEndCallStatus(reason);
                 }
             } 
         });
 
-        socket.on('call-joined', async ({ callId }) => {
-            if(callId && context) {
+        socket.on('call-joined', async ({ callId, sendTransportParams, recvTransportParams }) => {
+            if(context) {
+                const stream = await mediaDevices.getUserMedia({ audio: true, video: true });
+                context.updateLocalStream(stream);
+
+                const sendTransport = context.deviceRef.current?.createSendTransport(sendTransportParams);
+                sendTransport?.on('connect', async ({ dtlsParameters }, callback, errback) => {
+                    connectTransport(sendTransport.id, dtlsParameters, callback, errback);
+                });
+
+                const recvTransport = context.deviceRef.current?.createRecvTransport(recvTransportParams);
+                recvTransport?.on('connect', async ({ dtlsParameters }, callback, errback) => {
+                    connectTransport(recvTransport.id, dtlsParameters, callback, errback);
+                });
+
                 context.callIdRef.current = callId;
+                context.sendTransportRef.current = sendTransport;
+                context.recvTransportRef.current = recvTransport;
                 context.updateIsCallStarted(true);
             }
         });

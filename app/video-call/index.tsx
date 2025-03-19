@@ -25,6 +25,7 @@ import ImageProfile from '@/components/ImageProfile';
 import { AuthContext } from '@/contexts/AuthContext';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import VideoCallBottomSheet from '@/components/VideoCallBottomSheet';
+import { RTCView } from "react-native-webrtc";
 
 //  Use duration plugin
 dayjs.extend(duration);
@@ -35,11 +36,11 @@ type CornerId = 'topLeft' | 'topRight' | 'bottomLeft' | 'bottomRight';
 const CAMERA_SIZE = {
     withControls: {
         height: 240,
-        width: 160
+        width: 135
     },
     withoutControls: {
-        height: 145,
-        width: 85
+        height: 144,
+        width: 81
     }
 }
 
@@ -386,18 +387,21 @@ export default function VideoCall() {
                     </Animated.View>
                     <GestureDetector gesture={Gesture.Exclusive(panGesture, cameraTapGesture)} > 
                         <Animated.View style={[styles.camera, cameraAnimatedStyle, { backgroundColor: darkTheme.secondary }]} >
-                            {!videoCallContext?.isCameraOff ?
-                                <Animated.View style={[styles.cameraRotateButton, cameraRotateButtonAnimatedStyle]}>
-                                    <ThemedButton
-                                        onPress={() => { if(videoCallContext?.isCallStarted) startTimer(); console.log('Camera Rotated') }}
-                                        height={40}
-                                        width={40}
-                                        shape='circular'
-                                        backgroundColor={lightTheme.secondaryText}
-                                    >
-                                        <CameraRotateBoldIcon fill={lightTheme.primary} />
-                                    </ThemedButton>
-                                </Animated.View> :
+                            {!videoCallContext?.isCameraOff && videoCallContext?.localStream ?
+                                <>
+                                    <RTCView streamURL={videoCallContext.localStream.toURL()} mirror={true} style={styles.stream} />
+                                    <Animated.View style={[styles.cameraRotateButton, cameraRotateButtonAnimatedStyle]}>
+                                        <ThemedButton
+                                            onPress={() => { if(videoCallContext?.isCallStarted) startTimer(); console.log('Camera Rotated') }}
+                                            height={40}
+                                            width={40}
+                                            shape='circular'
+                                            backgroundColor={lightTheme.secondaryText}
+                                        >
+                                            <CameraRotateBoldIcon fill={lightTheme.primary} />
+                                        </ThemedButton>
+                                    </Animated.View>
+                                </> :
                                 <Animated.Image
                                     source={authContext?.user?.imageProfile ? { uri: authContext?.user?.imageProfile } : placeholder}
                                     style={imageProfileAnimatedStyle}
@@ -537,7 +541,12 @@ const styles = StyleSheet.create({
     camera: {
         justifyContent: 'center',
         alignItems: 'center',
-        position: 'absolute'
+        position: 'absolute',
+        overflow: 'hidden'
+    },
+    stream: {
+        height: '100%',
+        width: '100%'
     },
     micOffIcon: {
         justifyContent: 'center',

@@ -8,6 +8,7 @@ import { Audio } from 'expo-av';
 import DeviceInfo from "react-native-device-info";
 import notifee from '@notifee/react-native';
 import * as mediasoup from 'mediasoup-client';
+import { mediaDevices, MediaStream } from "react-native-webrtc";
 
 type EndCallStatus = "unanswered" | "rejected";
 type NavigateMode = 'push' | 'replace';
@@ -26,6 +27,7 @@ export interface VideoCallContextType {
     endCallStatus: EndCallStatus | undefined;
     isMicMuted: boolean;
     isCameraOff: boolean;
+    localStream: MediaStream | undefined;
     deviceRef: React.MutableRefObject<mediasoup.types.Device | undefined>;
     sendTransportRef: React.MutableRefObject<mediasoup.types.Transport<mediasoup.types.AppData> | undefined>;
     recvTransportRef: React.MutableRefObject<mediasoup.types.Transport<mediasoup.types.AppData> | undefined>;
@@ -33,10 +35,11 @@ export interface VideoCallContextType {
     updateIsCallStarted: React.Dispatch<React.SetStateAction<boolean>>;
     updateOtherUser: React.Dispatch<React.SetStateAction<CustomUser | Contact | undefined>>;
     updateEndCallStatus: React.Dispatch<React.SetStateAction<EndCallStatus | undefined>>;
+    updateLocalStream: React.Dispatch<React.SetStateAction<MediaStream | undefined>>;
     toggleIsMicMuted: () => void;
     toggleIsCameraOff: () => void;
     initializeDevice: () => Promise<void>;
-    startCall: (targetUserId: number, targetPhone: string, contactId?: number, isRetry?: boolean) => void;
+    startCall: (targetUserId: number, targetPhone: string, contactId?: number, isRetry?: boolean) => Promise<void>;
     endCall: () => void;
     answerCall: (callId: number, callerUserId: number, contactId?: number, navigateMode?: NavigateMode) => Promise<void>;
     rejectCall: (callId: number, callerUserId: number, goBack?: boolean) => Promise<void>;
@@ -53,6 +56,7 @@ export const VideoCallProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     const [endCallStatus, setEndCallStatus] = useState<EndCallStatus>();
     const [isMicMuted, setIsMicMuted] = useState(false);
     const [isCameraOff, setIsCameraOff] = useState(false);
+    const [localStream, setLocalStream] = useState<MediaStream>();
     const callIdRef = useRef<number>();
     const isRingingRef = useRef(isRinging);
     const ringbackSoundRef = useRef<Audio.Sound>();
@@ -103,17 +107,6 @@ export const VideoCallProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         return () => stopInterval();
     }, [isCallStarted]);
 
-    //  TODO: remove this
-    useEffect(() => {
-        console.log(sendTransportRef.current?.id);
-        
-    }, [sendTransportRef.current]);
-
-    //  TODO: remove this
-    useEffect(() => {
-        console.log(recvTransportRef.current?.id);
-    }, [recvTransportRef.current]);
-
     const initializeDevice = async () => {
         socket.emit('getRouterRtpCapabilities', async (capabilities: mediasoup.types.RtpCapabilities | null) => {
             if(capabilities) {
@@ -123,9 +116,11 @@ export const VideoCallProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         });
     };
 
-    const startCall = (targetUserId: number, targetPhone: string, contactId?: number, isRetry: boolean = false) => {
+    const startCall = async (targetUserId: number, targetPhone: string, contactId?: number, isRetry: boolean = false) => {
         socket.emit("call-user", { targetUserId, targetPhone });
         InCallManager.start({ media: 'video' });
+        const stream = await mediaDevices.getUserMedia({ audio: true, video: true });
+        setLocalStream(stream);
         
         if(!isRetry) {
             router.push({ 
@@ -202,6 +197,7 @@ export const VideoCallProvider: React.FC<{ children: React.ReactNode }> = ({ chi
                 endCallStatus,
                 isMicMuted,
                 isCameraOff,
+                localStream,
                 deviceRef,
                 sendTransportRef,
                 recvTransportRef,
@@ -209,6 +205,7 @@ export const VideoCallProvider: React.FC<{ children: React.ReactNode }> = ({ chi
                 updateIsCallStarted: setIsCallStarted,
                 updateOtherUser: setOtherUser,
                 updateEndCallStatus: setEndCallStatus,
+                updateLocalStream: setLocalStream,
                 toggleIsMicMuted,
                 toggleIsCameraOff,
                 initializeDevice,
