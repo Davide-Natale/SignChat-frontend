@@ -341,10 +341,14 @@ export default function VideoCall() {
                 <>
                     <GestureDetector gesture={tapGesture} >
                         <View style={styles.inner} >
-                            <ImageProfile
-                                uri={imageProfile ?? null}
-                                size={200}
-                            />
+                            { videoCallContext?.isCallStarted && videoCallContext.remoteStream ? 
+                                <RTCView streamURL={videoCallContext.remoteStream.toURL()} mirror={true} objectFit='cover' style={styles.stream} /> :
+                                    <ImageProfile
+                                        uri={imageProfile ?? null}
+                                        size={200}
+                                    />
+                            }
+                            
                         </View>
                     </GestureDetector>
                     <Animated.View
@@ -387,9 +391,9 @@ export default function VideoCall() {
                     </Animated.View>
                     <GestureDetector gesture={Gesture.Exclusive(panGesture, cameraTapGesture)} > 
                         <Animated.View style={[styles.camera, cameraAnimatedStyle, { backgroundColor: darkTheme.secondary }]} >
-                            {!videoCallContext?.isCameraOff && videoCallContext?.localStream ?
+                            {!videoCallContext?.isCameraOff ?
                                 <>
-                                    <RTCView streamURL={videoCallContext.localStream.toURL()} mirror={true} style={styles.stream} />
+                                    <RTCView streamURL={videoCallContext?.localStreamRef.current?.toURL()} mirror={true} zOrder={1} style={styles.stream} />
                                     <Animated.View style={[styles.cameraRotateButton, cameraRotateButtonAnimatedStyle]}>
                                         <ThemedButton
                                             onPress={() => { if(videoCallContext?.isCallStarted) startTimer(); console.log('Camera Rotated') }}
@@ -409,7 +413,7 @@ export default function VideoCall() {
                             }
                             {videoCallContext?.isMicMuted ?
                                 <Animated.View style={[styles.micOffIcon, micOffIconAnimatedStyle]} >
-                                    <MicOffBoldIcon height={18} width={18} fill={darkTheme.primaryText} />
+                                    <MicOffBoldIcon height={18} width={18} fill={darkTheme.error} />
                                 </Animated.View> : null
                             }
                         </Animated.View>

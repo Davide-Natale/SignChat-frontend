@@ -8,7 +8,7 @@ import { Audio } from 'expo-av';
 import DeviceInfo from "react-native-device-info";
 import notifee from '@notifee/react-native';
 import * as mediasoup from 'mediasoup-client';
-import { mediaDevices, MediaStream } from "react-native-webrtc";
+import { mediaDevices, MediaStream, MediaStreamTrack } from "react-native-webrtc";
 
 type EndCallStatus = "unanswered" | "rejected";
 type NavigateMode = 'push' | 'replace';
@@ -27,15 +27,19 @@ export interface VideoCallContextType {
     endCallStatus: EndCallStatus | undefined;
     isMicMuted: boolean;
     isCameraOff: boolean;
-    localStream: MediaStream | undefined;
+    remoteStream: MediaStream | undefined;
+    localStreamRef: React.MutableRefObject<MediaStream | undefined>;
     deviceRef: React.MutableRefObject<mediasoup.types.Device | undefined>;
     sendTransportRef: React.MutableRefObject<mediasoup.types.Transport<mediasoup.types.AppData> | undefined>;
     recvTransportRef: React.MutableRefObject<mediasoup.types.Transport<mediasoup.types.AppData> | undefined>;
+    videoProducerRef: React.MutableRefObject<mediasoup.types.Producer<mediasoup.types.AppData> | undefined>;
+    audioProducerRef: React.MutableRefObject<mediasoup.types.Producer<mediasoup.types.AppData> | undefined>;
+    videoConsumerRef: React.MutableRefObject<mediasoup.types.Consumer<mediasoup.types.AppData> | undefined>;
+    audioConsumerRef: React.MutableRefObject<mediasoup.types.Consumer<mediasoup.types.AppData> | undefined>;
     updateIsRinging: React.Dispatch<React.SetStateAction<boolean>>;
     updateIsCallStarted: React.Dispatch<React.SetStateAction<boolean>>;
     updateOtherUser: React.Dispatch<React.SetStateAction<CustomUser | Contact | undefined>>;
     updateEndCallStatus: React.Dispatch<React.SetStateAction<EndCallStatus | undefined>>;
-    updateLocalStream: React.Dispatch<React.SetStateAction<MediaStream | undefined>>;
     toggleIsMicMuted: () => void;
     toggleIsCameraOff: () => void;
     initializeDevice: () => Promise<void>;
@@ -56,15 +60,18 @@ export const VideoCallProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     const [endCallStatus, setEndCallStatus] = useState<EndCallStatus>();
     const [isMicMuted, setIsMicMuted] = useState(false);
     const [isCameraOff, setIsCameraOff] = useState(false);
-    const [localStream, setLocalStream] = useState<MediaStream>();
+    const [remoteStream, setRemoteStream] = useState<MediaStream>();
     const callIdRef = useRef<number>();
     const isRingingRef = useRef(isRinging);
     const ringbackSoundRef = useRef<Audio.Sound>();
+    const localStreamRef = useRef<MediaStream>();
     const deviceRef = useRef<mediasoup.types.Device>();
     const sendTransportRef = useRef<mediasoup.types.Transport<mediasoup.types.AppData>>();
     const recvTransportRef = useRef<mediasoup.types.Transport<mediasoup.types.AppData>>();
-    const producerRef = useRef();
-    const consumerRef = useRef();
+    const videoProducerRef = useRef<mediasoup.types.Producer<mediasoup.types.AppData>>();
+    const audioProducerRef = useRef<mediasoup.types.Producer<mediasoup.types.AppData>>();
+    const videoConsumerRef = useRef<mediasoup.types.Consumer<mediasoup.types.AppData>>();
+    const audioConsumerRef = useRef<mediasoup.types.Consumer<mediasoup.types.AppData>>();
     const intervalRef = useRef<NodeJS.Timeout>();
     const stopInterval = () => {
         if(intervalRef.current) {
@@ -107,6 +114,13 @@ export const VideoCallProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         return () => stopInterval();
     }, [isCallStarted]);
 
+    useEffect(() => {
+        if(videoConsumerRef.current && !remoteStream) {
+            const remoteStream = new MediaStream([videoConsumerRef.current.track as unknown as MediaStreamTrack]);
+            setRemoteStream(remoteStream);
+        }
+    }, [videoConsumerRef.current]);
+
     const initializeDevice = async () => {
         socket.emit('getRouterRtpCapabilities', async (capabilities: mediasoup.types.RtpCapabilities | null) => {
             if(capabilities) {
@@ -120,7 +134,7 @@ export const VideoCallProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         socket.emit("call-user", { targetUserId, targetPhone });
         InCallManager.start({ media: 'video' });
         const stream = await mediaDevices.getUserMedia({ audio: true, video: true });
-        setLocalStream(stream);
+        localStreamRef.current = stream;
         
         if(!isRetry) {
             router.push({ 
@@ -197,15 +211,19 @@ export const VideoCallProvider: React.FC<{ children: React.ReactNode }> = ({ chi
                 endCallStatus,
                 isMicMuted,
                 isCameraOff,
-                localStream,
+                remoteStream,
+                localStreamRef,
                 deviceRef,
                 sendTransportRef,
                 recvTransportRef,
+                videoProducerRef,
+                audioProducerRef,
+                videoConsumerRef,
+                audioConsumerRef,
                 updateIsRinging: setIsRinging,
                 updateIsCallStarted: setIsCallStarted,
                 updateOtherUser: setOtherUser,
                 updateEndCallStatus: setEndCallStatus,
-                updateLocalStream: setLocalStream,
                 toggleIsMicMuted,
                 toggleIsCameraOff,
                 initializeDevice,
