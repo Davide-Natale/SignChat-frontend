@@ -150,7 +150,7 @@ export default function TabLayout() {
         };
 
         initializeWebSocket();
-        return () => { disconnectSocket(); };
+        return () => { disconnectSocket() ; videoCallContext?.clearDevice() };
     }, []);
 
     return (

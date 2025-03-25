@@ -391,9 +391,9 @@ export default function VideoCall() {
                     </Animated.View>
                     <GestureDetector gesture={Gesture.Exclusive(panGesture, cameraTapGesture)} > 
                         <Animated.View style={[styles.camera, cameraAnimatedStyle, { backgroundColor: darkTheme.secondary }]} >
-                            {!videoCallContext?.isCameraOff ?
+                            {!videoCallContext?.isCameraOff && videoCallContext?.localStream ?
                                 <>
-                                    <RTCView streamURL={videoCallContext?.localStreamRef.current?.toURL()} mirror={true} zOrder={1} style={styles.stream} />
+                                    <RTCView streamURL={videoCallContext?.localStream.toURL()} mirror={true} zOrder={1} style={styles.stream} />
                                     <Animated.View style={[styles.cameraRotateButton, cameraRotateButtonAnimatedStyle]}>
                                         <ThemedButton
                                             onPress={() => { if(videoCallContext?.isCallStarted) startTimer(); console.log('Camera Rotated') }}

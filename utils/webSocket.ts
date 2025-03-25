@@ -176,23 +176,33 @@ export const connectSocket = async (context: VideoCallContextType | undefined, r
         socket.on('call-ended', async ({ reason }) => {
             if(context) {
                 context.callIdRef.current = undefined;
-                context.localStreamRef.current?.getTracks().forEach(track => track.stop());
-                context.localStreamRef.current = undefined;
                 context.sendTransportRef.current?.close();
                 context.sendTransportRef.current = undefined;
                 context.recvTransportRef.current?.close();
                 context.recvTransportRef.current = undefined;
+                context.resetIsMicMuted();
+                context.resetIsCameraOff();
                 InCallManager.stop();
 
                 if(context?.isRingingRef.current) {
                     context.updateIsRinging(false);
                 }
-
+                
                 if(reason === 'completed') {
+                    context.videoProducerRef.current = undefined;
+                    context.audioProducerRef.current = undefined;
+                    context.videoConsumerRef.current = undefined;
+                    context.audioConsumerRef.current = undefined;
+                    context.localStreamRef.current = undefined;
+                    context.updateLocalStream(undefined);
+                    context.clearRemoteStream();
                     context?.updateIsCallStarted(false);
                     context?.updateOtherUser(undefined);
                     router.back();
                 } else {
+                    context.localStreamRef.current?.getTracks().forEach(track => track.stop());
+                    context.localStreamRef.current = undefined
+                    context.updateLocalStream(undefined);
                     context?.updateEndCallStatus(reason);
                 }
             } 
@@ -203,6 +213,7 @@ export const connectSocket = async (context: VideoCallContextType | undefined, r
                 context.callIdRef.current = callId;
                 context.updateIsCallStarted(true);
                 const stream = await mediaDevices.getUserMedia({ audio: true, video: true });
+                context.updateLocalStream(stream);
                 context.localStreamRef.current = stream;
 
                 const sendTransport = context.deviceRef.current?.createSendTransport(sendTransportParams);

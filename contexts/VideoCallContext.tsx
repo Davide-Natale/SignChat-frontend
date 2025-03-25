@@ -27,6 +27,7 @@ export interface VideoCallContextType {
     endCallStatus: EndCallStatus | undefined;
     isMicMuted: boolean;
     isCameraOff: boolean;
+    localStream: MediaStream | undefined;
     remoteStream: MediaStream | undefined;
     localStreamRef: React.MutableRefObject<MediaStream | undefined>;
     deviceRef: React.MutableRefObject<mediasoup.types.Device | undefined>;
@@ -40,9 +41,14 @@ export interface VideoCallContextType {
     updateIsCallStarted: React.Dispatch<React.SetStateAction<boolean>>;
     updateOtherUser: React.Dispatch<React.SetStateAction<CustomUser | Contact | undefined>>;
     updateEndCallStatus: React.Dispatch<React.SetStateAction<EndCallStatus | undefined>>;
+    updateLocalStream: React.Dispatch<React.SetStateAction<MediaStream | undefined>>;
+    resetIsMicMuted: () => void;
+    resetIsCameraOff: () => void;
     toggleIsMicMuted: () => void;
     toggleIsCameraOff: () => void;
     initializeDevice: () => Promise<void>;
+    clearDevice: () => void;
+    clearRemoteStream: () => void;
     startCall: (targetUserId: number, targetPhone: string, contactId?: number, isRetry?: boolean) => Promise<void>;
     endCall: () => void;
     answerCall: (callId: number, callerUserId: number, contactId?: number, navigateMode?: NavigateMode) => Promise<void>;
@@ -60,6 +66,7 @@ export const VideoCallProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     const [endCallStatus, setEndCallStatus] = useState<EndCallStatus>();
     const [isMicMuted, setIsMicMuted] = useState(false);
     const [isCameraOff, setIsCameraOff] = useState(false);
+    const [localStream, setLocalStream] = useState<MediaStream>();
     const [remoteStream, setRemoteStream] = useState<MediaStream>();
     const callIdRef = useRef<number>();
     const isRingingRef = useRef(isRinging);
@@ -73,6 +80,7 @@ export const VideoCallProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     const videoConsumerRef = useRef<mediasoup.types.Consumer<mediasoup.types.AppData>>();
     const audioConsumerRef = useRef<mediasoup.types.Consumer<mediasoup.types.AppData>>();
     const intervalRef = useRef<NodeJS.Timeout>();
+
     const stopInterval = () => {
         if(intervalRef.current) {
             clearInterval(intervalRef.current);
@@ -101,7 +109,7 @@ export const VideoCallProvider: React.FC<{ children: React.ReactNode }> = ({ chi
             ringbackSoundRef.current?.stopAsync();
         }
     }, [isRinging]);
-
+ 
     useEffect(() => {
         if(isCallStarted) {
             intervalRef.current = setInterval(() => {
@@ -130,10 +138,19 @@ export const VideoCallProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         });
     };
 
+    const clearDevice = () => {
+        deviceRef.current = undefined;
+    };
+
+    const clearRemoteStream = () => {
+        setRemoteStream(undefined);
+    };
+
     const startCall = async (targetUserId: number, targetPhone: string, contactId?: number, isRetry: boolean = false) => {
         socket.emit("call-user", { targetUserId, targetPhone });
         InCallManager.start({ media: 'video' });
         const stream = await mediaDevices.getUserMedia({ audio: true, video: true });
+        setLocalStream(stream);
         localStreamRef.current = stream;
         
         if(!isRetry) {
@@ -191,13 +208,21 @@ export const VideoCallProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         }
     };
 
+    const resetIsMicMuted = () => {
+        setIsMicMuted(false);
+    };
+
+    const resetIsCameraOff = () => {
+        setIsCameraOff(false);
+    };
+
     const toggleIsMicMuted = () => {
         setIsMicMuted(prev => !prev);
-    }
+    };
 
     const toggleIsCameraOff = () => {
         setIsCameraOff(prev => !prev);
-    }
+    };
 
     return(
         <VideoCallContext.Provider value={
@@ -211,6 +236,7 @@ export const VideoCallProvider: React.FC<{ children: React.ReactNode }> = ({ chi
                 endCallStatus,
                 isMicMuted,
                 isCameraOff,
+                localStream,
                 remoteStream,
                 localStreamRef,
                 deviceRef,
@@ -224,9 +250,14 @@ export const VideoCallProvider: React.FC<{ children: React.ReactNode }> = ({ chi
                 updateIsCallStarted: setIsCallStarted,
                 updateOtherUser: setOtherUser,
                 updateEndCallStatus: setEndCallStatus,
+                updateLocalStream: setLocalStream,
+                resetIsMicMuted,
+                resetIsCameraOff,
                 toggleIsMicMuted,
                 toggleIsCameraOff,
                 initializeDevice,
+                clearDevice,
+                clearRemoteStream,
                 startCall,
                 endCall,
                 answerCall,
