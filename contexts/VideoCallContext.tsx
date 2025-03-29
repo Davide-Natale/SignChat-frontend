@@ -9,6 +9,7 @@ import DeviceInfo from "react-native-device-info";
 import notifee from '@notifee/react-native';
 import * as mediasoup from 'mediasoup-client';
 import { mediaDevices, MediaStream, MediaStreamTrack } from "react-native-webrtc";
+import { Response } from "@/types/Response";
 
 type EndCallStatus = "unanswered" | "rejected";
 type NavigateMode = 'push' | 'replace';
@@ -27,6 +28,7 @@ export interface VideoCallContextType {
     endCallStatus: EndCallStatus | undefined;
     isMicMuted: boolean;
     isCameraOff: boolean;
+    facingMode: 'user' | 'environment';
     localStream: MediaStream | undefined;
     remoteStream: MediaStream | undefined;
     localStreamRef: React.MutableRefObject<MediaStream | undefined>;
@@ -46,6 +48,7 @@ export interface VideoCallContextType {
     resetIsCameraOff: () => void;
     toggleIsMicMuted: () => void;
     toggleIsCameraOff: () => void;
+    switchCamera: () => void;
     initializeDevice: () => Promise<void>;
     clearDevice: () => void;
     clearRemoteStream: () => void;
@@ -66,6 +69,7 @@ export const VideoCallProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     const [endCallStatus, setEndCallStatus] = useState<EndCallStatus>();
     const [isMicMuted, setIsMicMuted] = useState(false);
     const [isCameraOff, setIsCameraOff] = useState(false);
+    const [facingMode, setFacingMode] = useState<'user' | 'environment'>('user');
     const [localStream, setLocalStream] = useState<MediaStream>();
     const [remoteStream, setRemoteStream] = useState<MediaStream>();
     const callIdRef = useRef<number>();
@@ -217,11 +221,61 @@ export const VideoCallProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     };
 
     const toggleIsMicMuted = () => {
+        const isMicMutedOld = isMicMuted;
+        const producerId = audioProducerRef.current?.id;
+        const action = isMicMuted ? 'resume-producer' : 'pause-producer';
+
+        if(!producerId) return;
+
         setIsMicMuted(prev => !prev);
+        socket.emit(action, { producerId }, (response: Response) => {
+            if(response.success) {
+                if(isMicMutedOld) {
+                    audioProducerRef.current?.resume();
+                } else {
+                    audioProducerRef.current?.pause();
+                }
+            } else {
+                //  TODO: handle with ErrorContext
+                console.log(response.error);
+                setIsMicMuted(isMicMutedOld);
+            }
+        });
     };
 
     const toggleIsCameraOff = () => {
+        const isCameraOffOld = isCameraOff;
+        const producerId = videoProducerRef.current?.id;
+        const action = isCameraOff ? 'resume-producer' : 'pause-producer';
+
+        if(!producerId) return;
+
         setIsCameraOff(prev => !prev);
+        socket.emit(action, { producerId }, (response: Response) => {
+            if(response.success) {
+                if(isCameraOffOld) {
+                    videoProducerRef.current?.resume();
+                } else {
+                    videoProducerRef.current?.pause();
+                }
+            } else {
+                //  TODO: handle with ErrorContext
+                console.log(response.error);
+                setIsCameraOff(isCameraOffOld);
+            }
+        });
+    };
+
+    const switchCamera = async () => {
+        const track = localStream?.getVideoTracks()[0];
+        const oldConstraints = track?.getConstraints();
+
+        track?.applyConstraints({ 
+            ...oldConstraints, 
+            facingMode: facingMode === 'user' ? 'environment' : 'user' 
+        });
+        
+        setFacingMode(prev => prev === 'user' ? 'environment' : 'user');
     };
 
     return(
@@ -236,6 +290,7 @@ export const VideoCallProvider: React.FC<{ children: React.ReactNode }> = ({ chi
                 endCallStatus,
                 isMicMuted,
                 isCameraOff,
+                facingMode,
                 localStream,
                 remoteStream,
                 localStreamRef,
@@ -255,6 +310,7 @@ export const VideoCallProvider: React.FC<{ children: React.ReactNode }> = ({ chi
                 resetIsCameraOff,
                 toggleIsMicMuted,
                 toggleIsCameraOff,
+                switchCamera,
                 initializeDevice,
                 clearDevice,
                 clearRemoteStream,

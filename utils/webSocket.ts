@@ -6,10 +6,8 @@ import { Router } from 'expo-router';
 import InCallManager from 'react-native-incall-manager';
 import * as mediasoup from 'mediasoup-client';
 import { mediaDevices } from "react-native-webrtc";
-
-type ErrorResponse = { success: false, error: string };
-
-type Response = { success: true } | ErrorResponse;
+import { ErrorResponse } from '@/types/ErrorResponse';
+import { Response } from '@/types/Response';
 
 type ProduceResponse = { success: true, id: string } | ErrorResponse;
 
@@ -300,6 +298,16 @@ export const connectSocket = async (context: VideoCallContextType | undefined, r
                 });
             }
             
+        });
+
+        socket.on('producer-paused', ({ kind }) => {
+            //  TODO: add implementation to update otherUser status
+            console.log('Producer Paused ', kind);
+        });
+
+        socket.on('producer-resumed', ({ kind }) => {
+            //  TODO: add implementation to update otherUser status
+            console.log('Producer Resumed ', kind);
         });
 
         socket.on('call-error', async ({ message }) => {

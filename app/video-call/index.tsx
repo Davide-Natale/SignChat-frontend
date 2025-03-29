@@ -12,7 +12,7 @@ import VideoCallBoldIcon from '@/assets/icons/videoCall-bold.svg';
 import EndCallBoldIcon from '@/assets/icons/endCall-bold.svg';
 import CameraRotateBoldIcon from '@/assets/icons/cameraRotate-bold.svg';
 import ClearIcon from '@/assets/icons/clear.svg';
-import { Dimensions, LayoutChangeEvent, StyleSheet, View } from 'react-native';
+import { Dimensions, LayoutChangeEvent, StyleSheet, View } from 'react-native'; 
 import { useTheme } from '@/hooks/useTheme';
 import ThemedButton from '@/components/ThemedButton';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -88,21 +88,49 @@ export default function VideoCall() {
             icon: <MoreIcon height={60} width={60} stroke={lightTheme.primary} /> 
         },
         {
-            backgroundColor: videoCallContext?.isCameraOff ? lightTheme.secondaryText : lightTheme.secondary,
+            backgroundColor: !videoCallContext?.remoteStream || videoCallContext?.isCameraOff ? lightTheme.secondaryText : lightTheme.secondary,
             onPress: () => { if(videoCallContext?.isCallStarted) startTimer() ; videoCallContext?.toggleIsCameraOff() },
-            icon: <VideoCallBoldIcon height={28} width={28} fill={videoCallContext?.isCameraOff ? lightTheme.primary : lightTheme.primaryText} />
+            disabled: !videoCallContext?.remoteStream,
+            icon: (
+                <VideoCallBoldIcon 
+                    height={28} 
+                    width={28} 
+                    fill={  
+                        !videoCallContext?.remoteStream ? darkTheme.secondaryText : 
+                            videoCallContext?.isCameraOff ? lightTheme.primary :
+                                lightTheme.primaryText
+                    } 
+                />
+            )
         },
         {
-            backgroundColor: videoCallContext?.isMicMuted ? lightTheme.secondary : lightTheme.secondaryText,
+            backgroundColor: !videoCallContext?.remoteStream || !videoCallContext?.isMicMuted ? lightTheme.secondaryText : lightTheme.secondary,
             onPress: () => { if(videoCallContext?.isCallStarted) startTimer() ; videoCallContext?.toggleIsMicMuted() },
-            icon: <MicOffBoldIcon height={28} width={28} fill={videoCallContext?.isMicMuted ? darkTheme.error : lightTheme.primary} />
+            disabled: !videoCallContext?.remoteStream,
+            icon: (
+                <MicOffBoldIcon 
+                    height={28} 
+                    width={28} 
+                    fill={
+                        !videoCallContext?.remoteStream ? darkTheme.secondaryText :
+                            videoCallContext?.isMicMuted ? darkTheme.error : 
+                                lightTheme.primary
+                    } 
+                />
+            )
         },
         {
             backgroundColor: darkTheme.error,
             onPress: () => { clearTimer() ; videoCallContext?.endCall() },
             icon: <EndCallBoldIcon height={28} width={28} fill={lightTheme.primary} />
         }
-    ], [videoCallContext?.otherUser, videoCallContext?.isCallStarted, videoCallContext?.isCameraOff, videoCallContext?.isMicMuted]);
+    ], [
+        videoCallContext?.otherUser, 
+        videoCallContext?.isCallStarted, 
+        videoCallContext?.isCameraOff, 
+        videoCallContext?.isMicMuted, 
+        videoCallContext?.remoteStream
+    ]);
 
     const onControlBarLayout = useCallback((event: LayoutChangeEvent) => {
         const { height } = event.nativeEvent.layout;
@@ -342,7 +370,7 @@ export default function VideoCall() {
                     <GestureDetector gesture={tapGesture} >
                         <View style={styles.inner} >
                             { videoCallContext?.isCallStarted && videoCallContext.remoteStream ? 
-                                <RTCView streamURL={videoCallContext.remoteStream.toURL()} mirror={true} objectFit='cover' style={styles.stream} /> :
+                                <RTCView streamURL={videoCallContext.remoteStream.toURL()} objectFit='cover' style={styles.stream} /> :
                                     <ImageProfile
                                         uri={imageProfile ?? null}
                                         size={200}
@@ -382,6 +410,7 @@ export default function VideoCall() {
                                 height={55}
                                 width={55}
                                 shape='circular'
+                                disabled={control.disabled}
                                 backgroundColor={control.backgroundColor}
                             >
                                 {control.icon}
@@ -393,10 +422,15 @@ export default function VideoCall() {
                         <Animated.View style={[styles.camera, cameraAnimatedStyle, { backgroundColor: darkTheme.secondary }]} >
                             {!videoCallContext?.isCameraOff && videoCallContext?.localStream ?
                                 <>
-                                    <RTCView streamURL={videoCallContext?.localStream.toURL()} mirror={true} zOrder={1} style={styles.stream} />
+                                    <RTCView 
+                                        streamURL={videoCallContext.localStream.toURL()} 
+                                        mirror={videoCallContext.facingMode === 'user'}
+                                        zOrder={1} 
+                                        style={styles.stream} 
+                                    />
                                     <Animated.View style={[styles.cameraRotateButton, cameraRotateButtonAnimatedStyle]}>
                                         <ThemedButton
-                                            onPress={() => { if(videoCallContext?.isCallStarted) startTimer(); console.log('Camera Rotated') }}
+                                            onPress={() => { if(videoCallContext.isCallStarted) startTimer() ; videoCallContext.switchCamera() }}
                                             height={40}
                                             width={40}
                                             shape='circular'
