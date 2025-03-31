@@ -11,6 +11,7 @@ import * as mediasoup from 'mediasoup-client';
 import { mediaDevices, MediaStream, MediaStreamTrack } from "react-native-webrtc";
 import { Response } from "@/types/Response";
 
+type OtherUserStatus = { muted: boolean, videoPaused: boolean}
 type EndCallStatus = "unanswered" | "rejected";
 type NavigateMode = 'push' | 'replace';
 
@@ -25,6 +26,7 @@ export interface VideoCallContextType {
     isCallStarted: boolean;
     duration: number;
     otherUser: Contact | CustomUser | undefined;
+    otherUserStatus: OtherUserStatus; 
     endCallStatus: EndCallStatus | undefined;
     isMicMuted: boolean;
     isCameraOff: boolean;
@@ -44,6 +46,8 @@ export interface VideoCallContextType {
     updateOtherUser: React.Dispatch<React.SetStateAction<CustomUser | Contact | undefined>>;
     updateEndCallStatus: React.Dispatch<React.SetStateAction<EndCallStatus | undefined>>;
     updateLocalStream: React.Dispatch<React.SetStateAction<MediaStream | undefined>>;
+    updateOtherUserStatus: (kind: 'audio' | 'video', isPaused: boolean) => void;
+    resetOtherUserStatus: () => void;
     resetIsMicMuted: () => void;
     resetIsCameraOff: () => void;
     toggleIsMicMuted: () => void;
@@ -66,6 +70,7 @@ export const VideoCallProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     const [isCallStarted, setIsCallStarted] = useState(false);
     const [duration, setDuration] = useState(0);
     const [otherUser, setOtherUser] = useState<Contact | CustomUser>();
+    const [otherUserStatus, setOtherUserStatus] = useState<OtherUserStatus>({ muted: false, videoPaused: false });
     const [endCallStatus, setEndCallStatus] = useState<EndCallStatus>();
     const [isMicMuted, setIsMicMuted] = useState(false);
     const [isCameraOff, setIsCameraOff] = useState(false);
@@ -278,6 +283,17 @@ export const VideoCallProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         setFacingMode(prev => prev === 'user' ? 'environment' : 'user');
     };
 
+    const updateOtherUserStatus = (kind: 'audio' | 'video', isPaused: boolean) => {
+        setOtherUserStatus(prev => ({
+            ...prev,
+            ...(kind === 'audio' ? { muted: isPaused } : { videoPaused: isPaused })
+        }));
+    };
+
+    const resetOtherUserStatus = () => {
+        setOtherUserStatus({ muted: false, videoPaused: false });
+    };
+
     return(
         <VideoCallContext.Provider value={
             {
@@ -288,6 +304,7 @@ export const VideoCallProvider: React.FC<{ children: React.ReactNode }> = ({ chi
                 duration,
                 otherUser,
                 endCallStatus,
+                otherUserStatus,
                 isMicMuted,
                 isCameraOff,
                 facingMode,
@@ -306,6 +323,8 @@ export const VideoCallProvider: React.FC<{ children: React.ReactNode }> = ({ chi
                 updateOtherUser: setOtherUser,
                 updateEndCallStatus: setEndCallStatus,
                 updateLocalStream: setLocalStream,
+                updateOtherUserStatus,
+                resetOtherUserStatus,
                 resetIsMicMuted,
                 resetIsCameraOff,
                 toggleIsMicMuted,

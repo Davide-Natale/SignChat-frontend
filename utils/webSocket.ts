@@ -196,6 +196,7 @@ export const connectSocket = async (context: VideoCallContextType | undefined, r
                     context.clearRemoteStream();
                     context?.updateIsCallStarted(false);
                     context?.updateOtherUser(undefined);
+                    context.resetOtherUserStatus();
                     router.back();
                 } else {
                     context.localStreamRef.current?.getTracks().forEach(track => track.stop());
@@ -301,13 +302,11 @@ export const connectSocket = async (context: VideoCallContextType | undefined, r
         });
 
         socket.on('producer-paused', ({ kind }) => {
-            //  TODO: add implementation to update otherUser status
-            console.log('Producer Paused ', kind);
+            context?.updateOtherUserStatus(kind, true);
         });
 
         socket.on('producer-resumed', ({ kind }) => {
-            //  TODO: add implementation to update otherUser status
-            console.log('Producer Resumed ', kind);
+            context?.updateOtherUserStatus(kind, false);
         });
 
         socket.on('call-error', async ({ message }) => {

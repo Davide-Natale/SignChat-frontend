@@ -369,14 +369,42 @@ export default function VideoCall() {
                 <>
                     <GestureDetector gesture={tapGesture} >
                         <View style={styles.inner} >
-                            { videoCallContext?.isCallStarted && videoCallContext.remoteStream ? 
+                            { videoCallContext?.isCallStarted && videoCallContext.remoteStream && !videoCallContext.otherUserStatus.videoPaused? 
                                 <RTCView streamURL={videoCallContext.remoteStream.toURL()} objectFit='cover' style={styles.stream} /> :
+                                <>
                                     <ImageProfile
                                         uri={imageProfile ?? null}
                                         size={200}
+                                        style={styles.imageProfile}
                                     />
+                                    { videoCallContext?.otherUserStatus.muted && videoCallContext.otherUserStatus.videoPaused ?
+                                        <View style={[styles.mutedGroup, { backgroundColor: lightTheme.secondaryText }]} >
+                                            <MicOffBoldIcon
+                                                height={20}
+                                                width={20}
+                                                fill={darkTheme.primaryText}
+                                            />
+                                            <ThemedText 
+                                                color={darkTheme.primaryText} 
+                                                fontSize={16} 
+                                                fontWeight='medium' 
+                                                numberOfLines={1} 
+                                                style={styles.mutedText}
+                                            >
+                                                Muted
+                                            </ThemedText>
+                                        </View> : null
+                                    }
+                                </>
                             }
-                            
+                            { videoCallContext?.otherUserStatus.muted && !videoCallContext.otherUserStatus.videoPaused ?
+                                <MicOffBoldIcon
+                                    height={22}
+                                    width={22}
+                                    fill={darkTheme.error}
+                                    style={[styles.mutedIcon, { top: insets.top + 4 }]}
+                                /> : null
+                            }
                         </View>
                     </GestureDetector>
                     <Animated.View
@@ -565,6 +593,9 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         position: 'absolute'
     },
+    imageProfile: {
+        marginBottom: 35
+    },
     controlBar: {
         alignSelf: 'center',
         flexDirection: 'row',
@@ -625,5 +656,21 @@ const styles = StyleSheet.create({
     },
     label: { 
         marginTop: 10 
+    },
+    mutedGroup: {
+        flexDirection: 'row', 
+        justifyContent: 'center', 
+        alignItems: 'center',
+        borderRadius: 20, 
+        paddingVertical: 2, 
+        paddingLeft: 12, 
+        paddingRight: 16 
+    },
+    mutedIcon: {
+        position: 'absolute',  
+        left: 10
+    },
+    mutedText: { 
+        marginLeft: 4
     }
 });
