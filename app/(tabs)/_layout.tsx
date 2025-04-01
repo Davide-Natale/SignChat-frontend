@@ -19,6 +19,7 @@ import { connectSocket, disconnectSocket } from "@/utils/webSocket";
 import { NotificationsContext } from "@/contexts/NotificationsContext";
 import { checkInitialNotification } from "@/utils/notifications";
 import { VideoCallContext } from "@/contexts/VideoCallContext";
+import { ErrorContext } from "@/contexts/ErrorContext";
 
 type CustomContact = Omit<Contact, "id" | "user">;
 
@@ -28,6 +29,7 @@ export default function TabLayout() {
     const authContext = useContext(AuthContext);
     const contactsContext = useContext(ContactsContext);
     const videoCallContext = useContext(VideoCallContext);
+    const errorContext = useContext(ErrorContext);
     const notificationsContext = useContext(NotificationsContext);
 
     const getLocalContacts = useCallback(async () => {
@@ -144,7 +146,7 @@ export default function TabLayout() {
 
     useEffect(() => {
         const initializeWebSocket = async () => {
-            await connectSocket(videoCallContext);
+            await connectSocket(videoCallContext, errorContext);
             await videoCallContext?.initializeDevice();
         };
 

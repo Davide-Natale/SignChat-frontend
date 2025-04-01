@@ -1,7 +1,7 @@
 import { isAxiosError } from "axios";
 import React, { createContext, useState } from "react"
 
-interface ErrorContextType {
+export interface ErrorContextType {
     errMsg: string;
     showErrMsg: boolean;
     handleError: (error: unknown) => void;
@@ -21,6 +21,8 @@ export const ErrorProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             } else if(error.message === "Network Error") {
                 setErrMsg("Response timed out. Please try again.");
             }
+        } else if(error instanceof Error) {
+            setErrMsg(error.message);
         } else {
             setErrMsg("Unknown error.");
         }

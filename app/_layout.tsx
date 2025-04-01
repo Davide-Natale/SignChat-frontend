@@ -29,9 +29,9 @@ export default function RootLayout() {
       <GestureHandlerRootView>
         <BottomSheetModalProvider>
           <AppProvider>
-            <VideoCallProvider>
-              <NotificationsProvider>
-                <ErrorProvider>
+            <ErrorProvider>
+              <VideoCallProvider>
+                <NotificationsProvider>
                   <ContactsProvider>
                     <AuthProvider>
                       <Stack>
@@ -214,9 +214,9 @@ export default function RootLayout() {
                       <StatusBar style="auto" />
                     </AuthProvider>
                   </ContactsProvider>
-                </ErrorProvider>
-              </NotificationsProvider>
-            </VideoCallProvider>
+                </NotificationsProvider>
+              </VideoCallProvider>
+            </ErrorProvider>
           </AppProvider>
         </BottomSheetModalProvider>
       </GestureHandlerRootView>

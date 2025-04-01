@@ -2,7 +2,7 @@ import { Contact } from "@/types/Contact";
 import { CustomUser } from "@/types/User";
 import { socket } from "@/utils/webSocket";
 import { Href, useRouter } from "expo-router";
-import React, { createContext, useEffect, useRef, useState } from "react";
+import React, { createContext, useContext, useEffect, useRef, useState } from "react";
 import InCallManager from 'react-native-incall-manager';
 import { Audio } from 'expo-av';
 import DeviceInfo from "react-native-device-info";
@@ -11,6 +11,7 @@ import * as mediasoup from 'mediasoup-client';
 import { mediaDevices, MediaStream, MediaStreamTrack } from "react-native-webrtc";
 import { Response } from "@/types/Response";
 import { ConnectionQuality } from "@/types/ConnectionQuality";
+import { ErrorContext } from "./ErrorContext";
 
 type OtherUserStatus = { muted: boolean, videoPaused: boolean}
 type EndCallStatus = "unanswered" | "rejected";
@@ -54,6 +55,7 @@ export interface VideoCallContextType {
     resetOtherUserStatus: () => void;
     resetIsMicMuted: () => void;
     resetIsCameraOff: () => void;
+    resetFacingMode: () => void;
     toggleIsMicMuted: () => void;
     toggleIsCameraOff: () => void;
     switchCamera: () => void;
@@ -70,6 +72,7 @@ export const VideoCallContext = createContext<VideoCallContextType | undefined>(
 
 export const VideoCallProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const router = useRouter();
+    const errorContext = useContext(ErrorContext);
     const [callId, setCallId] = useState<number>();
     const [isRinging, setIsRinging] = useState(false);
     const [isCallStarted, setIsCallStarted] = useState(false);
@@ -230,6 +233,10 @@ export const VideoCallProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         setIsCameraOff(false);
     };
 
+    const resetFacingMode = () => {
+        setFacingMode('user');
+    };
+
     const toggleIsMicMuted = () => {
         const isMicMutedOld = isMicMuted;
         const producerId = audioProducerRef.current?.id;
@@ -246,8 +253,7 @@ export const VideoCallProvider: React.FC<{ children: React.ReactNode }> = ({ chi
                     audioProducerRef.current?.pause();
                 }
             } else {
-                //  TODO: handle with ErrorContext
-                console.log(response.error);
+                errorContext?.handleError(new Error(response.error));
                 setIsMicMuted(isMicMutedOld);
             }
         });
@@ -269,8 +275,7 @@ export const VideoCallProvider: React.FC<{ children: React.ReactNode }> = ({ chi
                     videoProducerRef.current?.pause();
                 }
             } else {
-                //  TODO: handle with ErrorContext
-                console.log(response.error);
+                errorContext?.handleError(new Error(response.error));
                 setIsCameraOff(isCameraOffOld);
             }
         });
@@ -335,6 +340,7 @@ export const VideoCallProvider: React.FC<{ children: React.ReactNode }> = ({ chi
                 resetOtherUserStatus,
                 resetIsMicMuted,
                 resetIsCameraOff,
+                resetFacingMode,
                 toggleIsMicMuted,
                 toggleIsCameraOff,
                 switchCamera,
