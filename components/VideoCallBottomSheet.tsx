@@ -1,6 +1,6 @@
 import { useTheme } from '@/hooks/useTheme';
 import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet';
-import { forwardRef, useContext, useState } from 'react';
+import { forwardRef, useContext } from 'react';
 import { StyleSheet, View } from 'react-native';
 import ListItem from './ListItem';
 import ThemedText from './ThemedText';
@@ -8,9 +8,9 @@ import { AppContext } from '@/contexts/AppContext';
 import AccessibilityIcon from '@/assets/icons/accessibility.svg';
 import { Switch } from 'react-native-gesture-handler';
 import SignalIndicator from './SignalIndicator';
+import { VideoCallContext } from '@/contexts/VideoCallContext';
 
 type Ref = BottomSheetModal;
-type ConnectionQuality = 'Good' | 'Mid' | 'Low';
 
 interface VideoCallBottomSheetProps {
     onDismiss: () => void;
@@ -19,17 +19,7 @@ interface VideoCallBottomSheetProps {
 const VideoCallBottomSheet = forwardRef<Ref, VideoCallBottomSheetProps>(({ onDismiss }, ref) => {
     const darkTheme = useTheme('dark');
     const appContext = useContext(AppContext);
-    const [connectionQuality, setConnectionQuality] = useState<ConnectionQuality>('Good');
-
-    /*useEffect(() => {
-        const fetchStats = async () => {
-            const quality = await getConnectionStats(peerConnection);
-            setConnectionQuality(quality);
-        };
-
-        const interval = setInterval(fetchStats, 5000);
-        return () => clearInterval(interval);
-    }, [peerConnection]);*/
+    const videoCallContext = useContext(VideoCallContext);
 
     return (
         <BottomSheetModal
@@ -42,9 +32,9 @@ const VideoCallBottomSheet = forwardRef<Ref, VideoCallBottomSheetProps>(({ onDis
         >
             <BottomSheetView style={styles.contentContainer}>
                 <View style={styles.inner} >
-                    <SignalIndicator connectionQuality={connectionQuality} style={styles.signal} />
+                    <SignalIndicator height={20} connectionQuality={videoCallContext?.connectionQuality} style={styles.signal} />
                     <ThemedText color={darkTheme.secondaryText} fontSize={18} fontWeight="medium" >
-                        {`${connectionQuality ?? 'Checking'} connection ${!connectionQuality ? '...' : ''}`}
+                        {`${videoCallContext?.connectionQuality ?? 'Checking'} connection${!videoCallContext?.connectionQuality ? '...' : ''}`}
                     </ThemedText>
                 </View>
                 <View style={[styles.surface, { backgroundColor: darkTheme.onSurface }]} >

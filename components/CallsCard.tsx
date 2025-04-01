@@ -18,7 +18,7 @@ import InfoIcon from "@/assets/icons/info.svg";
 import { formatDate } from '@/utils/dateUtils';
 import React, { useCallback, useContext, useMemo } from 'react';
 import ThemedText from '@/components/ThemedText';
-import { router } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { Checkbox } from 'react-native-paper';
 import { getCallDescription } from '@/utils/callsUtils';
 import { VideoCallContext } from '@/contexts/VideoCallContext';
@@ -38,6 +38,7 @@ interface CallsCardProps {
 export default function CallsCard({ isEdit, label, calls, onEditAction, checkSelected, style }: CallsCardProps) {
     const theme = useTheme();
     const scheme = useColorScheme();
+    const router = useRouter();
     const videoCallContext = useContext(VideoCallContext);
     const iconComponents = useMemo(() => ({
         light: {
@@ -92,13 +93,27 @@ export default function CallsCard({ isEdit, label, calls, onEditAction, checkSel
                     const fullNameColor = call.status === "missed" ? theme.error : theme.primaryText;
                     const IconComponent = getIconComponent(call.type, call.status);
                     const onPress = isEdit && onEditAction && call.status !== 'ongoing' ? () => { onEditAction(call.id); } :
-                        (call.contact?.user || call.user) && call.status !== 'ongoing' ? () => { 
-                            if(call.contact?.user) {
-                                videoCallContext?.startCall(call.contact.user.id, call.phone, call.contact.id);
-                            } else if(call.user) {
-                                videoCallContext?.startCall(call.user.id, call.phone);
-                            }
-                        } : undefined;
+                        call.contact?.user || call.user ? 
+                            (call.status !== 'ongoing' ? 
+                                () => {
+                                    const userId = call.contact?.user ? call.contact.user.id : call.user?.id;
+                                    const contactId = call.contact?.user ? call.contact.id : undefined;
+
+                                    if(userId) {
+                                        videoCallContext?.startCall(userId, call.phone, contactId);
+                                    }
+                                } : 
+                                call.status === 'ongoing' && call.id === videoCallContext?.callId ? 
+                                    () => {
+                                        router.push({ 
+                                            pathname: '/video-call', 
+                                            params: { 
+                                                contactId: call.contact ? call.contact.id : undefined,
+                                                userId: !call.contact ? call.user?.id : undefined
+                                            } 
+                                        });
+                                    } : undefined
+                            ) : undefined;
 
                     return (
                         <ListItem

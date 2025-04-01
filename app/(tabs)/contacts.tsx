@@ -4,7 +4,7 @@ import ThemedButton from '@/components/ThemedButton';
 import { ContactsContext } from '@/contexts/ContactsContext';
 import { useTheme } from '@/hooks/useTheme';
 import { processContacts } from '@/utils/contactsUtils';
-import { router, useFocusEffect } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useContext, useMemo, useState } from 'react';
 import { FlatList, Keyboard, StyleSheet, View } from 'react-native';
 import AddUserIcon from "@/assets/icons/addUser-bold.svg";
@@ -14,6 +14,7 @@ import { VideoCallContext } from '@/contexts/VideoCallContext';
 
 export default function Contacts() {
   const theme = useTheme();
+  const router = useRouter();
   const contactsContext = useContext(ContactsContext);
   const videoCallContext = useContext(VideoCallContext);
   const [filter, setFilter] = useState("");

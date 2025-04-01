@@ -1,4 +1,4 @@
-import { Tabs, useRouter } from "expo-router";
+import { Tabs } from "expo-router";
 import CallIcon from '@/assets/icons/call.svg';
 import CallIconBold from '@/assets/icons/call-bold.svg';
 import ContactIcon from '@/assets/icons/contact.svg';
@@ -24,7 +24,6 @@ type CustomContact = Omit<Contact, "id" | "user">;
 
 export default function TabLayout() {
     const theme = useTheme();
-    const router = useRouter();
     const appContext = useContext(AppContext);
     const authContext = useContext(AuthContext);
     const contactsContext = useContext(ContactsContext);
@@ -145,7 +144,7 @@ export default function TabLayout() {
 
     useEffect(() => {
         const initializeWebSocket = async () => {
-            await connectSocket(videoCallContext, router);
+            await connectSocket(videoCallContext);
             await videoCallContext?.initializeDevice();
         };
 

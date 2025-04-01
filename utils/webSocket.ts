@@ -2,12 +2,13 @@ import { io } from 'socket.io-client';
 import { getToken } from './secureStore';
 import authAPI from '@/api/authAPI';
 import { VideoCallContextType } from '@/contexts/VideoCallContext'
-import { Router } from 'expo-router';
+import { router } from 'expo-router';
 import InCallManager from 'react-native-incall-manager';
 import * as mediasoup from 'mediasoup-client';
 import { mediaDevices } from "react-native-webrtc";
 import { ErrorResponse } from '@/types/ErrorResponse';
 import { Response } from '@/types/Response';
+import { ConnectionQuality } from '@/types/ConnectionQuality';
 
 type ProduceResponse = { success: true, id: string } | ErrorResponse;
 
@@ -114,7 +115,7 @@ const resumeConsumer = (consumer: mediasoup.types.Consumer<mediasoup.types.AppDa
     }
 }
 
-export const connectSocket = async (context: VideoCallContextType | undefined, router: Router) => {
+export const connectSocket = async (context: VideoCallContextType | undefined) => {
     const accessToken = await getToken('accessToken');
 
     if(accessToken && socket.disconnected) {
@@ -164,20 +165,20 @@ export const connectSocket = async (context: VideoCallContextType | undefined, r
                     connectTransport(recvTransport.id, dtlsParameters, callback, errback);
                 });
 
-                context.callIdRef.current = callId;
                 context.sendTransportRef.current = sendTransport;
                 context.recvTransportRef.current = recvTransport;
+                context.updateCallId(callId);
                 context.updateIsRinging(true);
             } 
         });
 
         socket.on('call-ended', async ({ reason }) => {
             if(context) {
-                context.callIdRef.current = undefined;
                 context.sendTransportRef.current?.close();
                 context.sendTransportRef.current = undefined;
                 context.recvTransportRef.current?.close();
                 context.recvTransportRef.current = undefined;
+                context.updateCallId(undefined);
                 context.resetIsMicMuted();
                 context.resetIsCameraOff();
                 InCallManager.stop();
@@ -196,6 +197,7 @@ export const connectSocket = async (context: VideoCallContextType | undefined, r
                     context.clearRemoteStream();
                     context?.updateIsCallStarted(false);
                     context?.updateOtherUser(undefined);
+                    context.updateConnectionQuality(undefined);
                     context.resetOtherUserStatus();
                     router.back();
                 } else {
@@ -209,7 +211,7 @@ export const connectSocket = async (context: VideoCallContextType | undefined, r
 
         socket.on('call-joined', async ({ callId, sendTransportParams, recvTransportParams }) => {
             if(context) {
-                context.callIdRef.current = callId;
+                context.updateCallId(callId);
                 context.updateIsCallStarted(true);
                 const stream = await mediaDevices.getUserMedia({ audio: true, video: true });
                 context.updateLocalStream(stream);
@@ -307,6 +309,13 @@ export const connectSocket = async (context: VideoCallContextType | undefined, r
 
         socket.on('producer-resumed', ({ kind }) => {
             context?.updateOtherUserStatus(kind, false);
+        });
+
+        socket.on('score-changed', ({ score }) => {
+            const connectionQuality: ConnectionQuality = score >= 0 && score <= 2 ? 'Low' : 
+                score >= 3 && score <= 6 ? 'Mid' : 'Good';
+
+            context?.updateConnectionQuality(connectionQuality);
         });
 
         socket.on('call-error', async ({ message }) => {

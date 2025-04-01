@@ -1,0 +1,1 @@
+export type ConnectionQuality = 'Good' | 'Mid' | 'Low';

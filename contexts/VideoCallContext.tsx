@@ -10,6 +10,7 @@ import notifee from '@notifee/react-native';
 import * as mediasoup from 'mediasoup-client';
 import { mediaDevices, MediaStream, MediaStreamTrack } from "react-native-webrtc";
 import { Response } from "@/types/Response";
+import { ConnectionQuality } from "@/types/ConnectionQuality";
 
 type OtherUserStatus = { muted: boolean, videoPaused: boolean}
 type EndCallStatus = "unanswered" | "rejected";
@@ -20,7 +21,7 @@ export const isContact = (obj: CustomUser | Contact): obj is Contact => {
 }
 
 export interface VideoCallContextType {
-    callIdRef: React.MutableRefObject<number | undefined>;
+    callId: number | undefined;
     isRinging: boolean;
     isRingingRef: React.MutableRefObject<boolean>;
     isCallStarted: boolean;
@@ -33,6 +34,7 @@ export interface VideoCallContextType {
     facingMode: 'user' | 'environment';
     localStream: MediaStream | undefined;
     remoteStream: MediaStream | undefined;
+    connectionQuality: ConnectionQuality | undefined;
     localStreamRef: React.MutableRefObject<MediaStream | undefined>;
     deviceRef: React.MutableRefObject<mediasoup.types.Device | undefined>;
     sendTransportRef: React.MutableRefObject<mediasoup.types.Transport<mediasoup.types.AppData> | undefined>;
@@ -41,11 +43,13 @@ export interface VideoCallContextType {
     audioProducerRef: React.MutableRefObject<mediasoup.types.Producer<mediasoup.types.AppData> | undefined>;
     videoConsumerRef: React.MutableRefObject<mediasoup.types.Consumer<mediasoup.types.AppData> | undefined>;
     audioConsumerRef: React.MutableRefObject<mediasoup.types.Consumer<mediasoup.types.AppData> | undefined>;
+    updateCallId: React.Dispatch<React.SetStateAction<number | undefined>>;
     updateIsRinging: React.Dispatch<React.SetStateAction<boolean>>;
     updateIsCallStarted: React.Dispatch<React.SetStateAction<boolean>>;
     updateOtherUser: React.Dispatch<React.SetStateAction<CustomUser | Contact | undefined>>;
     updateEndCallStatus: React.Dispatch<React.SetStateAction<EndCallStatus | undefined>>;
     updateLocalStream: React.Dispatch<React.SetStateAction<MediaStream | undefined>>;
+    updateConnectionQuality: React.Dispatch<React.SetStateAction<ConnectionQuality | undefined>>;
     updateOtherUserStatus: (kind: 'audio' | 'video', isPaused: boolean) => void;
     resetOtherUserStatus: () => void;
     resetIsMicMuted: () => void;
@@ -66,6 +70,7 @@ export const VideoCallContext = createContext<VideoCallContextType | undefined>(
 
 export const VideoCallProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const router = useRouter();
+    const [callId, setCallId] = useState<number>();
     const [isRinging, setIsRinging] = useState(false);
     const [isCallStarted, setIsCallStarted] = useState(false);
     const [duration, setDuration] = useState(0);
@@ -77,7 +82,7 @@ export const VideoCallProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     const [facingMode, setFacingMode] = useState<'user' | 'environment'>('user');
     const [localStream, setLocalStream] = useState<MediaStream>();
     const [remoteStream, setRemoteStream] = useState<MediaStream>();
-    const callIdRef = useRef<number>();
+    const [connectionQuality, setConnectionQuality] = useState<ConnectionQuality>();
     const isRingingRef = useRef(isRinging);
     const ringbackSoundRef = useRef<Audio.Sound>();
     const localStreamRef = useRef<MediaStream>();
@@ -174,10 +179,10 @@ export const VideoCallProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     };
 
     const endCall = () => {
-        if(callIdRef.current && otherUser) {
+        if(callId && otherUser) {
             const checkContact = isContact(otherUser);
             socket.emit("end-call", { 
-                callId: callIdRef.current, 
+                callId, 
                 otherUserId: checkContact ? otherUser.user?.id : otherUser.id
             });
         }  
@@ -297,7 +302,7 @@ export const VideoCallProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     return(
         <VideoCallContext.Provider value={
             {
-                callIdRef,
+                callId,
                 isRinging,
                 isRingingRef,
                 isCallStarted,
@@ -310,6 +315,7 @@ export const VideoCallProvider: React.FC<{ children: React.ReactNode }> = ({ chi
                 facingMode,
                 localStream,
                 remoteStream,
+                connectionQuality,
                 localStreamRef,
                 deviceRef,
                 sendTransportRef,
@@ -318,11 +324,13 @@ export const VideoCallProvider: React.FC<{ children: React.ReactNode }> = ({ chi
                 audioProducerRef,
                 videoConsumerRef,
                 audioConsumerRef,
+                updateCallId: setCallId,
                 updateIsRinging: setIsRinging,
                 updateIsCallStarted: setIsCallStarted,
                 updateOtherUser: setOtherUser,
                 updateEndCallStatus: setEndCallStatus,
                 updateLocalStream: setLocalStream,
+                updateConnectionQuality: setConnectionQuality,
                 updateOtherUserStatus,
                 resetOtherUserStatus,
                 resetIsMicMuted,

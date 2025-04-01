@@ -7,7 +7,7 @@ import DeviceInfo from 'react-native-device-info';
 import { displayIncomingCallNotification, displayNotification } from "@/utils/notifications";
 import notifee, { EventType } from '@notifee/react-native';
 import InCallManager from 'react-native-incall-manager';
-import { router } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { Contact } from "@/types/Contact";
 import { CustomUser } from "@/types/User";
 import { VideoCallContext } from "./VideoCallContext";
@@ -23,6 +23,7 @@ interface NotificationsContextType {
 export const NotificationsContext = createContext<NotificationsContextType | undefined>(undefined);
 
 export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+    const router = useRouter();
     const videoCallContext = useContext(VideoCallContext);
     const [fcmToken, setFcmToken] = useState<string | null>(null);
     const [isNotificationsEnabled, setIsNotificationsEnabled] = useState<boolean | null>(null);

@@ -26,6 +26,7 @@ import { AuthContext } from '@/contexts/AuthContext';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import VideoCallBottomSheet from '@/components/VideoCallBottomSheet';
 import { RTCView } from "react-native-webrtc";
+import SignalIndicator from '@/components/SignalIndicator';
 
 //  Use duration plugin
 dayjs.extend(duration);
@@ -405,6 +406,13 @@ export default function VideoCall() {
                                     style={[styles.mutedIcon, { top: insets.top + 4 }]}
                                 /> : null
                             }
+                            { videoCallContext?.connectionQuality === 'Low' ? 
+                                <SignalIndicator
+                                    height={16}
+                                    connectionQuality={videoCallContext.connectionQuality}
+                                    style={[styles.indicator, { top: insets.top + 4 }]}
+                                /> : null
+                            }
                         </View>
                     </GestureDetector>
                     <Animated.View
@@ -571,7 +579,7 @@ export default function VideoCall() {
                     </View>
                 </View>
             }
-            <VideoCallBottomSheet ref={bottomSheetRef} onDismiss={() => { startTimer(); }} />
+            <VideoCallBottomSheet ref={bottomSheetRef} onDismiss={() => { if(videoCallContext?.isCallStarted) startTimer(); }} />
             <ThemedSnackBar />
         </View>
     );
@@ -672,5 +680,9 @@ const styles = StyleSheet.create({
     },
     mutedText: { 
         marginLeft: 4
+    },
+    indicator: {
+        position: 'absolute',  
+        right: 10
     }
 });

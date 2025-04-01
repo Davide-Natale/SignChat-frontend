@@ -1,6 +1,6 @@
 import { AuthContext } from '@/contexts/AuthContext';
 import { useTheme } from '@/hooks/useTheme';
-import { router, useFocusEffect } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useContext, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import ImageProfile from '@/components/ImageProfile';
@@ -25,6 +25,7 @@ import { NotificationsContext } from '@/contexts/NotificationsContext';
 
 export default function Profile() {
   const theme = useTheme();
+  const router = useRouter();
   const [showDialog, setShowDialog] = useState(false);
   const authContext = useContext(AuthContext);
   const appContext = useContext(AppContext);
