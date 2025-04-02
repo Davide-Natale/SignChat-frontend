@@ -87,6 +87,17 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
                                 userId: user ? user.id : undefined
                             } 
                         });
+                    } else if(detail.notification?.data?.type === 'ongoing-call') {
+                        const userId = detail.notification.data.otherUserId as string;
+                        const contactId = detail.notification.data.contactId as string;
+
+                        router.push({
+                            pathname: '/video-call',
+                            params: {
+                                contactId,
+                                userId: !contactId ? userId : undefined
+                            }
+                        });
                     }
                 } else if(type === EventType.ACTION_PRESS) {
                     if(detail.pressAction?.id === 'decline') {
@@ -116,6 +127,8 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
                             contact?.user ? contact.user.id : user ? user.id : -1,
                             contact ? contact.id : undefined
                         );    
+                    } else if(detail.pressAction?.id === 'hang-up') {
+                        videoCallContext?.endCall();
                     }
                 }
             });
@@ -162,7 +175,7 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
                 unsubscribeRefreshListener.current = undefined;
             }
         };
-      }, [isNotificationsEnabled]);
+      }, [isNotificationsEnabled, videoCallContext?.callId, videoCallContext?.otherUser]);
 
     const initializeNotifications = async () => {
         if(isNotificationsEnabled) {

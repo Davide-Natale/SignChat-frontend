@@ -52,6 +52,17 @@ notifee.onBackgroundEvent(async ({ type, detail }) => {
                     userId: user ? user.id : undefined
                 } 
             });
+        } else if(detail.notification?.data?.type === 'ongoing-call') {
+            const userId = detail.notification.data.otherUserId as string;
+            const contactId = detail.notification.data.contactId as string;
+
+            router.push({
+                pathname: '/video-call',
+                params: {
+                    contactId,
+                    userId: !contactId ? userId : undefined
+                }
+            });
         }
     } else if(type === EventType.ACTION_PRESS) {    //  TODO: fix this because socket isn't already connected when app is killed
         if(detail.pressAction?.id === 'decline') {
@@ -94,8 +105,13 @@ notifee.onBackgroundEvent(async ({ type, detail }) => {
                 pathname: '/video-call', 
                 params: { 
                     contactId: contact ? contact.id : undefined, 
-                    userId: !contact ? user?.id : undefined 
+                    userId: !contact ? user?.id : undefined
                 } 
+            });
+        } else if(detail.pressAction?.id === 'hang-up') {
+            socket.emit("end-call", {
+                callId: detail.notification?.data?.callId,
+                otherUserId: detail.notification?.data?.otherUserId
             });
         }
     }

@@ -13,6 +13,16 @@ interface MessagePayload {
     data?: Data;
 }
 
+interface Options {
+    id: string;
+    title: string;
+    body: string;
+    imageProfile?: string | null;
+    data: Data;
+    showChronometer: boolean;
+    showTimestamp: boolean;
+}
+
 export const displayNotification = async (messagePayload: MessagePayload) => {
     const { title, body, imageProfile, data } = messagePayload;
     const placeholder = require("@/assets/images/profile-placeholder-light.png");
@@ -98,6 +108,48 @@ export const displayIncomingCallNotification = async (data: Data) => {
 
                     title: '<p style="color: #4CAF50"><b>Accept</b></p>',
                     pressAction: { id: 'accept' },
+                }
+            ],
+        },
+    });
+};
+
+export const displayOngoingCallNotification = async ({ id, title, body, imageProfile, data, showChronometer, showTimestamp }: Options) => {
+    const placeholder = require("@/assets/images/profile-placeholder-light.png");
+
+    //  Create a channel
+    const channelId = await notifee.createChannel({
+        id: 'ongoing-calls',
+        name: 'Ongoing Calls Channel',
+        badge: false,
+        importance: AndroidImportance.DEFAULT
+    });
+
+    await notifee.displayNotification({
+        id,
+        title,
+        body,
+        data,
+        android: {
+            channelId,
+            color: '#007cff',
+            smallIcon: 'notification_icon',
+            importance: AndroidImportance.DEFAULT,
+            category: AndroidCategory.CALL,
+            autoCancel: false,
+            ongoing: true,
+            circularLargeIcon: true,
+            largeIcon: imageProfile ?? placeholder,
+            showChronometer,
+            showTimestamp,
+            timestamp: dayjs().valueOf(),
+            pressAction: {
+                id: 'default'
+            },
+            actions: [
+                {
+                    title: '<p style="color: #FF4D4D"><b>Hang Up</b></p>',
+                    pressAction: { id: 'hang-up' },
                 }
             ],
         },

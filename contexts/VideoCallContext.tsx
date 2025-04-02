@@ -4,7 +4,7 @@ import { socket } from "@/utils/webSocket";
 import { Href, useRouter } from "expo-router";
 import React, { createContext, useContext, useEffect, useRef, useState } from "react";
 import InCallManager from 'react-native-incall-manager';
-import { Audio } from 'expo-av';
+import { Audio, InterruptionModeAndroid } from 'expo-av';
 import DeviceInfo from "react-native-device-info";
 import notifee from '@notifee/react-native';
 import * as mediasoup from 'mediasoup-client';
@@ -12,10 +12,12 @@ import { mediaDevices, MediaStream, MediaStreamTrack } from "react-native-webrtc
 import { Response } from "@/types/Response";
 import { ConnectionQuality } from "@/types/ConnectionQuality";
 import { ErrorContext } from "./ErrorContext";
+import { displayOngoingCallNotification } from "@/utils/notifications";
 
 type OtherUserStatus = { muted: boolean, videoPaused: boolean}
 type EndCallStatus = "unanswered" | "rejected";
 type NavigateMode = 'push' | 'replace';
+type NotificationType = 'ringing' | 'ongoing' | 'none';
 
 export const isContact = (obj: CustomUser | Contact): obj is Contact => {
     return 'user' in obj;
@@ -35,6 +37,7 @@ export interface VideoCallContextType {
     facingMode: 'user' | 'environment';
     localStream: MediaStream | undefined;
     remoteStream: MediaStream | undefined;
+    notificationType: NotificationType;
     connectionQuality: ConnectionQuality | undefined;
     localStreamRef: React.MutableRefObject<MediaStream | undefined>;
     deviceRef: React.MutableRefObject<mediasoup.types.Device | undefined>;
@@ -50,6 +53,7 @@ export interface VideoCallContextType {
     updateOtherUser: React.Dispatch<React.SetStateAction<CustomUser | Contact | undefined>>;
     updateEndCallStatus: React.Dispatch<React.SetStateAction<EndCallStatus | undefined>>;
     updateLocalStream: React.Dispatch<React.SetStateAction<MediaStream | undefined>>;
+    updateNotificationType: React.Dispatch<React.SetStateAction<NotificationType>>;
     updateConnectionQuality: React.Dispatch<React.SetStateAction<ConnectionQuality | undefined>>;
     updateOtherUserStatus: (kind: 'audio' | 'video', isPaused: boolean) => void;
     resetOtherUserStatus: () => void;
@@ -85,6 +89,7 @@ export const VideoCallProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     const [facingMode, setFacingMode] = useState<'user' | 'environment'>('user');
     const [localStream, setLocalStream] = useState<MediaStream>();
     const [remoteStream, setRemoteStream] = useState<MediaStream>();
+    const [notificationType, setNotificationType] = useState<NotificationType>('none');
     const [connectionQuality, setConnectionQuality] = useState<ConnectionQuality>();
     const isRingingRef = useRef(isRinging);
     const ringbackSoundRef = useRef<Audio.Sound>();
@@ -108,6 +113,11 @@ export const VideoCallProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
     useEffect(() => {
         const loadRingbackSound = async () => {
+            await Audio.setAudioModeAsync({
+                interruptionModeAndroid: InterruptionModeAndroid.DoNotMix,
+                staysActiveInBackground: true
+            });
+
             const { sound } = await Audio.Sound.createAsync(require('@/assets/audios/ringback.wav'), { shouldPlay: false, isLooping: true });
             ringbackSoundRef.current = sound;
         };
@@ -145,6 +155,54 @@ export const VideoCallProvider: React.FC<{ children: React.ReactNode }> = ({ chi
             setRemoteStream(remoteStream);
         }
     }, [videoConsumerRef.current]);
+
+    useEffect(() => {
+        if(!callId || (notificationType !== 'none' && !otherUser)) return;
+
+        const handleVideoCallNotification = async () => {
+            if(notificationType !== 'none') {
+                const title = otherUser ? (
+                    isContact(otherUser) ? 
+                        `${otherUser.firstName} ${otherUser.lastName || ''}`.trim() : 
+                            otherUser.phone
+                    ) : '';
+
+                const body = notificationType === 'ringing' ? 'Ringing...' :
+                    'Video call in progress';
+
+                const imageProfile = otherUser ? (
+                    isContact(otherUser) ? otherUser.user?.imageProfile : 
+                        otherUser.imageProfile
+                ) : undefined;
+
+                const otherUserId = otherUser ? (
+                    isContact(otherUser) ? otherUser.user?.id : otherUser.id
+                ) : undefined;
+            
+                const contactId = otherUser && isContact(otherUser) ? otherUser.id : undefined;
+
+                await displayOngoingCallNotification({
+                    id: callId.toString(),
+                    title,
+                    body,
+                    imageProfile,
+                    data: {
+                        type: 'ongoing-call',
+                        callId,
+                        otherUserId: otherUserId ?? -1, 
+                        ...(contactId !== undefined && { contactId })
+                    },
+                    showTimestamp: notificationType === 'ringing',
+                    showChronometer: notificationType === 'ongoing'
+                });
+            } else {
+                await notifee.cancelNotification(callId.toString());
+                setCallId(undefined);
+            }
+        };
+
+        handleVideoCallNotification();
+    }, [notificationType, otherUser]);
 
     const initializeDevice = async () => {
         socket.emit('getRouterRtpCapabilities', async (capabilities: mediasoup.types.RtpCapabilities | null) => {
@@ -320,6 +378,7 @@ export const VideoCallProvider: React.FC<{ children: React.ReactNode }> = ({ chi
                 facingMode,
                 localStream,
                 remoteStream,
+                notificationType,
                 connectionQuality,
                 localStreamRef,
                 deviceRef,
@@ -335,6 +394,7 @@ export const VideoCallProvider: React.FC<{ children: React.ReactNode }> = ({ chi
                 updateOtherUser: setOtherUser,
                 updateEndCallStatus: setEndCallStatus,
                 updateLocalStream: setLocalStream,
+                updateNotificationType: setNotificationType,
                 updateConnectionQuality: setConnectionQuality,
                 updateOtherUserStatus,
                 resetOtherUserStatus,

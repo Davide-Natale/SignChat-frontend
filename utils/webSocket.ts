@@ -175,6 +175,7 @@ export const connectSocket = async (
                 videoCallContext.recvTransportRef.current = recvTransport;
                 videoCallContext.updateCallId(callId);
                 videoCallContext.updateIsRinging(true);
+                videoCallContext.updateNotificationType('ringing');
             } 
         });
 
@@ -184,7 +185,7 @@ export const connectSocket = async (
                 videoCallContext.sendTransportRef.current = undefined;
                 videoCallContext.recvTransportRef.current?.close();
                 videoCallContext.recvTransportRef.current = undefined;
-                videoCallContext.updateCallId(undefined);
+                videoCallContext.updateNotificationType('none');
                 videoCallContext.resetIsMicMuted();
                 videoCallContext.resetIsCameraOff();
                 videoCallContext.resetFacingMode();
@@ -220,6 +221,7 @@ export const connectSocket = async (
             if(videoCallContext) {
                 videoCallContext.updateCallId(callId);
                 videoCallContext.updateIsCallStarted(true);
+                videoCallContext.updateNotificationType('ongoing');
                 const stream = await mediaDevices.getUserMedia({ audio: true, video: true });
                 videoCallContext.updateLocalStream(stream);
                 videoCallContext.localStreamRef.current = stream;
@@ -261,6 +263,7 @@ export const connectSocket = async (
                 }
     
                 videoCallContext?.updateIsCallStarted(true);
+                videoCallContext?.updateNotificationType('ongoing');
 
                 if(videoCallContext?.sendTransportRef.current) {
                     const { videoProducer, audioProducer } = await startProducing(
@@ -337,7 +340,7 @@ export const connectSocket = async (
                         videoCallContext.audioConsumerRef.current = undefined;
                         videoCallContext.localStreamRef.current?.getTracks().forEach(track => track.stop());
                         videoCallContext.localStreamRef.current = undefined
-                        videoCallContext.updateCallId(undefined);
+                        videoCallContext.updateNotificationType('none');
                         videoCallContext.updateIsRinging(false);
                         videoCallContext.resetIsMicMuted();
                         videoCallContext.resetIsCameraOff();
