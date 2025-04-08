@@ -36,7 +36,7 @@ export const displayNotification = async (messagePayload: MessagePayload) => {
     });
 
     //  Display notification
-    await notifee.displayNotification({ //  TODO: add recall button in case of missed calls
+    await notifee.displayNotification({
         title,
         body,
         data,
@@ -107,7 +107,7 @@ export const displayIncomingCallNotification = async (data: Data) => {
                 {
 
                     title: '<p style="color: #4CAF50"><b>Accept</b></p>',
-                    pressAction: { id: 'accept' },
+                    pressAction: { id: 'accept', launchActivity: 'default' },
                 }
             ],
         },

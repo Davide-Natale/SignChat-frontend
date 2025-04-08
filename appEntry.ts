@@ -103,7 +103,6 @@ notifee.onBackgroundEvent(async ({ type, detail }) => {
             InCallManager.stopRingtone();
             notifee.cancelNotification(callId.toString());
             InCallManager.start({ media: 'video' });
-            //  TODO: add back to foreground for app
             router.push({
                 pathname: '/video-call', 
                 params: { 
