@@ -3,6 +3,9 @@ import { CustomUser } from '@/types/User';
 import notifee, { AndroidCategory, AndroidImportance } from '@notifee/react-native';
 import dayjs from 'dayjs';
 import { router } from 'expo-router';
+import DeviceInfo from 'react-native-device-info';
+import { socket } from '@/utils/webSocket';
+import InCallManager from 'react-native-incall-manager';
 
 type Data = { [key: string]: string | number | object; };
 
@@ -92,10 +95,6 @@ export const displayIncomingCallNotification = async (data: Data) => {
             largeIcon: imageProfile ?? placeholder,
             showTimestamp: true,
             timestamp: dayjs().valueOf(),
-            fullScreenAction: {
-                id: 'default',
-                mainComponent: 'IncomingVideoCall'
-            },
             pressAction: {
                 id: 'default'
             },
@@ -105,7 +104,6 @@ export const displayIncomingCallNotification = async (data: Data) => {
                     pressAction: { id: 'decline' },
                 },
                 {
-
                     title: '<p style="color: #4CAF50"><b>Accept</b></p>',
                     pressAction: { id: 'accept', launchActivity: 'default' },
                 }
@@ -164,6 +162,7 @@ export const checkInitialNotification = async () => {
         const callId = initialNotification.notification.data.callId as string;
         router.push({ pathname: '/calls/[id]', params: { id: callId } });
     } else if(initialNotification.notification.data?.type === 'incoming-call') {
+        const deviceId = await DeviceInfo.getUniqueId();
         const callId = initialNotification.notification.data.callId as string;
         const contact = initialNotification.notification.data.contact && typeof initialNotification.notification.data.contact === 'string' ?
             JSON.parse(initialNotification.notification.data.contact) as Contact : initialNotification.notification.data.contact ?
@@ -172,13 +171,31 @@ export const checkInitialNotification = async () => {
             JSON.parse(initialNotification.notification.data.user) as CustomUser : initialNotification.notification.data.user ?
                 initialNotification.notification.data.user as CustomUser : undefined;
 
-        router.push({
-            pathname: '/video-call/incoming',
-            params: {
+        if(initialNotification.pressAction.id === 'accept') {
+            socket.emit("answer-call", { 
                 callId,
-                contactId: contact ? contact.id : undefined,
-                userId: user ? user.id : undefined
-            }
-        });
+                callerUserId: contact?.user ? contact.user.id : user?.id,
+                deviceId
+            });
+            InCallManager.stopRingtone();
+            notifee.cancelNotification(callId.toString());
+            InCallManager.start({ media: 'video' });
+            router.push({
+                pathname: '/video-call', 
+                params: { 
+                    contactId: contact ? contact.id : undefined, 
+                    userId: !contact ? user?.id : undefined
+                } 
+            });
+        } else {
+            router.push({
+                pathname: '/video-call/incoming',
+                params: {
+                    callId,
+                    contactId: contact ? contact.id : undefined,
+                    userId: user ? user.id : undefined
+                }
+            });
+        } 
     }
 };
