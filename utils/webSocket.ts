@@ -118,10 +118,7 @@ const resumeConsumer = (
     }
 }
 
-export const connectSocket = async (
-    videoCallContext: VideoCallContextType | undefined, 
-    errorContext: ErrorContextType | undefined
-) => {
+export const connectSocket = async () => {
     const accessToken = await getToken('accessToken');
 
     if(accessToken && socket.disconnected) {
@@ -156,210 +153,215 @@ export const connectSocket = async (
              } 
         });
 
-        socket.on('call-started', async ({ callId, sendTransportParams, recvTransportParams }) => {
-            if(videoCallContext) {
-                const sendTransport = videoCallContext.deviceRef.current?.createSendTransport(sendTransportParams);
-                sendTransport?.on('connect', ({ dtlsParameters }, callback, errback) => {
-                    connectTransport(sendTransport.id, dtlsParameters, callback, errback);
-                });
-                sendTransport?.on('produce', (parameters, callback, errback ) => { 
-                    createProducer(sendTransport.id, parameters, callback, errback);
-                });
+        socket.connect();
+    }
+};
 
-                const recvTransport = videoCallContext.deviceRef.current?.createRecvTransport(recvTransportParams);
-                recvTransport?.on('connect', async ({ dtlsParameters }, callback, errback) => {
-                    connectTransport(recvTransport.id, dtlsParameters, callback, errback);
-                });
+export const setupSocketEvents = (
+    videoCallContext: VideoCallContextType | undefined, 
+    errorContext: ErrorContextType | undefined
+) => {
+    socket.on('call-started', async ({ callId, sendTransportParams, recvTransportParams }) => {
+        if(videoCallContext) {
+            const sendTransport = videoCallContext.deviceRef.current?.createSendTransport(sendTransportParams);
+            sendTransport?.on('connect', ({ dtlsParameters }, callback, errback) => {
+                connectTransport(sendTransport.id, dtlsParameters, callback, errback);
+            });
+            sendTransport?.on('produce', (parameters, callback, errback ) => { 
+                createProducer(sendTransport.id, parameters, callback, errback);
+            });
 
-                videoCallContext.sendTransportRef.current = sendTransport;
-                videoCallContext.recvTransportRef.current = recvTransport;
-                videoCallContext.updateCallId(callId);
-                videoCallContext.updateIsRinging(true);
-                videoCallContext.updateNotificationType('ringing');
-            } 
-        });
+            const recvTransport = videoCallContext.deviceRef.current?.createRecvTransport(recvTransportParams);
+            recvTransport?.on('connect', async ({ dtlsParameters }, callback, errback) => {
+                connectTransport(recvTransport.id, dtlsParameters, callback, errback);
+            });
 
-        socket.on('call-ended', async ({ reason }) => {
-            if(videoCallContext) {
-                videoCallContext.sendTransportRef.current?.close();
-                videoCallContext.sendTransportRef.current = undefined;
-                videoCallContext.recvTransportRef.current?.close();
-                videoCallContext.recvTransportRef.current = undefined;
-                videoCallContext.updateNotificationType('none');
-                videoCallContext.resetIsMicMuted();
-                videoCallContext.resetIsCameraOff();
-                videoCallContext.resetFacingMode();
-                InCallManager.stop();
+            videoCallContext.sendTransportRef.current = sendTransport;
+            videoCallContext.recvTransportRef.current = recvTransport;
+            videoCallContext.updateCallId(callId);
+            videoCallContext.updateIsRinging(true);
+            videoCallContext.updateNotificationType('ringing');
+        } 
+    });
 
-                if(videoCallContext.isRingingRef.current) {
-                    videoCallContext.updateIsRinging(false);
+    socket.on('call-ended', async ({ reason }) => {
+        if(videoCallContext) {
+            videoCallContext.sendTransportRef.current?.close();
+            videoCallContext.sendTransportRef.current = undefined;
+            videoCallContext.recvTransportRef.current?.close();
+            videoCallContext.recvTransportRef.current = undefined;
+            videoCallContext.updateNotificationType('none');
+            videoCallContext.resetIsMicMuted();
+            videoCallContext.resetIsCameraOff();
+            videoCallContext.resetFacingMode();
+            InCallManager.stop();
+
+            if(videoCallContext.isRingingRef.current) {
+                videoCallContext.updateIsRinging(false);
+            }
+            
+            if(reason === 'completed') {
+                videoCallContext.videoProducerRef.current = undefined;
+                videoCallContext.audioProducerRef.current = undefined;
+                videoCallContext.videoConsumerRef.current = undefined;
+                videoCallContext.audioConsumerRef.current = undefined;
+                videoCallContext.localStreamRef.current = undefined;
+                videoCallContext.updateLocalStream(undefined);
+                videoCallContext.clearRemoteStream();
+                videoCallContext.updateIsCallStarted(false);
+                videoCallContext.updateOtherUser(undefined);
+                videoCallContext.updateConnectionQuality(undefined);
+                videoCallContext.resetOtherUserStatus();
+                router.back();
+            } else {
+                videoCallContext.localStreamRef.current?.getTracks().forEach(track => track.stop());
+                videoCallContext.localStreamRef.current = undefined
+                videoCallContext.updateLocalStream(undefined);
+                videoCallContext.updateEndCallStatus(reason);
+            }
+        } 
+    });
+
+    socket.on('call-joined', async ({ callId, sendTransportParams, recvTransportParams }) => {
+        if(videoCallContext) {
+            videoCallContext.updateCallId(callId);
+            videoCallContext.updateIsCallStarted(true);
+            videoCallContext.updateNotificationType('ongoing');
+            const stream = await mediaDevices.getUserMedia({ audio: true, video: true });
+            videoCallContext.updateLocalStream(stream);
+            videoCallContext.localStreamRef.current = stream;
+
+            const sendTransport = videoCallContext.deviceRef.current?.createSendTransport(sendTransportParams);
+            sendTransport?.on('connect', async ({ dtlsParameters }, callback, errback) => {
+                connectTransport(sendTransport.id, dtlsParameters, callback, errback);
+            });
+            sendTransport?.on('produce', (parameters, callback, errback ) => {
+                createProducer(sendTransport.id, parameters, callback, errback);
+            });
+
+            const recvTransport = videoCallContext.deviceRef.current?.createRecvTransport(recvTransportParams);
+            recvTransport?.on('connect', async ({ dtlsParameters }, callback, errback) => {
+                connectTransport(recvTransport.id, dtlsParameters, callback, errback);
+            });
+
+            videoCallContext.sendTransportRef.current = sendTransport;
+            videoCallContext.recvTransportRef.current = recvTransport;
+        
+            if(videoCallContext?.sendTransportRef.current) {
+                const { videoProducer, audioProducer } = await startProducing(
+                    videoCallContext.sendTransportRef.current, 
+                    videoCallContext.localStreamRef.current as unknown as MediaStream
+                );
+
+                videoCallContext.videoProducerRef.current = videoProducer;
+                videoCallContext.audioProducerRef.current = audioProducer;
+
+                socket.emit('readyToConsume');
+            }
+        }
+    });
+
+    socket.on('call-answered', async () => {
+        try {
+            if (videoCallContext?.isRingingRef.current) {
+                videoCallContext.updateIsRinging(false);
+            }
+
+            videoCallContext?.updateIsCallStarted(true);
+            videoCallContext?.updateNotificationType('ongoing');
+
+            if(videoCallContext?.sendTransportRef.current) {
+                const { videoProducer, audioProducer } = await startProducing(
+                    videoCallContext.sendTransportRef.current, 
+                    videoCallContext.localStreamRef.current as unknown as MediaStream
+                );
+
+                videoCallContext.videoProducerRef.current = videoProducer;
+                videoCallContext.audioProducerRef.current = audioProducer;
+
+                socket.emit('readyToConsume');
+            }
+        } catch (error) {
+            errorContext?.handleError(error);
+        }
+    });
+
+    socket.on('new-producer', ({ producerId }) => {
+        if(videoCallContext?.deviceRef.current && videoCallContext.recvTransportRef.current) {
+            const transportId = videoCallContext.recvTransportRef.current?.id;
+            const rtpCapabilities = videoCallContext.deviceRef.current.rtpCapabilities;
+
+            socket.emit('create-consumer', { transportId, producerId, rtpCapabilities }, async (response: ConsumeResponse) => {
+                if(response.success) {
+                    const { params } = response;
+                    const consumer = await videoCallContext.recvTransportRef.current?.consume({
+                        id: params.id,
+                        producerId: params.producerId,
+                        kind: params.kind,
+                        rtpParameters: params.rtpParameters
+                    });
+
+                    if(params.kind === 'audio') {
+                        videoCallContext.audioConsumerRef.current = consumer;
+                        resumeConsumer(videoCallContext.audioConsumerRef.current, errorContext);
+                    } else {
+                        videoCallContext.videoConsumerRef.current = consumer;
+                        resumeConsumer(videoCallContext.videoConsumerRef.current, errorContext);
+                    }
+                } else {
+                    errorContext?.handleError(new Error(response.error));
                 }
-                
-                if(reason === 'completed') {
+            });
+        }
+        
+    });
+
+    socket.on('producer-paused', ({ kind }) => {
+        videoCallContext?.updateOtherUserStatus(kind, true);
+    });
+
+    socket.on('producer-resumed', ({ kind }) => {
+        videoCallContext?.updateOtherUserStatus(kind, false);
+    });
+
+    socket.on('score-changed', ({ score }) => {
+        const connectionQuality: ConnectionQuality = score >= 0 && score <= 2 ? 'Low' : 
+            score >= 3 && score <= 6 ? 'Mid' : 'Good';
+
+        videoCallContext?.updateConnectionQuality(connectionQuality);
+    });
+
+    socket.on('call-error', async ({ message }) => {
+        setTimeout(() => { 
+            errorContext?.handleError(new Error(message)); 
+
+            setTimeout(() => {
+                if (videoCallContext) {
+                    videoCallContext.sendTransportRef.current = undefined;
+                    videoCallContext.recvTransportRef.current = undefined;
                     videoCallContext.videoProducerRef.current = undefined;
                     videoCallContext.audioProducerRef.current = undefined;
                     videoCallContext.videoConsumerRef.current = undefined;
                     videoCallContext.audioConsumerRef.current = undefined;
-                    videoCallContext.localStreamRef.current = undefined;
+                    videoCallContext.localStreamRef.current?.getTracks().forEach(track => track.stop());
+                    videoCallContext.localStreamRef.current = undefined
+                    videoCallContext.updateNotificationType('none');
+                    videoCallContext.updateIsRinging(false);
+                    videoCallContext.resetIsMicMuted();
+                    videoCallContext.resetIsCameraOff();
+                    videoCallContext.resetFacingMode();
                     videoCallContext.updateLocalStream(undefined);
                     videoCallContext.clearRemoteStream();
                     videoCallContext.updateIsCallStarted(false);
                     videoCallContext.updateOtherUser(undefined);
                     videoCallContext.updateConnectionQuality(undefined);
                     videoCallContext.resetOtherUserStatus();
+                    InCallManager.stop();
                     router.back();
-                } else {
-                    videoCallContext.localStreamRef.current?.getTracks().forEach(track => track.stop());
-                    videoCallContext.localStreamRef.current = undefined
-                    videoCallContext.updateLocalStream(undefined);
-                    videoCallContext.updateEndCallStatus(reason);
                 }
-            } 
-        });
-
-        socket.on('call-joined', async ({ callId, sendTransportParams, recvTransportParams }) => {
-            if(videoCallContext) {
-                videoCallContext.updateCallId(callId);
-                videoCallContext.updateIsCallStarted(true);
-                videoCallContext.updateNotificationType('ongoing');
-                const stream = await mediaDevices.getUserMedia({ audio: true, video: true });
-                videoCallContext.updateLocalStream(stream);
-                videoCallContext.localStreamRef.current = stream;
-
-                const sendTransport = videoCallContext.deviceRef.current?.createSendTransport(sendTransportParams);
-                sendTransport?.on('connect', async ({ dtlsParameters }, callback, errback) => {
-                    connectTransport(sendTransport.id, dtlsParameters, callback, errback);
-                });
-                sendTransport?.on('produce', (parameters, callback, errback ) => {
-                    createProducer(sendTransport.id, parameters, callback, errback);
-                });
-
-                const recvTransport = videoCallContext.deviceRef.current?.createRecvTransport(recvTransportParams);
-                recvTransport?.on('connect', async ({ dtlsParameters }, callback, errback) => {
-                    connectTransport(recvTransport.id, dtlsParameters, callback, errback);
-                });
-
-                videoCallContext.sendTransportRef.current = sendTransport;
-                videoCallContext.recvTransportRef.current = recvTransport;
-            
-                if(videoCallContext?.sendTransportRef.current) {
-                    const { videoProducer, audioProducer } = await startProducing(
-                        videoCallContext.sendTransportRef.current, 
-                        videoCallContext.localStreamRef.current as unknown as MediaStream
-                    );
-    
-                    videoCallContext.videoProducerRef.current = videoProducer;
-                    videoCallContext.audioProducerRef.current = audioProducer;
-
-                    socket.emit('readyToConsume');
-                }
-            }
-        });
-
-        socket.on('call-answered', async () => {
-            try {
-                if (videoCallContext?.isRingingRef.current) {
-                    videoCallContext.updateIsRinging(false);
-                }
-    
-                videoCallContext?.updateIsCallStarted(true);
-                videoCallContext?.updateNotificationType('ongoing');
-
-                if(videoCallContext?.sendTransportRef.current) {
-                    const { videoProducer, audioProducer } = await startProducing(
-                        videoCallContext.sendTransportRef.current, 
-                        videoCallContext.localStreamRef.current as unknown as MediaStream
-                    );
-
-                    videoCallContext.videoProducerRef.current = videoProducer;
-                    videoCallContext.audioProducerRef.current = audioProducer;
-
-                    socket.emit('readyToConsume');
-                }
-            } catch (error) {
-                errorContext?.handleError(error);
-            }
-        });
-
-        socket.on('new-producer', ({ producerId }) => {
-            if(videoCallContext?.deviceRef.current && videoCallContext.recvTransportRef.current) {
-                const transportId = videoCallContext.recvTransportRef.current?.id;
-                const rtpCapabilities = videoCallContext.deviceRef.current.rtpCapabilities;
-
-                socket.emit('create-consumer', { transportId, producerId, rtpCapabilities }, async (response: ConsumeResponse) => {
-                    if(response.success) {
-                        const { params } = response;
-                        const consumer = await videoCallContext.recvTransportRef.current?.consume({
-                            id: params.id,
-                            producerId: params.producerId,
-                            kind: params.kind,
-                            rtpParameters: params.rtpParameters
-                        });
-
-                        if(params.kind === 'audio') {
-                            videoCallContext.audioConsumerRef.current = consumer;
-                            resumeConsumer(videoCallContext.audioConsumerRef.current, errorContext);
-                        } else {
-                            videoCallContext.videoConsumerRef.current = consumer;
-                            resumeConsumer(videoCallContext.videoConsumerRef.current, errorContext);
-                        }
-                    } else {
-                        errorContext?.handleError(new Error(response.error));
-                    }
-                });
-            }
-            
-        });
-
-        socket.on('producer-paused', ({ kind }) => {
-            videoCallContext?.updateOtherUserStatus(kind, true);
-        });
-
-        socket.on('producer-resumed', ({ kind }) => {
-            videoCallContext?.updateOtherUserStatus(kind, false);
-        });
-
-        socket.on('score-changed', ({ score }) => {
-            const connectionQuality: ConnectionQuality = score >= 0 && score <= 2 ? 'Low' : 
-                score >= 3 && score <= 6 ? 'Mid' : 'Good';
-
-            videoCallContext?.updateConnectionQuality(connectionQuality);
-        });
-
-        socket.on('call-error', async ({ message }) => {
-            setTimeout(() => { 
-                errorContext?.handleError(new Error(message)); 
-
-                setTimeout(() => {
-                    if (videoCallContext) {
-                        videoCallContext.sendTransportRef.current = undefined;
-                        videoCallContext.recvTransportRef.current = undefined;
-                        videoCallContext.videoProducerRef.current = undefined;
-                        videoCallContext.audioProducerRef.current = undefined;
-                        videoCallContext.videoConsumerRef.current = undefined;
-                        videoCallContext.audioConsumerRef.current = undefined;
-                        videoCallContext.localStreamRef.current?.getTracks().forEach(track => track.stop());
-                        videoCallContext.localStreamRef.current = undefined
-                        videoCallContext.updateNotificationType('none');
-                        videoCallContext.updateIsRinging(false);
-                        videoCallContext.resetIsMicMuted();
-                        videoCallContext.resetIsCameraOff();
-                        videoCallContext.resetFacingMode();
-                        videoCallContext.updateLocalStream(undefined);
-                        videoCallContext.clearRemoteStream();
-                        videoCallContext.updateIsCallStarted(false);
-                        videoCallContext.updateOtherUser(undefined);
-                        videoCallContext.updateConnectionQuality(undefined);
-                        videoCallContext.resetOtherUserStatus();
-                        InCallManager.stop();
-                        router.back();
-                    }
-                }, 2000);
-            }, 1000);
-        });
-
-        socket.connect();
-    }
+            }, 2000);
+        }, 1000);
+    });
 };
 
 export const disconnectSocket = () => {

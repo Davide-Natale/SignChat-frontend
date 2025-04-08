@@ -158,9 +158,27 @@ export const displayOngoingCallNotification = async ({ id, title, body, imagePro
 
 export const checkInitialNotification = async () => {
     const initialNotification = await notifee.getInitialNotification();
+    if(!initialNotification) return;
 
-    if(initialNotification && initialNotification.notification.data?.type === 'missed-call') {
+    if(initialNotification.notification.data?.type === 'missed-call') {
         const callId = initialNotification.notification.data.callId as string;
         router.push({ pathname: '/calls/[id]', params: { id: callId } });
+    } else if(initialNotification.notification.data?.type === 'incoming-call') {
+        const callId = initialNotification.notification.data.callId as string;
+        const contact = initialNotification.notification.data.contact && typeof initialNotification.notification.data.contact === 'string' ?
+            JSON.parse(initialNotification.notification.data.contact) as Contact : initialNotification.notification.data.contact ?
+                initialNotification.notification.data.contact as Contact : undefined;
+        const user = initialNotification.notification.data.user && typeof initialNotification.notification.data.user === 'string' ?
+            JSON.parse(initialNotification.notification.data.user) as CustomUser : initialNotification.notification.data.user ?
+                initialNotification.notification.data.user as CustomUser : undefined;
+
+        router.push({
+            pathname: '/video-call/incoming',
+            params: {
+                callId,
+                contactId: contact ? contact.id : undefined,
+                userId: user ? user.id : undefined
+            }
+        });
     }
 };

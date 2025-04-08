@@ -8,7 +8,7 @@ import { router } from 'expo-router';
 import { Contact } from "@/types/Contact";
 import { CustomUser } from "@/types/User";
 import DeviceInfo from 'react-native-device-info';
-import { socket } from './utils/webSocket';
+import { connectSocket, socket } from './utils/webSocket';
 import { registerGlobals } from 'react-native-webrtc';
 
 //  Setup react-native-webrtc to expose all its classes to the global scope
@@ -64,7 +64,10 @@ notifee.onBackgroundEvent(async ({ type, detail }) => {
                 }
             });
         }
-    } else if(type === EventType.ACTION_PRESS) {    //  TODO: fix this because socket isn't already connected when app is killed
+    } else if(type === EventType.ACTION_PRESS) {
+        //  Connect socket if not already
+        await connectSocket();
+
         if(detail.pressAction?.id === 'decline') {
             const deviceId = await DeviceInfo.getUniqueId();
             const callId = detail.notification?.data?.callId as string;
