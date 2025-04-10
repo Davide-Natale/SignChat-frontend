@@ -1,13 +1,17 @@
 import { useTheme } from '@/hooks/useTheme';
 import { Contact } from '@/types/Contact';
-import { FlatList, StyleProp, StyleSheet, ToastAndroid, View, ViewStyle } from 'react-native';
+import { FlatList, StyleProp, StyleSheet, View, ViewStyle } from 'react-native';
 import ThemedText from './ThemedText';
 import ListItem from './ListItem';
 import Divider from './Divider';
-import React from 'react';
+import React, { useCallback, useContext, useMemo } from 'react';
 import ImageProfile from './ImageProfile';
 import { useRouter } from 'expo-router';
 import { VideoCallContextType } from '@/contexts/VideoCallContext';
+import * as Contacts from 'expo-contacts';
+import { parsePhoneNumberFromString } from 'libphonenumber-js';
+import * as Linking from 'expo-linking';
+import { ErrorContext } from '@/contexts/ErrorContext';
 
 interface ContactsCardProps {
     label?: string;
@@ -21,6 +25,30 @@ interface ContactsCardProps {
 export default function ContactsCard({ label, contacts, style, type='view', action, videoCallContext }: ContactsCardProps) {
     const theme = useTheme();
     const router = useRouter();
+    const errorContext = useContext(ErrorContext);
+    const message = useMemo(() => "Let's talk on SignChat! It's a secure and fast app to make calls with great accessibility features. " +
+        "Download it: http://192.168.178.183:3000/api/downloads/app", []);
+
+    const searchContactLocally = useCallback(async (phone: string) => {
+        //  Request Permissions
+        await Contacts.requestPermissionsAsync();
+
+        //  Search local contact
+        const { data } = await Contacts.getContactsAsync();
+
+        const contact = data.find(localContact => {
+            const contactPhone = localContact.phoneNumbers?.[0].number?.replaceAll(" ", "") ?? "";
+            const phoneObj = parsePhoneNumberFromString(contactPhone);
+
+            if (phoneObj) {
+                return phone === phoneObj.nationalNumber;
+            }
+
+            return phone === contactPhone;
+        });
+
+        return contact;
+    }, []);
 
     if(contacts.length === 0) {
         return null;
@@ -57,21 +85,31 @@ export default function ContactsCard({ label, contacts, style, type='view', acti
                                 Invite
                             </ThemedText> : undefined
                         }
-                        onPress={() => {
-                            if(action) { action(); }
+                        onPress={async () => {
+                            try {
+                                if (action) { action(); }
 
-                            if (label) {
-                                if (type === 'view') {
-                                    router.push({
-                                        pathname: "/contacts/[id]/info",
-                                        params: { id: contact.id }
-                                    });
-                                } else if(contact.user) {
-                                    videoCallContext?.startCall(contact.user.id, contact.phone, contact.id);
+                                if (label) {
+                                    if (type === 'view') {
+                                        router.push({
+                                            pathname: "/contacts/[id]/info",
+                                            params: { id: contact.id }
+                                        });
+                                    } else if (contact.user) {
+                                        videoCallContext?.startCall(contact.user.id, contact.phone, contact.id);
+                                    }
+                                } else {
+                                    const localContact = await searchContactLocally(contact.phone);
+                                    const phoneNumber = localContact?.phoneNumbers?.[0].number;
+
+                                    if (phoneNumber) {
+                                        const smsUrl = `sms:${phoneNumber}?body=${encodeURIComponent(message)}`;
+                                        await Linking.openURL(smsUrl);
+                                    }
                                 }
-                            } else {
-                                ToastAndroid.show('Coming Soon!', ToastAndroid.SHORT);
-                            } 
+                            } catch (error) {
+                                errorContext?.handleError(error);
+                            }
                         }}
                         style={styles.row}
                     />

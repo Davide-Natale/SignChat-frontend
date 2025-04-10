@@ -27,12 +27,18 @@ import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import VideoCallBottomSheet from '@/components/VideoCallBottomSheet';
 import { RTCView } from "react-native-webrtc";
 import SignalIndicator from '@/components/SignalIndicator';
+import { AppContext } from '@/contexts/AppContext';
 
 //  Use duration plugin
 dayjs.extend(duration);
 
 type Corner = { x: number, y: number };
 type CornerId = 'topLeft' | 'topRight' | 'bottomLeft' | 'bottomRight';
+
+const ACCESSIBILITY_SIZE = {
+    height: 200,
+    width: 112.5
+}
 
 const CAMERA_SIZE = {
     withControls: {
@@ -50,6 +56,7 @@ export default function VideoCall() {
     const darkTheme = useTheme('dark');
     const lightTheme = useTheme('light');
     const insets = useSafeAreaInsets();
+    const appContext = useContext(AppContext);
     const authContext = useContext(AuthContext);
     const errorContext = useContext(ErrorContext);
     const videoCallContext = useContext(VideoCallContext);
@@ -64,6 +71,7 @@ export default function VideoCall() {
     const width = useSharedValue(CAMERA_SIZE.withControls.width);
     const height = useSharedValue(CAMERA_SIZE.withControls.height);
     const size = useSharedValue(CAMERA_SIZE.withControls.width / 2);
+    const accessibilityTranslateY = useSharedValue(screenHeight - ACCESSIBILITY_SIZE.height - 110 - marginYBottom);
     const translateX = useSharedValue(screenWidth - CAMERA_SIZE.withControls.width - marginX);
     const translateY = useSharedValue(screenHeight - CAMERA_SIZE.withControls.height - 110 - marginYBottom);
     const context = useSharedValue({ x: 0, y: 0 });
@@ -178,7 +186,8 @@ export default function VideoCall() {
 
         width.value = CAMERA_SIZE.withoutControls.width;
         height.value = CAMERA_SIZE.withoutControls.height;
-        size.value = CAMERA_SIZE.withoutControls.width / 2      
+        size.value = CAMERA_SIZE.withoutControls.width / 2;
+        accessibilityTranslateY.value += controlBarHeight;  
     }, [controlBarHeight, textGroupHeight]);
 
     const toggleVisibility = useCallback(() => {
@@ -202,6 +211,7 @@ export default function VideoCall() {
         width.value = CAMERA_SIZE.withControls.width;
         height.value = CAMERA_SIZE.withControls.height;
         size.value = CAMERA_SIZE.withControls.width / 2;
+        accessibilityTranslateY.value -= controlBarHeight;
         startTimer();   
     }, [controlBarHeight, textGroupHeight]);
 
@@ -304,6 +314,10 @@ export default function VideoCall() {
     const controlBarAnimatedStyle = useAnimatedStyle(() => ({
         transform: [{ translateY: withTiming(isVisible.value ? 0 : 100, { duration: 300 }) }],
         opacity: withTiming(isVisible.value, { duration: 300 })
+    }));
+
+    const accessibilityAnimatedStyle = useAnimatedStyle(() => ({
+        transform: [{ translateY: withTiming(accessibilityTranslateY.value, { duration: 300 }) }]
     }));
 
     const cameraAnimatedStyle = useAnimatedStyle(() => {
@@ -454,6 +468,17 @@ export default function VideoCall() {
                         ))
                         }
                     </Animated.View>
+                    { appContext?.isAccessibilityEnabled ? 
+                        <Animated.View style={[styles.camera, accessibilityAnimatedStyle, 
+                            { 
+                                left: marginX,
+                                height: ACCESSIBILITY_SIZE.height,
+                                width: ACCESSIBILITY_SIZE.width,
+                                borderRadius: ACCESSIBILITY_SIZE.width / 10,
+                                backgroundColor: darkTheme.secondary 
+                            }
+                        ]} /> : null
+                    }
                     <GestureDetector gesture={Gesture.Exclusive(panGesture, cameraTapGesture)} > 
                         <Animated.View style={[styles.camera, cameraAnimatedStyle, { backgroundColor: darkTheme.secondary }]} >
                             {!videoCallContext?.isCameraOff && videoCallContext?.localStream ?
