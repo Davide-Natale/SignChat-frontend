@@ -468,7 +468,7 @@ export default function VideoCall() {
                         ))
                         }
                     </Animated.View>
-                    { appContext?.isAccessibilityEnabled ? 
+                    { /*appContext?.isAccessibilityEnabled ? 
                         <Animated.View style={[styles.camera, accessibilityAnimatedStyle, 
                             { 
                                 left: marginX,
@@ -477,7 +477,7 @@ export default function VideoCall() {
                                 borderRadius: ACCESSIBILITY_SIZE.width / 10,
                                 backgroundColor: darkTheme.secondary 
                             }
-                        ]} /> : null
+                        ]} /> : null */
                     }
                     <GestureDetector gesture={Gesture.Exclusive(panGesture, cameraTapGesture)} > 
                         <Animated.View style={[styles.camera, cameraAnimatedStyle, { backgroundColor: darkTheme.secondary }]} >

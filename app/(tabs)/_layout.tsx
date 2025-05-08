@@ -133,26 +133,26 @@ export default function TabLayout() {
 
     useEffect(() => {
         const initializeApp = async () => {
+            //  Synch local contacts 
             await synchContacts();
+
+            //  Connect WebSocket and setup event handlers
+            await connectSocket();
+            setupSocketEvents(videoCallContext, errorContext);
+
+            //  Check local preferences
             await checkPreferences();
+
+            //  Initialize mediasoup device
+            await videoCallContext?.initializeDevice();
         };
         
         initializeApp();
+        return () => { disconnectSocket() ; videoCallContext?.clearDevice() };
     }, []);
 
     useEffect(() => {
         authContext?.fetchProfile();
-    }, []);
-
-    useEffect(() => {
-        const initializeWebSocket = async () => {
-            await connectSocket();
-            setupSocketEvents(videoCallContext, errorContext);
-            await videoCallContext?.initializeDevice();
-        };
-
-        initializeWebSocket();
-        return () => { disconnectSocket() ; videoCallContext?.clearDevice() };
     }, []);
 
     return (

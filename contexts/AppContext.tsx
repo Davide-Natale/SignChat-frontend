@@ -1,4 +1,5 @@
 import { getPreference, savePreference } from "@/utils/asyncStorage";
+import { socket } from "@/utils/webSocket";
 import React, { createContext, useEffect, useState } from "react"
 
 interface AppContextType {
@@ -37,8 +38,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         try {
             setIsAccessibilityEnabled(value);
             await savePreference('accessibility', value);
+            socket.emit('update-preference', { type: 'accessibility', value });
         } catch (error) {
             setIsAccessibilityEnabled(!value);
+            socket.emit('update-preference', { type: 'accessibility', value: !value });
             throw error;
         }
     };

@@ -10,6 +10,7 @@ import { ErrorResponse } from '@/types/ErrorResponse';
 import { Response } from '@/types/Response';
 import { ConnectionQuality } from '@/types/ConnectionQuality';
 import { ErrorContextType } from '@/contexts/ErrorContext';
+import { getPreference } from './asyncStorage';
 
 type ProduceResponse = { success: true, id: string } | ErrorResponse;
 
@@ -120,10 +121,17 @@ const resumeConsumer = (
 
 export const connectSocket = async () => {
     const accessToken = await getToken('accessToken');
+    const accessibilityPreference = await getPreference('accessibility');
 
     if(accessToken && socket.disconnected) {
         socket.auth = { token: `Bearer ${accessToken}` };
         
+        socket.on('connect', () => {
+            if(accessibilityPreference !== null) {
+                socket.emit('update-preference', { type: 'accessibility', value: accessibilityPreference });
+            }
+        });
+
         socket.on('reconnect_attempt', async () => {
             const latestAccessToken = await getToken('accessToken');
             if(latestAccessToken) socket.auth = { token: `Bearer ${latestAccessToken}` };
