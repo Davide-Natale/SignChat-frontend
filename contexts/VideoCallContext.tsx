@@ -47,6 +47,7 @@ export interface VideoCallContextType {
     audioProducerRef: React.MutableRefObject<mediasoup.types.Producer<mediasoup.types.AppData> | undefined>;
     videoConsumerRef: React.MutableRefObject<mediasoup.types.Consumer<mediasoup.types.AppData> | undefined>;
     audioConsumerRef: React.MutableRefObject<mediasoup.types.Consumer<mediasoup.types.AppData> | undefined>;
+    accessibilityAudioConsumerRef: React.MutableRefObject<mediasoup.types.Consumer<mediasoup.types.AppData> | undefined>;
     updateCallId: React.Dispatch<React.SetStateAction<number | undefined>>;
     updateIsRinging: React.Dispatch<React.SetStateAction<boolean>>;
     updateIsCallStarted: React.Dispatch<React.SetStateAction<boolean>>;
@@ -101,6 +102,7 @@ export const VideoCallProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     const audioProducerRef = useRef<mediasoup.types.Producer<mediasoup.types.AppData>>();
     const videoConsumerRef = useRef<mediasoup.types.Consumer<mediasoup.types.AppData>>();
     const audioConsumerRef = useRef<mediasoup.types.Consumer<mediasoup.types.AppData>>();
+    const accessibilityAudioConsumerRef = useRef<mediasoup.types.Consumer<mediasoup.types.AppData>>();
     const intervalRef = useRef<NodeJS.Timeout>();
 
     const stopInterval = () => {
@@ -388,6 +390,7 @@ export const VideoCallProvider: React.FC<{ children: React.ReactNode }> = ({ chi
                 audioProducerRef,
                 videoConsumerRef,
                 audioConsumerRef,
+                accessibilityAudioConsumerRef,
                 updateCallId: setCallId,
                 updateIsRinging: setIsRinging,
                 updateIsCallStarted: setIsCallStarted,

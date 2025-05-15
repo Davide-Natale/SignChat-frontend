@@ -213,6 +213,7 @@ export const setupSocketEvents = (
                 videoCallContext.audioProducerRef.current = undefined;
                 videoCallContext.videoConsumerRef.current = undefined;
                 videoCallContext.audioConsumerRef.current = undefined;
+                videoCallContext.accessibilityAudioConsumerRef.current = undefined;
                 videoCallContext.localStreamRef.current = undefined;
                 videoCallContext.updateLocalStream(undefined);
                 videoCallContext.clearRemoteStream();
@@ -294,7 +295,7 @@ export const setupSocketEvents = (
         }
     });
 
-    socket.on('new-producer', ({ producerId }) => {
+    socket.on('new-producer', ({ producerId, accessibility }) => {
         if(videoCallContext?.deviceRef.current && videoCallContext.recvTransportRef.current) {
             const transportId = videoCallContext.recvTransportRef.current?.id;
             const rtpCapabilities = videoCallContext.deviceRef.current.rtpCapabilities;
@@ -310,8 +311,11 @@ export const setupSocketEvents = (
                     });
 
                     if(params.kind === 'audio') {
-                        videoCallContext.audioConsumerRef.current = consumer;
-                        resumeConsumer(videoCallContext.audioConsumerRef.current, errorContext);
+                        const ref = accessibility ? videoCallContext.accessibilityAudioConsumerRef : 
+                            videoCallContext.audioConsumerRef;
+
+                        ref.current = consumer;
+                        resumeConsumer(ref.current, errorContext);          
                     } else {
                         videoCallContext.videoConsumerRef.current = consumer;
                         resumeConsumer(videoCallContext.videoConsumerRef.current, errorContext);
@@ -321,7 +325,6 @@ export const setupSocketEvents = (
                 }
             });
         }
-        
     });
 
     socket.on('producer-paused', ({ kind }) => {
@@ -351,6 +354,7 @@ export const setupSocketEvents = (
                     videoCallContext.audioProducerRef.current = undefined;
                     videoCallContext.videoConsumerRef.current = undefined;
                     videoCallContext.audioConsumerRef.current = undefined;
+                    videoCallContext.accessibilityAudioConsumerRef.current = undefined;
                     videoCallContext.localStreamRef.current?.getTracks().forEach(track => track.stop());
                     videoCallContext.localStreamRef.current = undefined
                     videoCallContext.updateNotificationType('none');
