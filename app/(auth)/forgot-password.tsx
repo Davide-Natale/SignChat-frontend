@@ -16,7 +16,7 @@ export default function ForgotPassword() {
     const router = useRouter();
     const appContext = useContext(AppContext);
     const errorContext = useContext(ErrorContext);
-    const [email, setEmail] = useState("daxnatale@gmail.com");
+    const [email, setEmail] = useState("");
     const [emailErrMsg, setEmailErrMsg] = useState("");
     const description = "Don't worry! It happens. Please enter the email address assosieted with your account."
 

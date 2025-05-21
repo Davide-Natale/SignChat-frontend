@@ -18,9 +18,9 @@ export default function Login() {
     const appContext = useContext(AppContext);
     const authContext = useContext(AuthContext);
     const errorContext = useContext(ErrorContext);
-    const [email, setEmail] = useState("daxnatale@gmail.com");
-    const [password, setPassword] = useState("Aa0?aaaa");
-    const [confirmPassword, setConfirmPassword] = useState("Aa0?aaaa");
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [confirmPassword, setConfirmPassword] = useState("");
     const [emailErrMsg, setEmailErrMsg] = useState("");
     const [passwordErrMsg, setPasswordErrMsg] = useState("");
     const [confirmPasswordErrMsg, setConfirmPasswordErrMsg] = useState("");

@@ -17,8 +17,8 @@ export default function ResetPassword() {
     const router = useRouter();
     const appContext = useContext(AppContext);
     const errorContext = useContext(ErrorContext);
-    const [password, setPassword] = useState("Password2!");
-    const [confirmPassword, setConfirmPassword] = useState("Password2!");
+    const [password, setPassword] = useState("");
+    const [confirmPassword, setConfirmPassword] = useState("");
     const [passwordErrMsg, setPasswordErrMsg] = useState("");
     const [confirmPasswordErrMsg, setConfirmPasswordErrMsg] = useState("");
     const textInputRef = useRef<TextInput>(null);

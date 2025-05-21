@@ -16,9 +16,9 @@ export default function ChangePassword() {
     const router = useRouter();
     const appContext = useContext(AppContext);
     const errorContext = useContext(ErrorContext);
-    const [currentPassword, setCurrentPassword] = useState("Password1!");
-    const [newPassword, setNewPassword] = useState("Password3!");
-    const [confirmNewPassword, setConfirmNewPassword] = useState("Password3!");
+    const [currentPassword, setCurrentPassword] = useState("");
+    const [newPassword, setNewPassword] = useState("");
+    const [confirmNewPassword, setConfirmNewPassword] = useState("");
     const [currrentPasswordErrMsg, setCurrrentPasswordErrMsg] = useState("");
     const [newPasswordErrMsg, setNewPasswordErrMsg] = useState("");
     const [confirmNewPasswordErrMsg, setConfirmNewPasswordErrMsg] = useState("");
