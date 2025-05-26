@@ -3,8 +3,6 @@ import CallIcon from '@/assets/icons/call.svg';
 import CallIconBold from '@/assets/icons/call-bold.svg';
 import ContactIcon from '@/assets/icons/contact.svg';
 import ContactIconBold from '@/assets/icons/contact-bold.svg';
-import TranscriptionIcon from '@/assets/icons/transcription.svg';
-import TranscriptionIconBold from '@/assets/icons/transcription-bold.svg';
 import { useTheme } from "@/hooks/useTheme";
 import { useCallback, useContext, useEffect } from "react";
 import { AppContext } from "@/contexts/AppContext";
@@ -199,18 +197,6 @@ export default function TabLayout() {
                         );
                     } 
                 }} 
-            />
-            <Tabs.Screen
-                name="transcriptions"
-                options={{
-                    title: 'Transcriptions',
-                    tabBarIcon: ({ focused, color }) => {
-                        return(
-                            focused ? <TranscriptionIconBold fill={color} /> :
-                                <TranscriptionIcon stroke={color} />
-                        );
-                    }
-                }}
             />
             <Tabs.Screen 
                 name="profile"
