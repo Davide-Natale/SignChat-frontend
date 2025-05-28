@@ -120,7 +120,7 @@ Before using this project, make sure to configure it properly by following the i
         ```
         eas build --platform android --profile production
         ```
-        You will be asked to generate a new **Android Keystore**, please answer `Yes`. This will start a new build generation after that Android Keystor has been generated, you can even cancel and remove this build, since is not needed to complete
+        You will be asked to generate a new **Android Keystore**, please answer `Yes`. This will start a new build generation after that Android Keystore has been generated, you can even cancel and remove this build from **Expo Dashboard**, since is not needed to complete it
 
     5. Generate **Firebase Service Account Key**:
         - Go to the **[Firebase Console](https://console.firebase.google.com/)**
@@ -140,7 +140,8 @@ Before using this project, make sure to configure it properly by following the i
         - Select **Google Service Account**
         - Choose **Manage your Google Service Account Key for Push Notifications (FCM V1)**
         - Select **Set up a Google Service Account Key for Push Notifications (FCM V1)**
-        - The command must automatically identify the `JSON` file placed in the root directory in the previous step; otherwise choose **Upload a new service account key** and provide the path of `JSON` file previously downloaded
+        - Choose **Upload a new service account key**
+        - The command must automatically identify the `JSON` file placed in the root directory in the previous step; otherwise provide the path of `JSON` file previously downloaded
         - Once this is done, you can delete the `JSON` file, as it contains sensible data and should not be committed to `Version Control`
 
     7. Get `SHA-1 certificate` from **Expo Dashboard**:
@@ -152,9 +153,7 @@ Before using this project, make sure to configure it properly by following the i
     8. Configure `google-service.json` with **Firebase**:
         - Go to the **[Firebase Console](https://console.firebase.google.com/)**
         - Select your project and navigate to **Project Settings**
-        - Move to the **Service accounts** tab
-        - Click **Generate new private key**, this will download a `JSON` file
-        - Move it to the **root directory** of the project
+        - Move to the **General** tab
         - Scroll to the **Your App** section and click **"Add app" > Android**
         - Enter the **Android package name**, this must match the one in [`app.json`](app.json):
           ```
