@@ -214,10 +214,13 @@ export const setupSocketEvents = (
                 videoCallContext.videoConsumerRef.current = undefined;
                 videoCallContext.audioConsumerRef.current = undefined;
                 videoCallContext.accessibilityAudioConsumerRef.current = undefined;
+                videoCallContext.accessibilityVideoConsumerRef.current = undefined;
                 videoCallContext.localStreamRef.current = undefined;
                 videoCallContext.updateLocalStream(undefined);
                 videoCallContext.clearRemoteStream();
+                videoCallContext.clearAccessibilityRemoteStream();
                 videoCallContext.updateIsCallStarted(false);
+                videoCallContext.updateIsAccessibilityCall(false);
                 videoCallContext.updateOtherUser(undefined);
                 videoCallContext.updateConnectionQuality(undefined);
                 videoCallContext.resetOtherUserStatus();
@@ -231,10 +234,11 @@ export const setupSocketEvents = (
         } 
     });
 
-    socket.on('call-joined', async ({ callId, sendTransportParams, recvTransportParams }) => {
+    socket.on('call-joined', async ({ callId, isAccessibilityCall, sendTransportParams, recvTransportParams }) => {
         if(videoCallContext) {
             videoCallContext.updateCallId(callId);
             videoCallContext.updateIsCallStarted(true);
+            videoCallContext.updateIsAccessibilityCall(isAccessibilityCall);
             videoCallContext.updateNotificationType('ongoing');
             const stream = await mediaDevices.getUserMedia({ audio: true, video: true });
             videoCallContext.updateLocalStream(stream);
@@ -270,13 +274,14 @@ export const setupSocketEvents = (
         }
     });
 
-    socket.on('call-answered', async () => {
+    socket.on('call-answered', async ({ isAccessibilityCall }) => {
         try {
             if (videoCallContext?.isRingingRef.current) {
                 videoCallContext.updateIsRinging(false);
             }
 
             videoCallContext?.updateIsCallStarted(true);
+            videoCallContext?.updateIsAccessibilityCall(isAccessibilityCall);
             videoCallContext?.updateNotificationType('ongoing');
 
             if(videoCallContext?.sendTransportRef.current) {
@@ -310,16 +315,14 @@ export const setupSocketEvents = (
                         rtpParameters: params.rtpParameters
                     });
 
-                    if(params.kind === 'audio') {
-                        const ref = accessibility ? videoCallContext.accessibilityAudioConsumerRef : 
-                            videoCallContext.audioConsumerRef;
+                    const ref = accessibility ? 
+                        (params.kind === 'audio' ? videoCallContext.accessibilityAudioConsumerRef
+                            : videoCallContext.accessibilityVideoConsumerRef) : 
+                        (params.kind === 'audio' ? videoCallContext.audioConsumerRef
+                            : videoCallContext.videoConsumerRef);
 
-                        ref.current = consumer;
-                        resumeConsumer(ref.current, errorContext);          
-                    } else {
-                        videoCallContext.videoConsumerRef.current = consumer;
-                        resumeConsumer(videoCallContext.videoConsumerRef.current, errorContext);
-                    }
+                    ref.current = consumer;
+                    resumeConsumer(ref.current, errorContext);
                 } else {
                     errorContext?.handleError(new Error(response.error));
                 }
@@ -355,6 +358,7 @@ export const setupSocketEvents = (
                     videoCallContext.videoConsumerRef.current = undefined;
                     videoCallContext.audioConsumerRef.current = undefined;
                     videoCallContext.accessibilityAudioConsumerRef.current = undefined;
+                    videoCallContext.accessibilityVideoConsumerRef.current = undefined;
                     videoCallContext.localStreamRef.current?.getTracks().forEach(track => track.stop());
                     videoCallContext.localStreamRef.current = undefined
                     videoCallContext.updateNotificationType('none');
@@ -364,7 +368,9 @@ export const setupSocketEvents = (
                     videoCallContext.resetFacingMode();
                     videoCallContext.updateLocalStream(undefined);
                     videoCallContext.clearRemoteStream();
+                    videoCallContext.clearAccessibilityRemoteStream();
                     videoCallContext.updateIsCallStarted(false);
+                    videoCallContext.updateIsAccessibilityCall(false);
                     videoCallContext.updateOtherUser(undefined);
                     videoCallContext.updateConnectionQuality(undefined);
                     videoCallContext.resetOtherUserStatus();

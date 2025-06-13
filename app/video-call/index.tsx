@@ -468,7 +468,7 @@ export default function VideoCall() {
                         ))
                         }
                     </Animated.View>
-                    { /*appContext?.isAccessibilityEnabled ? 
+                    { appContext?.isAccessibilityEnabled && videoCallContext?.isAccessibilityCall ? 
                         <Animated.View style={[styles.camera, accessibilityAnimatedStyle, 
                             { 
                                 left: marginX,
@@ -477,7 +477,14 @@ export default function VideoCall() {
                                 borderRadius: ACCESSIBILITY_SIZE.width / 10,
                                 backgroundColor: darkTheme.secondary 
                             }
-                        ]} /> : null */
+                        ]}>
+                            <RTCView 
+                                streamURL={videoCallContext.accessibilityRemoteStream?.toURL()} 
+                                zOrder={1} 
+                                objectFit='contain' 
+                                style={styles.stream} 
+                            />
+                        </Animated.View> : null
                     }
                     <GestureDetector gesture={Gesture.Exclusive(panGesture, cameraTapGesture)} > 
                         <Animated.View style={[styles.camera, cameraAnimatedStyle, { backgroundColor: darkTheme.secondary }]} >
