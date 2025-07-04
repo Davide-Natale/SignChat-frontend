@@ -38,7 +38,6 @@ This project aims to bridge this communication gap by developing a mobile applic
 
 The project consists of two main repositories:
 
-<!-- TODO: change link when repositories uploaded to Team -->
 - __[SignChat-backend](https://github.com/Davide-Natale/SignChat-backend.git)__ - A backend architecture managed through **Docker Compose**
 
 - __[SignChat-frontend](https://github.com/Davide-Natale/SignChat-frontend.git)__ - A **React Native** mobile application written in **Typescript** based on **Expo**
